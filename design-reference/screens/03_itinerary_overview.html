@@ -1,0 +1,342 @@
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" name="viewport"><meta content="mobile_tab" name="shell-type"><link href="https://fonts.googleapis.com/css2?family=Outfit:wght@600;700&amp;family=Inter:wght@400;600;700&amp;display=swap" rel="stylesheet"><link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"><style>@layer base{html,body{width:100vw;margin:0;padding:0;background-color:#f8f9ff;}body{overscroll-behavior:none;}.pb-safe{padding-bottom:env(safe-area-inset-bottom,24px);}.pt-safe{padding-top:env(safe-area-inset-top,0px);}main>:first-child{margin-top:0!important;}main>:last-child{margin-bottom:0!important;}}::-webkit-scrollbar{display:none;}</style><script src="https://cdn.tailwindcss.com"></script><script id="tailwind-config">tailwind.config={darkMode:"class",theme:{extend:{colors:{"secondary-fixed-dim":"#7bd0ff","surface-container-low":"#eff4ff","inverse-primary":"#65d8d4","inverse-on-surface":"#eaf1ff","secondary":"#00668a","on-secondary-container":"#004d6a","inverse-surface":"#213145","on-background":"#0b1c30","surface-bright":"#f8f9ff","on-error":"#ffffff","on-surface-variant":"#3d4948","surface-tint":"#006a68","on-tertiary-container":"#fffbff","on-primary-container":"#f3fffd","primary":"#006765","tertiary-container":"#a36700","primary-fixed-dim":"#65d8d4","on-primary-fixed-variant":"#00504e","error":"#ba1a1a","on-secondary":"#ffffff","on-tertiary-fixed-variant":"#653e00","surface":"#f8f9ff","surface-container-lowest":"#ffffff","tertiary-fixed":"#ffddb8","outline":"#6d7a79","primary-container":"#008280","on-error-container":"#93000a","surface-container-highest":"#d3e4fe","surface-container":"#e5eeff","tertiary-fixed-dim":"#ffb95f","background":"#f8f9ff","secondary-fixed":"#c4e7ff","on-primary":"#ffffff","on-primary-fixed":"#00201f","on-tertiary":"#ffffff","tertiary":"#825100","surface-dim":"#cbdbf5","on-secondary-fixed-variant":"#004c69","surface-container-high":"#dce9ff","primary-fixed":"#83f5f1","error-container":"#ffdad6","on-tertiary-fixed":"#2a1700","outline-variant":"#bcc9c8","surface-variant":"#d3e4fe","secondary-container":"#40c2fd","on-secondary-fixed":"#001e2c","on-surface":"#0b1c30"},borderRadius:{DEFAULT:"0.25rem",lg:"0.5rem",xl:"0.75rem",full:"9999px"},spacing:{"space-xs":"0.25rem","gutter-mobile":"0.75rem",margin:"1rem","space-md":"1rem","margin-mobile":"1rem","space-lg":"1.5rem","space-xl":"2rem","space-sm":"0.5rem",gutter:"1rem"},fontFamily:{"headline-lg":["Outfit"],"body-sm":["Inter"],"headline-lg-mobile":["Outfit"],"display-lg":["Outfit"],"headline-sm":["Outfit"],"body-lg":["Inter"],"label-sm":["Inter"],"label-md":["Inter"],"headline-md":["Outfit"],"body-md":["Inter"],"label-lg":["Inter"]},fontSize:{"headline-lg":["30px",{lineHeight:"38px",letterSpacing:"-0.015em",fontWeight:"700"}],"body-sm":["12px",{lineHeight:"16px",letterSpacing:"0.01em",fontWeight:"400"}],"headline-lg-mobile":["26px",{lineHeight:"34px",letterSpacing:"-0.015em",fontWeight:"700"}],"display-lg":["36px",{lineHeight:"44px",letterSpacing:"-0.02em",fontWeight:"700"}],"headline-sm":["18px",{lineHeight:"24px",letterSpacing:"-0.005em",fontWeight:"600"}],"body-lg":["16px",{lineHeight:"24px",letterSpacing:"0em",fontWeight:"400"}],"label-sm":["11px",{lineHeight:"14px",letterSpacing:"0.03em",fontWeight:"700"}],"label-md":["13px",{lineHeight:"18px",letterSpacing:"0.01em",fontWeight:"600"}],"headline-md":["22px",{lineHeight:"28px",letterSpacing:"-0.01em",fontWeight:"600"}],"body-md":["14px",{lineHeight:"20px",letterSpacing:"0em",fontWeight:"400"}],"label-lg":["15px",{lineHeight:"20px",letterSpacing:"0.005em",fontWeight:"600"}]}}}};</script><style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head><body class="bg-surface text-on-surface font-body-md text-body-md flex flex-col min-h-screen"><header class="fixed top-0 w-full z-50 pt-safe bg-surface/80 backdrop-blur-xl shadow-[0_1px_8px_rgba(0,0,0,0.04)]"><div class="h-16 px-margin flex items-center justify-between"><div class="flex items-center gap-space-sm"><img alt="RoamWise App Icon" class="h-8 w-auto object-contain" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAJk8BPW9YMi5Z9MjentbyiJuQv-N8QStI_PKTuJtsMLJ7e2ycBRLWgxoW3Y3MrGOhJJT5y2EBDFum8fHE_5bBnRxzboZ4AW7-PsJLqUwjAWtimz-ySXqsCG_I2bSz48ezoDEgXcSFe-cfMB7PzQwCn0mBXtyBGnGoQzBv6ytplYtXGdjxi0uT7HtqqprO5ziMRmMqKUz1_OYjCoxDUH2aHEK5sXZipAIL5mPqXTLt8"><div class="flex flex-col"><div class="flex items-center gap-space-xs"><span class="material-symbols-outlined text-[14px] text-primary">explore</span><span class="font-label-sm text-label-sm text-primary uppercase tracking-wider">RoamWise AI</span></div><span class="font-headline-sm text-headline-sm text-on-surface leading-none">Trip</span></div></div><div class="flex items-center gap-space-sm"><div class="flex items-center gap-space-xs bg-surface-container-low px-space-sm py-space-xs rounded-full shadow-[0_2px_8px_rgba(15,23,42,0.04)]"><span class="material-symbols-outlined text-secondary text-[16px]">partly_cloudy_day</span><span class="font-label-sm text-label-sm text-on-secondary-container">Kyoto · 22°C</span></div><img alt="Profile" class="w-8 h-8 rounded-full object-cover shadow-[0_2px_6px_rgba(0,0,0,0.08)]" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDrWr6Hf-Hd4soh3SbS0gS9u6hr9Mq4os_01YXkCF8j-HnPkZXWMmJ9Wz9Hsd2hlZsanj_rJyNGolkhgor83myB6dCv0Oz0LfKzpLTFjUCpOHaySV0-VW-CvAKuog9RwJ2vu4KryideaoTc6BS15K5_l4jog40aiv5hMN7-olpDMxqV3L-URpF84OenkmU0MD-1wBroLfj6C11e3jy4N73lc-9-dnzYOw_xGRAaIF7R"></div></div></header><main class="flex flex-col relative w-full pt-16 pb-24 bg-surface min-h-screen"><div class="flex flex-col w-full">
+<!-- Subtle Ambient Glow Canvas Decor -->
+<div class="relative w-full px-margin pt-space-md pb-space-lg flex flex-col gap-space-lg">
+<!-- Trip Header Overview Card -->
+<section class="relative w-full bg-surface-container-lowest rounded-[18px] p-space-md shadow-[0_8px_24px_-4px_rgba(15,23,42,0.06)] overflow-hidden">
+<div class="absolute -right-12 -top-12 w-40 h-40 bg-secondary-fixed-dim/20 rounded-full blur-2xl pointer-events-none"></div>
+<div class="flex flex-col gap-space-sm relative z-10">
+<div class="flex items-center justify-between">
+<span class="inline-flex items-center gap-space-xs bg-surface-container px-space-sm py-1 rounded-full font-label-sm text-label-sm text-on-surface-variant">
+<span class="material-symbols-outlined text-[14px] text-primary" style="font-variation-settings: 'FILL' 1;">person</span>
+            Solo • Moderate Pace
+          </span>
+<span class="inline-flex items-center gap-space-xs bg-tertiary-fixed text-on-tertiary-fixed px-space-sm py-1 rounded-full font-label-sm text-label-sm font-bold shadow-sm">
+<span class="material-symbols-outlined text-[14px]">wb_sunny</span>
+            22°C Mostly Sunny • 15% Rain Risk
+          </span>
+</div>
+<div class="flex flex-col mt-space-xs">
+<h1 class="font-headline-lg-mobile text-headline-lg-mobile text-on-surface tracking-tight">
+            Kyoto Cultural Autumn Expedition
+          </h1>
+<div class="flex items-center gap-space-xs text-on-surface-variant font-label-md text-label-md mt-1">
+<span class="material-symbols-outlined text-[16px] text-secondary">calendar_today</span>
+<span class="">Oct 14 – 18 (5 Days)</span>
+<span class="text-outline-variant">•</span>
+<span class="text-primary font-semibold">AI Optimized</span>
+</div>
+</div>
+<!-- Mini Destination Photo Snippet -->
+<div class="relative w-full h-28 rounded-xl overflow-hidden mt-space-xs shadow-inner">
+<img class="w-full h-full object-cover" data-alt="Stunning Kyoto pagoda nestled in vibrant Japanese autumn red and orange maple foliage, soft golden hour sunlight filtering through temple trees, photorealistic cinematic travel photography with calm warm palette." src="https://lh3.googleusercontent.com/aida-public/AB6AXuCMMt7anw-O0yg-WFE7PDykiF4iQT51-Yx-dIhHLVrtoYsqappKIjosYLUSmQMxTGYaFipf_CrObmZZekwgGcPBZ27rDsCs8ZB4dLpRZbzJm4F_lNexM8CpX5xAgoDw5FRQl4I_BB9TNBVd7Ub6h5b9xi1ghHUZj48yk-dsiRm8TwZFJHFt1bSV4emNr9sApv3yMwCqqp9WgqfWIDIZyob8zSwNOS12bF7a_037BmjX">
+<div class="absolute inset-0 bg-gradient-to-t from-inverse-surface/80 via-inverse-surface/20 to-transparent flex items-end p-space-sm">
+<span class="text-inverse-on-surface font-label-sm text-label-sm flex items-center gap-1">
+<span class="material-symbols-outlined text-[14px] text-secondary-fixed-dim">location_on</span>
+              Higashiyama &amp; Central Kyoto Base
+            </span>
+</div>
+</div>
+</div>
+</section>
+<!-- Horizontal Day Tabs (Pill Carousel) -->
+<section class="flex items-center gap-space-sm overflow-x-auto no-scrollbar py-1 -mx-margin px-margin">
+<button class="flex items-center gap-space-xs px-space-md py-2 rounded-full bg-primary text-on-primary font-label-md text-label-md shadow-[0_4px_12px_rgba(0,103,101,0.25)] whitespace-nowrap active:scale-95 transition-transform">
+<span class="material-symbols-outlined text-[16px]">calendar_view_day</span>
+<span class="">Day 1 (Tue)</span>
+</button>
+<button class="flex items-center gap-space-xs px-space-md py-2 rounded-full bg-surface-container text-on-surface-variant hover:text-on-surface font-label-md text-label-md whitespace-nowrap active:scale-95 transition-transform">
+<span class="">Day 2 (Wed)</span>
+</button>
+<button class="flex items-center gap-space-xs px-space-md py-2 rounded-full bg-surface-container text-on-surface-variant hover:text-on-surface font-label-md text-label-md whitespace-nowrap active:scale-95 transition-transform">
+<span class="">Day 3 (Thu)</span>
+</button>
+<button class="flex items-center gap-space-xs px-space-md py-2 rounded-full bg-surface-container text-on-surface-variant hover:text-on-surface font-label-md text-label-md whitespace-nowrap active:scale-95 transition-transform">
+<span class="">Day 4</span>
+</button>
+<button class="flex items-center gap-space-xs px-space-md py-2 rounded-full bg-surface-container text-on-surface-variant hover:text-on-surface font-label-md text-label-md whitespace-nowrap active:scale-95 transition-transform">
+<span class="">Day 5</span>
+</button>
+</section>
+<!-- 3 Days Itinerary Feed -->
+<div class="flex flex-col gap-space-lg">
+<!-- DAY 1 CARD -->
+<article class="bg-surface-container-lowest rounded-[18px] p-space-md shadow-[0_6px_20px_-4px_rgba(15,23,42,0.06)] flex flex-col gap-space-md">
+<!-- Date & Theme Banner -->
+<div class="flex flex-col gap-1">
+<div class="flex items-center justify-between">
+<span class="font-label-sm text-label-sm text-secondary font-bold tracking-wide uppercase">Day 01</span>
+<span class="inline-flex items-center gap-1 font-label-sm text-label-sm text-on-tertiary-fixed-variant bg-tertiary-fixed/60 px-2 py-0.5 rounded-full">
+<span class="material-symbols-outlined text-[13px] text-tertiary">wb_sunny</span>
+              Sunny 23°C
+            </span>
+</div>
+<h2 class="font-headline-sm text-headline-sm text-on-surface">Historic Temples &amp; Gion Evening</h2>
+<span class="font-body-sm text-body-sm text-on-surface-variant">Tuesday, Oct 14</span>
+</div>
+<!-- Activities List -->
+<div class="flex flex-col gap-space-sm">
+<!-- Activity 1 -->
+<div class="flex items-start gap-space-sm p-space-sm bg-surface-container-low rounded-xl">
+<div class="w-14 h-14 rounded-lg overflow-hidden shrink-0 shadow-sm">
+<img class="w-full h-full object-cover" data-alt="The Golden Pavilion Kinkaku-ji temple in Kyoto reflecting sharply on mirror pond framed by pine trees under radiant clear blue sky, travel photograph." src="https://lh3.googleusercontent.com/aida-public/AB6AXuBxFVjYfd1fxN9RyhxH0DclMdDsxBZcb-DxiI4YNRhdptNdrIpOAutdfj3AMSKnafaVy7CEBTUZPYhR3ETQx_tcaLw_P5oMGbPiuwYm-ugqW0nATp0Ak0bbhRJIr9QQP4nYB5PLma3Br_cbH9boR8svApo8hZyzfADBvxXEk5giDr-_ZB3R7iH01c7rt5cF_IQ0eogMkKuinmGop5csxgcjOpTCysFs83Ly8sWpdl4r">
+</div>
+<div class="flex flex-col flex-1 min-w-0">
+<div class="flex items-center justify-between gap-1">
+<span class="font-label-md text-label-md text-on-surface font-semibold truncate">Kinkaku-ji Golden Pavilion</span>
+<span class="font-label-sm text-label-sm text-tertiary-container shrink-0">☀️ Low Risk</span>
+</div>
+<div class="flex items-center gap-2 mt-1 text-on-surface-variant font-body-sm text-body-sm">
+<span class="">09:00 AM</span>
+<span class="">•</span>
+<span class="">2h</span>
+<span class="">•</span>
+<span class="font-semibold text-on-surface">¥500</span>
+</div>
+</div>
+</div>
+<!-- Activity 2 -->
+<div class="flex items-start gap-space-sm p-space-sm bg-surface-container-low rounded-xl">
+<div class="w-14 h-14 rounded-lg overflow-hidden shrink-0 shadow-sm">
+<img class="w-full h-full object-cover" data-alt="Atmospheric covered Nishiki market street in Kyoto filled with artisan food stalls, glowing warm lanterns, fresh sashimi skewers and steam." src="https://lh3.googleusercontent.com/aida-public/AB6AXuCd6UGr3ilNvt-_wUgmeFKZnfnOK270wTPg_bpWz2sp2n31l60RzhOVTdu2UXLleXySiJOJdQhIvz7Sp6Ret6E-_fFWxg9gJBVKEldtBezYh35Gz_ZfoAZx14Lzvld061ICXPh8W6OjVxv-Sfv6pvyyARN-f7UyFCWdN2_3EMfcA0N2swdozrqzK1875bowYLYsx5ukHYhaAqL2A5T_hDd1jnJuY_OSzlIADreydJ3L">
+</div>
+<div class="flex flex-col flex-1 min-w-0">
+<div class="flex items-center justify-between gap-1">
+<span class="font-label-md text-label-md text-on-surface font-semibold truncate">Nishiki Market Street Food</span>
+<span class="font-label-sm text-label-sm text-secondary shrink-0">☂️ Indoor Safe</span>
+</div>
+<div class="flex items-center gap-2 mt-1 text-on-surface-variant font-body-sm text-body-sm">
+<span class="">01:30 PM</span>
+<span class="">•</span>
+<span class="">1.5h</span>
+<span class="">•</span>
+<span class="font-semibold text-on-surface">¥2,400</span>
+</div>
+</div>
+</div>
+<!-- Activity 3 -->
+<div class="flex items-start gap-space-sm p-space-sm bg-surface-container-low rounded-xl">
+<div class="w-14 h-14 rounded-lg overflow-hidden shrink-0 shadow-sm">
+<img class="w-full h-full object-cover" data-alt="Quiet cobblestone alley in Gion Kyoto during dusk sunset, traditional dark wooden machiya merchant townhouses with glowing red paper lanterns." src="https://lh3.googleusercontent.com/aida-public/AB6AXuAh_waJEqPnMbzmhpxtvgo-xAKK2rNCwUx9dV2I0ACC8LR0mkO_AiH_H4CV95eexlqrLyoTIhbD-h9zmG0jKAVEInSiR-vkIM0qR8vMMuMVPuRs-TivHUipMr120Idgb4SxTwxIkriILhWIVY1lDGOBt5DI-3s1P1BXnc5NsGLsZJ4xUQfJgGnkvSzsBN88-S3g4VLxA2_nd3OYoG_qr3hLfAtv93T0FOjYaXBvWFUK">
+</div>
+<div class="flex flex-col flex-1 min-w-0">
+<div class="flex items-center justify-between gap-1">
+<span class="font-label-md text-label-md text-on-surface font-semibold truncate">Gion Historic Geisha District</span>
+<span class="font-label-sm text-label-sm text-tertiary shrink-0">🌅 Ideal Sunset</span>
+</div>
+<div class="flex items-center gap-2 mt-1 text-on-surface-variant font-body-sm text-body-sm">
+<span class="">05:00 PM</span>
+<span class="">•</span>
+<span class="">2.5h</span>
+<span class="">•</span>
+<span class="font-semibold text-primary">Free</span>
+</div>
+</div>
+</div>
+</div>
+<!-- Footer / Action Link -->
+<a class="flex items-center justify-between pt-space-xs text-primary font-label-md text-label-md hover:underline" href="#">
+<span class="flex items-center gap-1">
+<span class="material-symbols-outlined text-[16px]">schedule</span>
+            View Full Timeline
+          </span>
+<span class="material-symbols-outlined text-[18px]">arrow_forward</span>
+</a>
+</article>
+<!-- DAY 2 CARD (With Weather Alert & Plan B Ready) -->
+<article class="relative bg-surface-container-lowest rounded-[18px] p-space-md shadow-[0_8px_24px_-4px_rgba(56,189,248,0.12)] flex flex-col gap-space-md">
+<!-- Ambient Weather Alert Highlight Bar -->
+<div class="flex items-center gap-space-xs bg-error-container text-on-error-container px-space-sm py-1.5 rounded-xl font-label-sm text-label-sm font-semibold">
+<span class="material-symbols-outlined text-[16px]">thunderstorm</span>
+<span class="">Rain Alert: 65% Rain at 2 PM (Plan B ready)</span>
+</div>
+<!-- Date & Theme Banner -->
+<div class="flex flex-col gap-1">
+<div class="flex items-center justify-between">
+<span class="font-label-sm text-label-sm text-secondary font-bold tracking-wide uppercase">Day 02</span>
+<span class="inline-flex items-center gap-1 font-label-sm text-label-sm text-on-secondary-container bg-secondary-fixed/50 px-2 py-0.5 rounded-full">
+<span class="material-symbols-outlined text-[13px] text-secondary">rainy</span>
+              Showers 19°C
+            </span>
+</div>
+<h2 class="font-headline-sm text-headline-sm text-on-surface">Arashiyama Bamboo &amp; River Walk</h2>
+<span class="font-body-sm text-body-sm text-on-surface-variant">Wednesday, Oct 15</span>
+</div>
+<!-- Activities List -->
+<div class="flex flex-col gap-space-sm">
+<!-- Activity 1 -->
+<div class="flex items-start gap-space-sm p-space-sm bg-surface-container-low rounded-xl">
+<div class="w-14 h-14 rounded-lg overflow-hidden shrink-0 shadow-sm">
+<img class="w-full h-full object-cover" data-alt="Towering green Sagano Bamboo Forest grove in Arashiyama Kyoto early morning mist, walking pathway illuminated by gentle morning glow." src="https://lh3.googleusercontent.com/aida-public/AB6AXuDtBBRozpf8nDEC0TCls00ZUQ6OTKW5-CEFkSQF_zhOm9TUC8ERjcWIkzp_vLxZrbueqz3wUVA4pS4eONaWykdxJoFlsNn2Wam4oJzb12Ye6_fdZ2fzIaA5lIzaXycJUEBtHp--TjgS7bi9pDI2Db-tT2MV8142XdU1f4dPz-nfsUw_fzKkJ2z7OwRkERETb62Zv7RhfiVH8Mkd3ernJM76wDFYZ5OLTvSFTg8uhtxH">
+</div>
+<div class="flex flex-col flex-1 min-w-0">
+<div class="flex items-center justify-between gap-1">
+<span class="font-label-md text-label-md text-on-surface font-semibold truncate">Bamboo Grove Serene Walk</span>
+<span class="font-label-sm text-label-sm text-tertiary-container shrink-0">☀️ Low Risk</span>
+</div>
+<div class="flex items-center gap-2 mt-1 text-on-surface-variant font-body-sm text-body-sm">
+<span class="">08:30 AM</span>
+<span class="">•</span>
+<span class="">1.5h</span>
+<span class="">•</span>
+<span class="font-semibold text-primary">Free</span>
+</div>
+</div>
+</div>
+<!-- Activity 2 -->
+<div class="flex items-start gap-space-sm p-space-sm bg-surface-container-low rounded-xl">
+<div class="w-14 h-14 rounded-lg overflow-hidden shrink-0 shadow-sm">
+<img class="w-full h-full object-cover" data-alt="Tenryu-ji Zen temple dry landscape rock garden with pristine raked white gravel and tranquil koi pond backed by misty Kyoto mountains." src="https://lh3.googleusercontent.com/aida-public/AB6AXuCvmdN8v50dAzukPG9MyUjGPslkrjn7AHFdHiOEQHtITeoXAr7akibkS_IQzXG_d3g5ByyyQX82IVUtEyI7fK_zYjUqC7fLlz9-7JKx1-ob2vSfXMvkc3T_pGXyCj2KqGZH39rhloE-qHPzRJZByGGUBqYmkGVlj427z7xGFT2h5UwDgZDM03kdrtU4kCMvnZLD7Fy3pbcQvPCEx1dXG-UDIwOsnjb48UamTqa3HjAT">
+</div>
+<div class="flex flex-col flex-1 min-w-0">
+<div class="flex items-center justify-between gap-1">
+<span class="font-label-md text-label-md text-on-surface font-semibold truncate">Tenryu-ji Zen Gardens</span>
+<span class="font-label-sm text-label-sm text-on-surface-variant shrink-0">⛅ Medium Risk</span>
+</div>
+<div class="flex items-center gap-2 mt-1 text-on-surface-variant font-body-sm text-body-sm">
+<span class="">11:00 AM</span>
+<span class="">•</span>
+<span class="">2h</span>
+<span class="">•</span>
+<span class="font-semibold text-on-surface">¥800</span>
+</div>
+</div>
+</div>
+<!-- Activity 3 (Indoor Shifted Activity) -->
+<div class="flex items-start gap-space-sm p-space-sm bg-secondary-fixed/20 rounded-xl">
+<div class="w-14 h-14 rounded-lg overflow-hidden shrink-0 shadow-sm">
+<img class="w-full h-full object-cover" data-alt="Traditional Japanese tea master whisking vibrant green matcha in ceramic chawan bowl inside tatami tearoom overlooking gentle rain on garden moss." src="https://lh3.googleusercontent.com/aida-public/AB6AXuApHkgFV1WvrZNesMQtjxir1uFvtrw3dtoYbrwsGLSjwPIKxY7gYBjLHD7gTh6nlddr6QuC3UDIsJjpoH0rdMvAt2NfbiJZbjd7WE8Jj547hEJte8xx5AwF_b23WREVi6ndhumNjxGB9C_TLUhQO6bkna-9WtSoHkQkwm2XPINpwEuAcRDJUIhI4Zft07_XwawkfiYUyk6CEbbPTUyBZUuHkTV7mhxXgYggxxPxRS04">
+</div>
+<div class="flex flex-col flex-1 min-w-0">
+<div class="flex items-center justify-between gap-1">
+<span class="font-label-md text-label-md text-on-surface font-semibold truncate">Kyoto Traditional Tea Ceremony</span>
+<span class="font-label-sm text-label-sm text-primary font-bold shrink-0">🍵 Indoor Safe</span>
+</div>
+<div class="flex items-center gap-2 mt-1 text-on-surface-variant font-body-sm text-body-sm">
+<span class="">02:00 PM</span>
+<span class="">•</span>
+<span class="">1.5h</span>
+<span class="">•</span>
+<span class="font-semibold text-on-surface">¥3,200</span>
+</div>
+</div>
+</div>
+</div>
+<!-- Footer / Action Link -->
+<a class="flex items-center justify-between pt-space-xs text-primary font-label-md text-label-md hover:underline" href="#">
+<span class="flex items-center gap-1">
+<span class="material-symbols-outlined text-[16px]">schedule</span>
+            View Full Timeline
+          </span>
+<span class="material-symbols-outlined text-[18px]">arrow_forward</span>
+</a>
+</article>
+<!-- DAY 3 CARD -->
+<article class="bg-surface-container-lowest rounded-[18px] p-space-md shadow-[0_6px_20px_-4px_rgba(15,23,42,0.06)] flex flex-col gap-space-md">
+<!-- Date & Theme Banner -->
+<div class="flex flex-col gap-1">
+<div class="flex items-center justify-between">
+<span class="font-label-sm text-label-sm text-secondary font-bold tracking-wide uppercase">Day 03</span>
+<span class="inline-flex items-center gap-1 font-label-sm text-label-sm text-on-tertiary-fixed-variant bg-tertiary-fixed/60 px-2 py-0.5 rounded-full">
+<span class="material-symbols-outlined text-[13px] text-tertiary">wb_sunny</span>
+              Crisp Sun 21°C
+            </span>
+</div>
+<h2 class="font-headline-sm text-headline-sm text-on-surface">Fushimi Inari &amp; Sake Brewery District</h2>
+<span class="font-body-sm text-body-sm text-on-surface-variant">Thursday, Oct 16</span>
+</div>
+<!-- Activities List -->
+<div class="flex flex-col gap-space-sm">
+<!-- Activity 1 -->
+<div class="flex items-start gap-space-sm p-space-sm bg-surface-container-low rounded-xl">
+<div class="w-14 h-14 rounded-lg overflow-hidden shrink-0 shadow-sm">
+<img class="w-full h-full object-cover" data-alt="Infinite vermillion torii gates stretching along mountain trails of Fushimi Inari Taisha shrine in Kyoto, crisp morning autumn sunshine casting patterned shadows." src="https://lh3.googleusercontent.com/aida-public/AB6AXuAr4mgJ16u5EaPmkLoWcE2eiVkUD2LdixKh-tCfHCNqf0AfynJFnf3oH3PYczqHS3JHuS-ozkJZzecLO0_u5Lv8vsXonGgHZTjiRhn_1LtdaGXsBwy7iGfTUaYUYQPYwNszKgH-E_kSVrgWtQr7Ha1KrTmguj69_25eUVHC7CIWd7285sI-jnQVLvlO-yUVd2hfm3h0EFuMYIawP9YxAn_e9HVSzCxiTOeCcN3NFy7A">
+</div>
+<div class="flex flex-col flex-1 min-w-0">
+<div class="flex items-center justify-between gap-1">
+<span class="font-label-md text-label-md text-on-surface font-semibold truncate">Fushimi Inari Shrine Hike</span>
+<span class="font-label-sm text-label-sm text-tertiary-container shrink-0">☀️ Low Risk</span>
+</div>
+<div class="flex items-center gap-2 mt-1 text-on-surface-variant font-body-sm text-body-sm">
+<span class="">08:00 AM</span>
+<span class="">•</span>
+<span class="">3h</span>
+<span class="">•</span>
+<span class="font-semibold text-primary">Free</span>
+</div>
+</div>
+</div>
+<!-- Activity 2 -->
+<div class="flex items-start gap-space-sm p-space-sm bg-surface-container-low rounded-xl">
+<div class="w-14 h-14 rounded-lg overflow-hidden shrink-0 shadow-sm">
+<img class="w-full h-full object-cover" data-alt="Traditional wood and white plaster sake brewery along Fushimi river canal in Kyoto with willow trees and vintage wooden sake barrels." src="https://lh3.googleusercontent.com/aida-public/AB6AXuB93VRDPuIlB3X3scuiXDZKypagjqJpy9TrdzOZQ6ckRCJYjDIQOEMc8lLixVLFMWE4OGDE1jPykay9QhX8IdY88TNMZtY45Eyh_I9kXcPy_bjuA5JpQJ5qJuAaWrKvlTGFRY7rSkgn5pYn9oeTPMtcDr7cdCg4AqRzNjqP3aKN3_q7Vu1J6EWpyx0Z-J9lSDDo89SJzvlSADzluTuMMyyMRff7wuZN5Douxay4P9hr">
+</div>
+<div class="flex flex-col flex-1 min-w-0">
+<div class="flex items-center justify-between gap-1">
+<span class="font-label-md text-label-md text-on-surface font-semibold truncate">Gekkeikan Okura Sake Museum</span>
+<span class="font-label-sm text-label-sm text-secondary shrink-0">🍶 Tasting</span>
+</div>
+<div class="flex items-center gap-2 mt-1 text-on-surface-variant font-body-sm text-body-sm">
+<span class="">12:30 PM</span>
+<span class="">•</span>
+<span class="">1.5h</span>
+<span class="">•</span>
+<span class="font-semibold text-on-surface">¥600</span>
+</div>
+</div>
+</div>
+<!-- Activity 3 -->
+<div class="flex items-start gap-space-sm p-space-sm bg-surface-container-low rounded-xl">
+<div class="w-14 h-14 rounded-lg overflow-hidden shrink-0 shadow-sm">
+<img class="w-full h-full object-cover" data-alt="Charming wooden canal side path in Fushimi Kyoto with weeping willows and flat-bottom tourist boat in clean reflective autumn waters." src="https://lh3.googleusercontent.com/aida-public/AB6AXuANFddNDuZKXz6uttIeCDD4PHTzrDHuGz3K4bCRuOgZaWkurkjzPDWP5BvjybwruwjKJsqhy2gjQ3OPTW8PT6JfT8dsL2i80ehKsCFd_CyvoyOnFa9hs3x4bQIT_AGwisaYPpJsYRSlnbS_hY4BvWlni5Odj74zQo42zDM1MTlm0u3p8SEBpqQ_9CVrppO6OgJuGC7EINdPjtSFW4g7YuhEPuNbw76Kz_W5VPhs-QGi">
+</div>
+<div class="flex flex-col flex-1 min-w-0">
+<div class="flex items-center justify-between gap-1">
+<span class="font-label-md text-label-md text-on-surface font-semibold truncate">Fushimi Canal Sunset Stroll</span>
+<span class="font-label-sm text-label-sm text-tertiary shrink-0">☀️ Clear Skies</span>
+</div>
+<div class="flex items-center gap-2 mt-1 text-on-surface-variant font-body-sm text-body-sm">
+<span class="">03:30 PM</span>
+<span class="">•</span>
+<span class="">2h</span>
+<span class="">•</span>
+<span class="font-semibold text-primary">Free</span>
+</div>
+</div>
+</div>
+</div>
+<!-- Footer / Action Link -->
+<a class="flex items-center justify-between pt-space-xs text-primary font-label-md text-label-md hover:underline" href="#">
+<span class="flex items-center gap-1">
+<span class="material-symbols-outlined text-[16px]">schedule</span>
+            View Full Timeline
+          </span>
+<span class="material-symbols-outlined text-[18px]">arrow_forward</span>
+</a>
+</article>
+</div>
+<!-- Prominent Expand/Show Remaining Days Button -->
+<button class="w-full py-3.5 px-space-md bg-surface-container-high hover:bg-surface-container-highest text-on-surface rounded-full flex items-center justify-center gap-space-xs font-label-lg text-label-lg active:scale-[0.99] transition-all shadow-sm">
+<span class="material-symbols-outlined text-[20px] text-secondary">expand_more</span>
+<span class="">Show remaining 2 days (Oct 17–18)</span>
+</button>
+<!-- Quick Actions Bar (Export & Edit) -->
+<div class="flex items-center gap-space-sm pt-space-xs">
+<button class="flex-1 h-12 bg-primary hover:bg-primary-container text-on-primary rounded-xl font-label-md text-label-md flex items-center justify-center gap-space-xs shadow-[0_4px_14px_rgba(0,103,101,0.25)] active:scale-98 transition-all">
+<span class="material-symbols-outlined text-[18px]">calendar_add_on</span>
+<span class="">Export to Calendar</span>
+</button>
+<button class="flex-1 h-12 bg-surface-container-low hover:bg-surface-container text-on-surface rounded-xl font-label-md text-label-md flex items-center justify-center gap-space-xs shadow-sm active:scale-98 transition-all">
+<span class="material-symbols-outlined text-[18px] text-secondary">tune</span>
+<span class="">Edit Preferences</span>
+</button>
+</div>
+</div>
+</div></main><nav class="fixed bottom-0 w-full z-50 pb-safe bg-surface/85 backdrop-blur-xl shadow-[0_-4px_20px_rgba(15,23,42,0.06)]" data-active-classes="text-primary font-label-md"><div class="flex justify-around items-center h-16 px-space-xs"><a aria-current="page" class="flex flex-col items-center justify-center min-w-[56px] min-h-[44px] transition-colors text-primary font-label-md" data-path="trip" href="#"><span class="material-symbols-outlined text-[24px]">event_note</span><span class="font-label-sm text-label-sm mt-space-xs">Trip</span></a><a class="flex flex-col items-center justify-center min-w-[56px] min-h-[44px] text-on-surface-variant hover:text-on-surface transition-colors" data-path="weather" href="#"><span class="material-symbols-outlined text-[24px]">wb_sunny</span><span class="font-label-sm text-label-sm mt-space-xs">Weather</span></a><a class="flex flex-col items-center justify-center min-w-[56px] min-h-[44px] text-on-surface-variant hover:text-on-surface transition-colors" data-path="map" href="#"><span class="material-symbols-outlined text-[24px]">map</span><span class="font-label-sm text-label-sm mt-space-xs">Map</span></a><a class="relative flex flex-col items-center justify-center min-w-[56px] min-h-[44px] text-on-surface-variant hover:text-on-surface transition-colors" data-path="alerts" href="#"><span class="relative flex items-center justify-center"><span class="material-symbols-outlined text-[24px]">notifications</span><span class="absolute -top-1 -right-2 bg-error text-on-error font-label-sm text-[10px] w-4 h-4 rounded-full flex items-center justify-center font-bold">2</span></span><span class="font-label-sm text-label-sm mt-space-xs">Alerts</span></a><a class="flex flex-col items-center justify-center min-w-[56px] min-h-[44px] text-on-surface-variant hover:text-on-surface transition-colors" data-path="profile" href="#"><span class="material-symbols-outlined text-[24px]">account_circle</span><span class="font-label-sm text-label-sm mt-space-xs">Profile</span></a></div></nav>
+
+</body></html>

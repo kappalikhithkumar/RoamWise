@@ -1,0 +1,102 @@
+{
+  "project": "projects/12891182045575151039",
+  "title": "TripMind AI Travel Planner",
+  "deviceType": "MOBILE",
+  "screens": [
+    {
+      "id": "0b55dcfe436e41b4b0c6d44cbb2c08d8",
+      "sourceScreen": "projects/12891182045575151039/screens/0b55dcfe436e41b4b0c6d44cbb2c08d8",
+      "x": 4202,
+      "width": 390,
+      "height": 1082,
+      "label": "8. Something Came Up Re-planning"
+    },
+    {
+      "id": "1ccf47b8abea428abec968a301b65bf1",
+      "sourceScreen": "projects/12891182045575151039/screens/1ccf47b8abea428abec968a301b65bf1",
+      "x": 3294,
+      "width": 390,
+      "height": 884,
+      "label": "6. Plan B Alert Bottom Sheet"
+    },
+    {
+      "id": "4a93faaa8bba48799d2ef6dba095daeb",
+      "sourceScreen": "projects/12891182045575151039/screens/4a93faaa8bba48799d2ef6dba095daeb",
+      "x": 3748,
+      "width": 390,
+      "height": 2406,
+      "label": "5. Weather Dashboard"
+    },
+    {
+      "id": "5ddeb4abf93d4649b177c8f55281eb9e",
+      "sourceScreen": "projects/12891182045575151039/screens/5ddeb4abf93d4649b177c8f55281eb9e",
+      "x": 1932,
+      "width": 390,
+      "height": 1976,
+      "label": "3. Itinerary Overview"
+    },
+    {
+      "id": "5f0ca9cba34b49b5b98c71adabb10044",
+      "sourceScreen": "projects/12891182045575151039/screens/5f0ca9cba34b49b5b98c71adabb10044",
+      "x": 2840,
+      "width": 390,
+      "height": 1848,
+      "label": "4. Day Detail Timeline"
+    },
+    {
+      "id": "635c2add664648c8a3e99fbe53cede7a",
+      "sourceScreen": "projects/12891182045575151039/screens/635c2add664648c8a3e99fbe53cede7a",
+      "x": 1024,
+      "width": 390,
+      "height": 1392,
+      "label": "1. Plan Trip Input"
+    },
+    {
+      "id": "assets_18e5807705d84e97bec35a0d84c05d14",
+      "width": 960,
+      "height": 540,
+      "sourceAsset": "assets/18e5807705d84e97bec35a0d84c05d14",
+      "type": "DESIGN_SYSTEM_INSTANCE"
+    },
+    {
+      "id": "c35abc023af6417a9f15245639de3f7a",
+      "sourceScreen": "projects/12891182045575151039/screens/c35abc023af6417a9f15245639de3f7a",
+      "x": 5564,
+      "width": 390,
+      "height": 884,
+      "label": "TripMind AI Weather-Aware Itinerary Flow"
+    },
+    {
+      "id": "c36b106c848d48ffb6d586b853516a95",
+      "sourceScreen": "projects/12891182045575151039/screens/c36b106c848d48ffb6d586b853516a95",
+      "x": 2386,
+      "width": 390,
+      "height": 1310,
+      "label": "7. Navigation & Live Route"
+    },
+    {
+      "id": "d8689c3d20b643ee9ed698138af7b508",
+      "sourceScreen": "projects/12891182045575151039/screens/d8689c3d20b643ee9ed698138af7b508",
+      "x": 4656,
+      "width": 390,
+      "height": 1487,
+      "label": "9. Updated Plan Review"
+    },
+    {
+      "id": "f3bea15f43124a688230a8b512b07ad5",
+      "sourceScreen": "projects/12891182045575151039/screens/f3bea15f43124a688230a8b512b07ad5",
+      "x": 1478,
+      "width": 390,
+      "height": 1142,
+      "label": "2. AI Generating Itinerary"
+    },
+    {
+      "id": "fc75fdd02d9543a2b89485acdce5038b",
+      "sourceScreen": "projects/12891182045575151039/screens/fc75fdd02d9543a2b89485acdce5038b",
+      "x": 5110,
+      "width": 390,
+      "height": 1316,
+      "label": "10. Alerts & Notifications Center"
+    }
+  ]
+}
