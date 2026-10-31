@@ -33,6 +33,7 @@ interface TripState {
   backendTripId: number | null;
   isBackendOnline: boolean;
   isSyncing: boolean;
+  isDemoMode: boolean;
 }
 
 type TripAction =
@@ -54,7 +55,10 @@ type TripAction =
   | { type: 'SET_BACKEND_STATUS'; payload: boolean }
   | { type: 'SET_BACKEND_TRIP_ID'; payload: number | null }
   | { type: 'SET_SYNCING'; payload: boolean }
-  | { type: 'HYDRATE_ACTIVE_TRIP'; payload: { backendTripId: number; config: TripConfig; days: DayItinerary[] } };
+  | { type: 'SET_PENDING_REPLAN'; payload: ReplanProposal }
+  | { type: 'HYDRATE_ACTIVE_TRIP'; payload: { backendTripId: number; config: TripConfig; days: DayItinerary[] } }
+  | { type: 'ENTER_DEMO_MODE' }
+  | { type: 'RESET_TO_DISCOVERY' };
 
 const INITIAL_PROFILE: UserProfile = {
   name: 'Aarav Sharma',
@@ -67,23 +71,37 @@ const INITIAL_PROFILE: UserProfile = {
   theme: 'light'
 };
 
+export const DEFAULT_EMPTY_CONFIG: TripConfig = {
+  destination: '',
+  destinations: [],
+  startDate: '',
+  endDate: '',
+  budgetTier: 'Moderate',
+  interests: [],
+  travelerType: 'Solo',
+  pace: 'Balanced',
+  weatherAdaptive: true,
+  tagline: ''
+};
+
 const initialState: TripState = {
-  config: INITIAL_TRIP_CONFIG,
-  days: INITIAL_JAIPUR_DAYS,
+  config: DEFAULT_EMPTY_CONFIG,
+  days: [],
   activeDayNumber: 1,
   planBModal: {
     isOpen: false,
     activity: null,
-    dayNumber: 2
+    dayNumber: 1
   },
   pendingReplan: null,
-  alerts: INITIAL_ALERTS,
+  alerts: [],
   userProfile: INITIAL_PROFILE,
-  savedTrips: MOCK_TRIPS,
-  hasActiveTrip: true,
+  savedTrips: [],
+  hasActiveTrip: false,
   backendTripId: null,
   isBackendOnline: false,
-  isSyncing: false
+  isSyncing: false,
+  isDemoMode: false
 };
 
 function tripReducer(state: TripState, action: TripAction): TripState {
@@ -97,6 +115,38 @@ function tripReducer(state: TripState, action: TripAction): TripState {
     case 'SET_SYNCING':
       return { ...state, isSyncing: action.payload };
 
+    case 'ENTER_DEMO_MODE':
+      return {
+        ...state,
+        isDemoMode: true,
+        hasActiveTrip: true,
+        backendTripId: null,
+        config: {
+          ...INITIAL_TRIP_CONFIG,
+          tagline: 'Royal Forts, Bazaars & Sunset Pavilions [Demo Mode]'
+        },
+        days: INITIAL_JAIPUR_DAYS,
+        savedTrips: MOCK_TRIPS.map((t) => ({
+          ...t,
+          title: t.title.includes('[Demo]') ? t.title : `${t.title} [Demo]`
+        })),
+        alerts: INITIAL_ALERTS,
+        activeDayNumber: 1
+      };
+
+    case 'RESET_TO_DISCOVERY':
+      return {
+        ...state,
+        hasActiveTrip: false,
+        isDemoMode: false,
+        backendTripId: null,
+        config: DEFAULT_EMPTY_CONFIG,
+        days: [],
+        savedTrips: [],
+        alerts: [],
+        activeDayNumber: 1
+      };
+
     case 'HYDRATE_ACTIVE_TRIP':
       return {
         ...state,
@@ -104,7 +154,14 @@ function tripReducer(state: TripState, action: TripAction): TripState {
         config: action.payload.config,
         days: action.payload.days,
         hasActiveTrip: true,
+        isDemoMode: false,
         activeDayNumber: 1
+      };
+
+    case 'SET_PENDING_REPLAN':
+      return {
+        ...state,
+        pendingReplan: action.payload
       };
 
     case 'TOGGLE_ACTIVE_TRIP':
@@ -119,7 +176,8 @@ function tripReducer(state: TripState, action: TripAction): TripState {
         config: action.payload.config,
         days: action.payload.generatedDays,
         activeDayNumber: 1,
-        hasActiveTrip: true
+        hasActiveTrip: true,
+        isDemoMode: false
       };
     }
 
@@ -216,33 +274,36 @@ function tripReducer(state: TripState, action: TripAction): TripState {
 
     case 'CREATE_REPLAN_PROPOSAL': {
       const { scenarioText, delayMinutes } = action.payload;
-      const activeDay = state.days.find((d) => d.dayNumber === state.activeDayNumber) || state.days[0];
+      const activeDay = state.days.find((d) => d.dayNumber === state.activeDayNumber) || state.days[0] || INITIAL_JAIPUR_DAYS[0];
+      const act0 = activeDay?.activities?.[0] || INITIAL_JAIPUR_DAYS[0].activities[0];
+      const act1 = activeDay?.activities?.[1] || INITIAL_JAIPUR_DAYS[0].activities[1];
+      const actLast = activeDay?.activities?.[activeDay.activities.length - 1] || INITIAL_JAIPUR_DAYS[0].activities[2];
 
       const diffItems: ItineraryDiffItem[] = [
         {
           id: 'diff-1',
           type: 'locked',
-          activityId: activeDay.activities[0]?.id || 'act-1',
-          title: activeDay.activities[0]?.title || 'Morning Stop',
-          location: activeDay.activities[0]?.location || 'Heritage Area',
-          originalTime: activeDay.activities[0]?.timeSlot || '08:30 AM',
-          newTime: activeDay.activities[0]?.timeSlot || '08:30 AM',
-          duration: activeDay.activities[0]?.duration || '1.5h',
-          cost: activeDay.activities[0]?.cost || 200,
-          costDisplay: activeDay.activities[0]?.costDisplay || '₹200',
+          activityId: act0?.id || 'act-1',
+          title: act0?.title || 'Morning Stop',
+          location: act0?.location || 'Heritage Area',
+          originalTime: act0?.timeSlot || '08:30 AM',
+          newTime: act0?.timeSlot || '08:30 AM',
+          duration: act0?.duration || '1.5h',
+          cost: act0?.cost || 200,
+          costDisplay: act0?.costDisplay || '₹200',
           notes: 'Completed / Locked morning reservation preserved intact'
         },
         {
           id: 'diff-2',
           type: 'adjusted',
-          activityId: activeDay.activities[1]?.id || 'act-2',
-          title: activeDay.activities[1]?.title || 'Main Afternoon Highlight',
-          location: activeDay.activities[1]?.location || 'Palace Grounds',
-          originalTime: activeDay.activities[1]?.timeSlot || '10:30 AM',
+          activityId: act1?.id || 'act-2',
+          title: act1?.title || 'Main Afternoon Highlight',
+          location: act1?.location || 'Palace Grounds',
+          originalTime: act1?.timeSlot || '10:30 AM',
           newTime: '11:15 AM',
           duration: '1.5h',
-          cost: activeDay.activities[1]?.cost || 700,
-          costDisplay: activeDay.activities[1]?.costDisplay || '₹700',
+          cost: act1?.cost || 700,
+          costDisplay: act1?.costDisplay || '₹700',
           notes: `Shifted +${delayMinutes}m to accommodate delay; tour duration compressed by 30 mins`
         },
         {
@@ -260,25 +321,25 @@ function tripReducer(state: TripState, action: TripAction): TripState {
         {
           id: 'diff-4',
           type: 'adjusted',
-          activityId: activeDay.activities[activeDay.activities.length - 1]?.id || 'act-last',
-          title: activeDay.activities[activeDay.activities.length - 1]?.title || 'Evening Dinner & Stroll',
-          location: activeDay.activities[activeDay.activities.length - 1]?.location || 'Bazaar Arcade',
-          originalTime: activeDay.activities[activeDay.activities.length - 1]?.timeSlot || '05:00 PM',
+          activityId: actLast?.id || 'act-last',
+          title: actLast?.title || 'Evening Dinner & Stroll',
+          location: actLast?.location || 'Bazaar Arcade',
+          originalTime: actLast?.timeSlot || '05:00 PM',
           newTime: '06:15 PM',
           duration: '2h',
-          cost: activeDay.activities[activeDay.activities.length - 1]?.cost || 450,
-          costDisplay: activeDay.activities[activeDay.activities.length - 1]?.costDisplay || '₹450',
+          cost: actLast?.cost || 450,
+          costDisplay: actLast?.costDisplay || '₹450',
           notes: 'Moved into twilight for vibrant night market ambiance'
         }
       ];
 
       const proposedActivities: Activity[] = [
         {
-          ...activeDay.activities[0],
+          ...act0,
           isLocked: true
         },
         {
-          ...activeDay.activities[1],
+          ...act1,
           timeSlot: '11:15 AM',
           duration: '1.5h'
         },
@@ -301,7 +362,7 @@ function tripReducer(state: TripState, action: TripAction): TripState {
           isVisited: false
         },
         {
-          ...activeDay.activities[activeDay.activities.length - 1],
+          ...actLast,
           timeSlot: '06:15 PM'
         }
       ];
@@ -398,11 +459,14 @@ interface TripContextValue {
   state: TripState;
   unreadAlertsCount: number;
   hasActiveTrip: boolean;
+  isDemoMode: boolean;
   savedTrips: TripSummary[];
   backendTripId: number | null;
   isBackendOnline: boolean;
   isSyncing: boolean;
   toggleActiveTrip: () => void;
+  enterDemoMode: () => void;
+  exitDemoMode: () => Promise<void>;
   updateConfig: (config: TripConfig) => Promise<void>;
   setActiveDay: (dayNumber: number) => void;
   toggleVisited: (dayNumber: number, activityId: string) => Promise<void>;
@@ -464,7 +528,7 @@ export const TripProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const refreshBackendTrips = useCallback(async () => {
     try {
       const trips = await apiService.getTrips();
-      if (Array.isArray(trips) && trips.length > 0) {
+      if (Array.isArray(trips)) {
         dispatch({ type: 'SET_SAVED_TRIPS', payload: formatBackendTrips(trips) });
       }
     } catch (err) {
@@ -532,6 +596,7 @@ export const TripProvider: React.FC<{ children: React.ReactNode }> = ({ children
           } else {
             localStorage.removeItem('roamwise_active_backend_id');
             dispatch({ type: 'SET_BACKEND_TRIP_ID', payload: null });
+            dispatch({ type: 'RESET_TO_DISCOVERY' });
           }
         }
         return true;
@@ -596,29 +661,23 @@ export const TripProvider: React.FC<{ children: React.ReactNode }> = ({ children
               }
             }
           } else {
-            // First time initialization: seed baseline itinerary to database
-            try {
-              const res = await apiService.createTrip({
-                ...initialState.config,
-                days: initialState.days
-              });
-              if (res && res.tripId) {
-                dispatch({ type: 'SET_BACKEND_TRIP_ID', payload: res.tripId });
-                localStorage.setItem('roamwise_active_backend_id', res.tripId.toString());
-                const seededTrips = await apiService.getTrips();
-                if (isMounted && Array.isArray(seededTrips)) {
-                  dispatch({ type: 'SET_SAVED_TRIPS', payload: formatBackendTrips(seededTrips) });
-                }
-              }
-            } catch (seedErr) {
-              console.warn('Initial trip seed to database skipped:', seedErr);
-            }
+            // New user / empty database: show Discovery Dashboard
+            // DO NOT automatically insert sample trips into the production/presentation database!
+            localStorage.removeItem('roamwise_active_backend_id');
+            dispatch({ type: 'RESET_TO_DISCOVERY' });
           }
+        } else {
+          localStorage.removeItem('roamwise_active_backend_id');
+          dispatch({ type: 'RESET_TO_DISCOVERY' });
         }
       } catch (err) {
         console.info('RoamWise API offline or unreachable, continuing with local state:', err);
         if (isMounted) {
           dispatch({ type: 'SET_BACKEND_STATUS', payload: false });
+          const storedTripId = localStorage.getItem('roamwise_active_backend_id');
+          if (!storedTripId) {
+            dispatch({ type: 'RESET_TO_DISCOVERY' });
+          }
         }
       }
     };
@@ -630,6 +689,61 @@ export const TripProvider: React.FC<{ children: React.ReactNode }> = ({ children
     };
   }, []);
 
+  // Explicit Demo Mode Controls
+  const enterDemoMode = useCallback(() => {
+    dispatch({ type: 'ENTER_DEMO_MODE' });
+  }, []);
+
+  const exitDemoMode = useCallback(async () => {
+    try {
+      dispatch({ type: 'SET_SYNCING', payload: true });
+      const trips = await apiService.getTrips();
+      if (Array.isArray(trips) && trips.length > 0) {
+        dispatch({ type: 'SET_SAVED_TRIPS', payload: formatBackendTrips(trips) });
+        const storedTripId = localStorage.getItem('roamwise_active_backend_id');
+        const targetId = storedTripId ? parseInt(storedTripId, 10) : trips[0].id;
+        const matchedTrip = trips.find((t) => t.id === targetId) || trips[0];
+        if (matchedTrip) {
+          const fullTrip = await apiService.getTrip(matchedTrip.id);
+          if (fullTrip) {
+            const loadedConfig: TripConfig = {
+              destination: fullTrip.destination,
+              destinations: fullTrip.destinations,
+              startDate: fullTrip.startDate,
+              endDate: fullTrip.endDate,
+              budgetTier: fullTrip.budgetTier,
+              interests: fullTrip.interests || [],
+              travelerType: fullTrip.travelerType,
+              pace: fullTrip.pace,
+              weatherAdaptive: fullTrip.weatherAdaptive,
+              tagline: fullTrip.tagline
+            };
+            const loadedDays = fullTrip.days && fullTrip.days.length > 0
+              ? fullTrip.days
+              : generateDeterministicItinerary(loadedConfig);
+            dispatch({
+              type: 'HYDRATE_ACTIVE_TRIP',
+              payload: {
+                backendTripId: fullTrip.id,
+                config: loadedConfig,
+                days: loadedDays
+              }
+            });
+            localStorage.setItem('roamwise_active_backend_id', fullTrip.id.toString());
+          }
+        }
+      } else {
+        localStorage.removeItem('roamwise_active_backend_id');
+        dispatch({ type: 'RESET_TO_DISCOVERY' });
+      }
+    } catch (err) {
+      console.warn('Error exiting demo mode:', err);
+      dispatch({ type: 'RESET_TO_DISCOVERY' });
+    } finally {
+      dispatch({ type: 'SET_SYNCING', payload: false });
+    }
+  }, []);
+
   const unreadAlertsCount = state.alerts.filter((al) => al.unread).length;
   const hasActiveTrip = state.hasActiveTrip;
   const savedTrips = state.savedTrips;
@@ -639,14 +753,35 @@ export const TripProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const toggleActiveTrip = () => dispatch({ type: 'TOGGLE_ACTIVE_TRIP' });
 
-  // Update trip configuration & persist to backend
+  // Update trip configuration & persist to backend (with Gemini AI support)
   const updateConfig = async (config: TripConfig) => {
-    const generatedDays = generateDeterministicItinerary(config);
-    dispatch({ type: 'UPDATE_CONFIG', payload: { config, generatedDays } });
+    const localDays = generateDeterministicItinerary(config);
+    dispatch({ type: 'UPDATE_CONFIG', payload: { config, generatedDays: localDays } });
 
     try {
       dispatch({ type: 'SET_SYNCING', payload: true });
-      const res = await apiService.createTrip({ ...config, days: generatedDays });
+      let finalDays = localDays;
+      let finalTagline = config.tagline;
+
+      // Try AI itinerary generation if online
+      if (stateRef.current.isBackendOnline) {
+        try {
+          const genRes = await apiService.generateItinerary(config);
+          if (genRes && genRes.days && genRes.days.length > 0) {
+            finalDays = genRes.days;
+            if (genRes.tagline) finalTagline = genRes.tagline;
+            dispatch({
+              type: 'UPDATE_CONFIG',
+              payload: { config: { ...config, tagline: finalTagline }, generatedDays: finalDays }
+            });
+          }
+        } catch (aiErr) {
+          console.info('Backend AI generation call bypassed, using deterministic itinerary:', aiErr);
+        }
+      }
+
+      // Persist to backend database
+      const res = await apiService.createTrip({ ...config, tagline: finalTagline, days: finalDays });
       if (res && res.tripId) {
         dispatch({ type: 'SET_BACKEND_TRIP_ID', payload: res.tripId });
         localStorage.setItem('roamwise_active_backend_id', res.tripId.toString());
@@ -678,7 +813,7 @@ export const TripProvider: React.FC<{ children: React.ReactNode }> = ({ children
     });
 
     const activeId = stateRef.current.backendTripId;
-    if (activeId && stateRef.current.isBackendOnline) {
+    if (activeId && stateRef.current.isBackendOnline && !stateRef.current.isDemoMode) {
       try {
         await apiService.updateTrip(activeId, { days: updatedDays });
       } catch (err) {
@@ -736,7 +871,7 @@ export const TripProvider: React.FC<{ children: React.ReactNode }> = ({ children
     dispatch({ type: 'APPLY_PLAN_B', payload: { dayNumber, originalActivityId } });
 
     const activeId = stateRef.current.backendTripId;
-    if (activeId && stateRef.current.isBackendOnline) {
+    if (activeId && stateRef.current.isBackendOnline && !stateRef.current.isDemoMode) {
       try {
         await apiService.updateTrip(activeId, { days: updatedDays });
       } catch (err) {
@@ -745,8 +880,36 @@ export const TripProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
   };
 
-  const createReplanProposal = (scenarioText: string, delayMinutes = 45) =>
+  const createReplanProposal = async (scenarioText: string, delayMinutes = 45) => {
+    // 1. Immediate optimistic proposal
     dispatch({ type: 'CREATE_REPLAN_PROPOSAL', payload: { scenarioText, delayMinutes } });
+
+    // 2. Query Gemini AI via Flask backend if online and not in demo mode
+    if (stateRef.current.isBackendOnline && !stateRef.current.isDemoMode) {
+      try {
+        dispatch({ type: 'SET_SYNCING', payload: true });
+        const res = await apiService.replanTrip({
+          trip: {
+            destination: stateRef.current.config.destination,
+            days: stateRef.current.days
+          },
+          scenarioText,
+          delayMinutes,
+          activeDayNumber: stateRef.current.activeDayNumber
+        });
+        if (res && res.proposal && res.proposal.proposedActivities) {
+          dispatch({
+            type: 'SET_PENDING_REPLAN',
+            payload: res.proposal
+          });
+        }
+      } catch (err) {
+        console.warn('Backend AI replan call failed, preserving local proposal:', err);
+      } finally {
+        dispatch({ type: 'SET_SYNCING', payload: false });
+      }
+    }
+  };
 
   // Accept replan proposal & sync to backend
   const acceptReplan = async () => {
@@ -766,7 +929,7 @@ export const TripProvider: React.FC<{ children: React.ReactNode }> = ({ children
     dispatch({ type: 'ACCEPT_REPLAN' });
 
     const activeId = stateRef.current.backendTripId;
-    if (activeId && stateRef.current.isBackendOnline) {
+    if (activeId && stateRef.current.isBackendOnline && !stateRef.current.isDemoMode) {
       try {
         await apiService.updateTrip(activeId, { days: updatedDays });
       } catch (err) {
@@ -787,11 +950,14 @@ export const TripProvider: React.FC<{ children: React.ReactNode }> = ({ children
         state,
         unreadAlertsCount,
         hasActiveTrip,
+        isDemoMode: state.isDemoMode,
         savedTrips,
         backendTripId,
         isBackendOnline,
         isSyncing,
         toggleActiveTrip,
+        enterDemoMode,
+        exitDemoMode,
         updateConfig,
         setActiveDay,
         toggleVisited,

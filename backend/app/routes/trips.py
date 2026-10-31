@@ -1,8 +1,48 @@
 import json
+from datetime import datetime, timedelta
 from flask import Blueprint, jsonify, request
 from app.database import get_db, serialize_trip, serialize_day, serialize_activity
+from app.services.gemini_service import gemini_service
 
 trips_bp = Blueprint("trips", __name__)
+
+@trips_bp.route("/trips/generate", methods=["POST"])
+def generate_itinerary_endpoint():
+    """Generate an itinerary using Gemini AI with deterministic fallback."""
+    data = request.get_json() or {}
+    destination = data.get("destination")
+    if not destination:
+        return jsonify({"error": "Destination is required"}), 400
+
+    result = gemini_service.generate_itinerary(data)
+    return jsonify({
+        "success": True,
+        "itinerary": result,
+        "tagline": result.get("tagline"),
+        "days": result.get("days", []),
+        "generationSource": result.get("generationSource", "ai")
+    }), 200
+
+@trips_bp.route("/trips/replan", methods=["POST"])
+def replan_trip_endpoint():
+    """Generate adaptive replan proposal using Gemini AI based on natural language."""
+    data = request.get_json() or {}
+    current_trip = data.get("trip") or {}
+    scenario_text = data.get("scenarioText", "General schedule adjustment")
+    delay_minutes = int(data.get("delayMinutes", 45))
+    active_day_number = int(data.get("activeDayNumber", 1))
+
+    proposal = gemini_service.replan_itinerary(
+        current_trip=current_trip,
+        scenario_text=scenario_text,
+        delay_minutes=delay_minutes,
+        active_day_number=active_day_number
+    )
+    return jsonify({
+        "success": True,
+        "proposal": proposal,
+        "generationSource": proposal.get("generationSource", "ai")
+    }), 200
 
 @trips_bp.route("/trips", methods=["GET"])
 def list_trips():
@@ -32,10 +72,19 @@ def create_trip():
     """Save a new trip, its configuration, and its complete day schedule and activities."""
     data = request.get_json() or {}
     
-    destination = data.get("destination", "Jaipur ➔ Delhi ➔ Agra")
+    raw_dest = data.get("destination")
+    if not raw_dest or not str(raw_dest).strip():
+        return jsonify({"error": "Destination is required"}), 400
+        
+    destination = str(raw_dest).strip()
     destinations = data.get("destinations", [destination])
-    start_date = data.get("startDate", "2025-10-18")
-    end_date = data.get("endDate", "2025-10-24")
+    
+    now = datetime.now()
+    default_start = (now + timedelta(days=7)).strftime("%Y-%m-%d")
+    default_end = (now + timedelta(days=10)).strftime("%Y-%m-%d")
+    start_date = data.get("startDate") or default_start
+    end_date = data.get("endDate") or default_end
+    
     budget_tier = data.get("budgetTier", "Moderate")
     interests = data.get("interests", ["Culture", "Food", "History"])
     traveler_type = data.get("travelerType", "Couple")
@@ -45,6 +94,11 @@ def create_trip():
     is_domestic = 1 if data.get("isDomestic", True) else 0
     
     days_data = data.get("days", [])
+    if not days_data:
+        ai_itinerary = gemini_service.generate_itinerary(data)
+        days_data = ai_itinerary.get("days", [])
+        if not data.get("tagline"):
+            tagline = ai_itinerary.get("tagline", tagline)
     
     db = get_db()
     cursor = db.cursor()

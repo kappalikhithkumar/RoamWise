@@ -6,10 +6,44 @@ import { BottomNav } from '../components/common/BottomNav';
 
 export const ItineraryOverviewPage: React.FC = () => {
   const navigate = useNavigate();
-  const { state, toggleVisited } = useTrip();
+  const { state, toggleVisited, isDemoMode, enterDemoMode, exitDemoMode } = useTrip();
   const [toastMessage, setToastMessage] = useState<string | null>(null);
   const [showAiModal, setShowAiModal] = useState(false);
   const [aiPrompt, setAiPrompt] = useState('');
+
+  if (!state.hasActiveTrip || state.days.length === 0) {
+    return (
+      <div className="flex flex-col min-h-screen bg-background text-on-surface pb-24">
+        <Header title="Itinerary Dashboard" />
+        <main className="flex-1 max-w-lg w-full mx-auto px-4 pt-24 text-center flex flex-col items-center justify-center">
+          <div className="w-16 h-16 rounded-full bg-[#EDFDF5] border border-[#D8E9DD] flex items-center justify-center text-primary mb-4 shadow-sm">
+            <span className="material-symbols-outlined text-3xl">route</span>
+          </div>
+          <h2 className="text-xl font-bold font-display text-primary">No Active Itinerary Loaded</h2>
+          <p className="text-sm text-[#414845] mt-1 mb-6">
+            You don't have an active itinerary selected yet. Create a new tailored trip or explore a sample itinerary in Demo Mode.
+          </p>
+          <div className="flex flex-wrap items-center justify-center gap-3">
+            <button
+              onClick={() => navigate('/plan')}
+              className="px-5 py-2.5 rounded-xl bg-primary text-white text-xs font-bold hover:bg-[#204E43] active:scale-95 transition shadow-sm flex items-center gap-2"
+            >
+              <span className="material-symbols-outlined text-[18px]">add</span>
+              <span>Plan New Trip</span>
+            </button>
+            <button
+              onClick={enterDemoMode}
+              className="px-4 py-2.5 rounded-xl bg-[#EDFDF5] text-primary border border-[#D8E9DD] text-xs font-semibold hover:bg-secondary-container active:scale-95 transition flex items-center gap-2"
+            >
+              <span className="material-symbols-outlined text-[18px]">play_circle</span>
+              <span>Try Demo Mode</span>
+            </button>
+          </div>
+        </main>
+        <BottomNav />
+      </div>
+    );
+  }
 
   const handleExport = () => {
     setToastMessage('Simulated Calendar Sync: Demo .ics feed generated for offline preview.');
@@ -18,7 +52,9 @@ export const ItineraryOverviewPage: React.FC = () => {
 
   const rawDestinations = state.config.destinations && state.config.destinations.length > 0
     ? state.config.destinations
-    : state.config.destination.split(/➔|,|to/).map((s) => s.trim()).filter(Boolean);
+    : state.config.destination
+    ? state.config.destination.split(/➔|,|to/).map((s) => s.trim()).filter(Boolean)
+    : ['Jaipur, Rajasthan'];
 
   const primaryCity = rawDestinations[0]?.split(',')[0] || 'Rajasthan';
   const circuitTitle = state.config.tagline || `${primaryCity} Curated Circuit Expedition`;
@@ -41,6 +77,25 @@ export const ItineraryOverviewPage: React.FC = () => {
 
       {/* Main Container */}
       <main className="flex-1 max-w-4xl w-full mx-auto px-4 sm:px-6 pt-20 flex flex-col gap-6">
+        {/* Demo Mode Notice Banner */}
+        {isDemoMode && (
+          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 p-3.5 rounded-xl bg-amber/15 border border-amber/35 text-primary shadow-sm">
+            <div className="flex items-center gap-2.5">
+              <span className="material-symbols-outlined text-amber text-[20px]">science</span>
+              <div>
+                <span className="text-xs font-bold uppercase tracking-wider block">Demo Presentation Mode</span>
+                <span className="text-xs text-[#414845]">Viewing sample Jaipur itinerary with adaptive timeline. Real SQLite database is untouched.</span>
+              </div>
+            </div>
+            <button
+              onClick={exitDemoMode}
+              className="px-3.5 py-1.5 rounded-lg bg-white border border-amber/40 text-xs font-bold text-primary hover:bg-[#FFF8F0] active:scale-95 transition shadow-sm shrink-0 flex items-center gap-1"
+            >
+              <span className="material-symbols-outlined text-[15px]">close</span>
+              <span>Exit Demo</span>
+            </button>
+          </div>
+        )}
 
         {/* ========================================================================= */}
         {/* SECTION 1: CIRCUIT MACRO HEADER (Screen 13 Spec)                          */}
@@ -286,7 +341,7 @@ export const ItineraryOverviewPage: React.FC = () => {
                                 Plan B Active
                               </span>
                             )}
-                            {act.hasPlanBReady && (
+                            {act.hasPlanBReady && act.weatherRisk === 'high' && !act.isPlanBAlternative && (
                               <span className="px-1.5 py-0.2 rounded text-[10px] bg-[#FFF8F0] text-amber border border-amber/30 font-bold">
                                 ⚠️ Plan B Ready
                               </span>

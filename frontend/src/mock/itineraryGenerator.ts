@@ -22,6 +22,561 @@ interface CityKnowledge {
 }
 
 const CITY_DATABASE: Record<string, CityKnowledge> = {
+  bangalore: {
+    city: 'Bangalore',
+    region: 'Karnataka',
+    themeDescriptors: [
+      'Botanical Canopies & Colonial Heritage',
+      'Royal Palaces & Aviation Heritage',
+      'Art Sanctuaries & Innovation Enclaves',
+      'Historic Bazaars & Sacred Shrines'
+    ],
+    stops: [
+      {
+        title: 'Lalbagh Botanical Garden',
+        duration: '2.5h',
+        period: 'morning',
+        cost: 50,
+        category: 'Nature',
+        location: 'Mavalli, Bengaluru',
+        isIndoor: false,
+        weatherRisk: 'low',
+        weatherRiskLabel: '🌿 Shaded Garden Walk',
+        description: '240-acre historic botanical garden commissioned by Hyder Ali, featuring centuries-old trees and the iconic 19th-century Glass House.',
+        imageUrl: 'https://images.unsplash.com/photo-1599661046289-e31897846e41?auto=format&fit=crop&w=600&q=80'
+      },
+      {
+        title: 'Cubbon Park & Bamboo Groves',
+        duration: '2h',
+        period: 'afternoon',
+        cost: 0,
+        category: 'Nature',
+        location: 'Kasturba Road, Bengaluru',
+        isIndoor: false,
+        weatherRisk: 'high',
+        weatherRiskLabel: '⚠️ Convective Rain Risk',
+        description: '300-acre lush lung space in the city heart, housing the State Central Library and colonial red-brick monuments.',
+        imageUrl: 'https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=600&q=80',
+        hasPlanBReady: true,
+        planBAlternative: {
+          id: 'planb-visvesvaraya-museum',
+          title: 'Visvesvaraya Industrial & Technological Museum',
+          timeSlot: '02:30 PM',
+          duration: '2h',
+          cost: 85,
+          costDisplay: '₹85',
+          category: 'Culture',
+          location: 'Kasturba Road (opp. Cubbon Park), Bengaluru',
+          isIndoor: true,
+          weatherRiskLabel: '🛡️ 100% Indoor Sheltered',
+          description: 'Interactive science museum with working engines, space exhibits, and a life-size animated Spinosaurus safe from afternoon showers.',
+          imageUrl: 'https://images.unsplash.com/photo-1582510003544-4d00b7f74220?auto=format&fit=crop&w=600&q=80',
+          shelterReason: 'Afternoon rain squalls. Swapped to indoor interactive science museum directly across Kasturba Road.',
+          costDelta: '+₹85'
+        }
+      },
+      {
+        title: 'Vidhana Soudha & Attara Kacheri Vista',
+        duration: '1.5h',
+        period: 'evening',
+        cost: 0,
+        category: 'Culture',
+        location: 'Dr. Ambedkar Veedhi, Bengaluru',
+        isIndoor: false,
+        weatherRisk: 'low',
+        weatherRiskLabel: '🏛️ Architectural Vista',
+        description: 'Monumental Neo-Dravidian granite seat of state legislature, magnificently illuminated during evening golden hours.',
+        imageUrl: 'https://images.unsplash.com/photo-1596178065887-1198b6148b2b?auto=format&fit=crop&w=600&q=80'
+      },
+      {
+        title: 'Bangalore Palace & Royal Durbar Hall',
+        duration: '2.5h',
+        period: 'morning',
+        cost: 480,
+        category: 'History',
+        location: 'Vasanth Nagar, Bengaluru',
+        isIndoor: true,
+        weatherRisk: 'low',
+        weatherRiskLabel: '🏰 Covered Royal Palace',
+        description: 'Tudor-style royal residence built by Chamaraja Wadiyar with turreted ramparts, woodcarvings, and Raja Ravi Varma paintings.',
+        imageUrl: 'https://images.unsplash.com/photo-1587474260584-136574528ed5?auto=format&fit=crop&w=600&q=80'
+      },
+      {
+        title: 'National Gallery of Modern Art (NGMA)',
+        duration: '2h',
+        period: 'afternoon',
+        cost: 50,
+        category: 'Culture',
+        location: 'Palace Road, Bengaluru',
+        isIndoor: true,
+        weatherRisk: 'low',
+        weatherRiskLabel: '🖼️ Air-Conditioned Gallery',
+        description: 'Heritage Manikyavelu Mansion surrounded by ancient trees, housing modern Indian masterpieces from Amrita Sher-Gil to Jamini Roy.',
+        imageUrl: 'https://images.unsplash.com/photo-1582510003544-4d00b7f74220?auto=format&fit=crop&w=600&q=80'
+      },
+      {
+        title: 'Commercial Street Heritage Shopping Trail',
+        duration: '2h',
+        period: 'evening',
+        cost: 300,
+        category: 'Shopping',
+        location: 'Tasker Town, Bengaluru',
+        isIndoor: false,
+        weatherRisk: 'low',
+        weatherRiskLabel: '🛍️ Evening Bazaars',
+        description: 'Historic colonial shopping arcade lined with silk saree merchants, silver artisans, and legendary Mysore Pak sweet shops.',
+        imageUrl: 'https://images.unsplash.com/photo-1563379091339-03b21ab4a4f8?auto=format&fit=crop&w=600&q=80'
+      },
+      {
+        title: 'Tipu Sultan\'s Summer Palace',
+        duration: '2h',
+        period: 'morning',
+        cost: 25,
+        category: 'History',
+        location: 'Albert Victor Road, Chamrajpet, Bengaluru',
+        isIndoor: true,
+        weatherRisk: 'low',
+        weatherRiskLabel: '🏛️ Teakwood Palace',
+        description: 'Two-story 1791 Indo-Islamic palace crafted entirely of teakwood pillars, arches, and balconies, known as the Abode of Happiness.',
+        imageUrl: 'https://images.unsplash.com/photo-1590050752117-238cb0fb12b1?auto=format&fit=crop&w=600&q=80'
+      },
+      {
+        title: 'Dodda Basavanna (Bull Temple)',
+        duration: '1.5h',
+        period: 'afternoon',
+        cost: 0,
+        category: 'Spiritual',
+        location: 'Bugle Rock Park, Basavanagudi, Bengaluru',
+        isIndoor: false,
+        weatherRisk: 'low',
+        weatherRiskLabel: '🪔 Sacred Shrine',
+        description: '16th-century monolithic Nandi bull carved from single granite boulder at Bugle Rock, the origin of Bengaluru\'s annual groundnut fair.',
+        imageUrl: 'https://images.unsplash.com/photo-1590050752117-238cb0fb12b1?auto=format&fit=crop&w=600&q=80'
+      },
+      {
+        title: 'Mavalli Tiffin Room (MTR) & Filter Coffee',
+        duration: '1.5h',
+        period: 'evening',
+        cost: 250,
+        category: 'Food',
+        location: 'Lalbagh Road, Bengaluru',
+        isIndoor: true,
+        weatherRisk: 'low',
+        weatherRiskLabel: '☕ Culinary Landmark',
+        description: 'Centenary vegetarian culinary institution famous for inventing Rava Idli during WWII and authentic brass-tumbler degree coffee.',
+        imageUrl: 'https://images.unsplash.com/photo-1563379091339-03b21ab4a4f8?auto=format&fit=crop&w=600&q=80'
+      },
+      {
+        title: 'HAL Aerospace Museum & Heritage Centre',
+        duration: '2h',
+        period: 'morning',
+        cost: 50,
+        category: 'History',
+        location: 'HAL Airport Road, Bengaluru',
+        isIndoor: true,
+        weatherRisk: 'low',
+        weatherRiskLabel: '✈️ Aviation Gallery',
+        description: 'India\'s first aerospace museum showcasing indigenous Marut, Kiran, and Tejas aircraft along with flight simulators.',
+        imageUrl: 'https://images.unsplash.com/photo-1587474260584-136574528ed5?auto=format&fit=crop&w=600&q=80'
+      },
+      {
+        title: 'ISKCON Temple Bangalore',
+        duration: '2h',
+        period: 'afternoon',
+        cost: 0,
+        category: 'Spiritual',
+        location: 'Hare Krishna Hill, Rajajinagar, Bengaluru',
+        isIndoor: true,
+        weatherRisk: 'low',
+        weatherRiskLabel: '🏛️ Modern Hill Temple',
+        description: 'One of the largest ISKCON temple complexes globally, featuring gold-plated flagstaff, Vedic museum, and panoramic hill views.',
+        imageUrl: 'https://images.unsplash.com/photo-1590050752117-238cb0fb12b1?auto=format&fit=crop&w=600&q=80'
+      },
+      {
+        title: 'Ulsoor Lake Promenade & Sunset',
+        duration: '1.5h',
+        period: 'evening',
+        cost: 0,
+        category: 'Relaxation',
+        location: 'Ulsoor, Bengaluru',
+        isIndoor: false,
+        weatherRisk: 'low',
+        weatherRiskLabel: '🌅 Lakefront Sunset',
+        description: 'Historic 120-acre Kempe Gowda II reservoir dotted with green islets, scenic pathways, and evening breeze.',
+        imageUrl: 'https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=600&q=80'
+      }
+    ]
+  },
+  visakhapatnam: {
+    city: 'Visakhapatnam',
+    region: 'Andhra Pradesh',
+    themeDescriptors: [
+      'Beach Road & Naval Heritage Circuit',
+      'Scenic Heights, Panoramic Hills & Coastal Sands',
+      'Sacred Temples & Historic Dolphin\'s Nose Vistas',
+      'Monastic Antiquities & Dutch Maritime Trails'
+    ],
+    stops: [
+      {
+        title: 'INS Kursura Submarine Museum',
+        duration: '2h',
+        period: 'morning',
+        cost: 70,
+        category: 'History',
+        location: 'Beach Road, Visakhapatnam',
+        isIndoor: true,
+        weatherRisk: 'low',
+        weatherRiskLabel: '🏛️ Indoor Submarine Museum',
+        description: 'Authentic Soviet-built submarine decommissioned and preserved as South Asia\'s first submarine museum along the coastal sands.',
+        imageUrl: 'https://images.unsplash.com/photo-1599661046289-e31897846e41?auto=format&fit=crop&w=600&q=80'
+      },
+      {
+        title: 'TU 142 Aircraft Museum',
+        duration: '1.5h',
+        period: 'afternoon',
+        cost: 50,
+        category: 'History',
+        location: 'Opposite Kursura, Beach Road, Visakhapatnam',
+        isIndoor: true,
+        weatherRisk: 'low',
+        weatherRiskLabel: '✈️ Covered Aviation Gallery',
+        description: 'Decommissioned Tupolev maritime anti-submarine reconnaissance aircraft transformed into an interactive naval aviation museum.',
+        imageUrl: 'https://images.unsplash.com/photo-1587474260584-136574528ed5?auto=format&fit=crop&w=600&q=80'
+      },
+      {
+        title: 'Ramakrishna Beach Promenade & Sunset Walk',
+        duration: '2h',
+        period: 'evening',
+        cost: 0,
+        category: 'Relaxation',
+        location: 'Beach Road, Visakhapatnam',
+        isIndoor: false,
+        weatherRisk: 'low',
+        weatherRiskLabel: '🌊 Coastal Sunset',
+        description: 'Iconic seafront promenade known for the Kali Temple vista, maritime monuments, and refreshing Bay of Bengal evening breeze.',
+        imageUrl: 'https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=600&q=80'
+      },
+      {
+        title: 'Kailasagiri Hilltop Park & Coastal Ropeway',
+        duration: '2.5h',
+        period: 'morning',
+        cost: 120,
+        category: 'Nature',
+        location: 'Hill Crest, Kailasagiri, Visakhapatnam',
+        isIndoor: false,
+        weatherRisk: 'low',
+        weatherRiskLabel: '☀️ Panoramic Heights',
+        description: 'Scenic 360-foot hilltop park featuring colossal Shiva-Parvati statues, floral clock, and aerial cable car views of the coastline.',
+        imageUrl: 'https://images.unsplash.com/photo-1589182373726-e4f658ab50f0?auto=format&fit=crop&w=600&q=80'
+      },
+      {
+        title: 'Tenneti Seafront Coastal Park',
+        duration: '1.5h',
+        period: 'afternoon',
+        cost: 20,
+        category: 'Nature',
+        location: 'Jodugullapalem, Beach Road, Visakhapatnam',
+        isIndoor: false,
+        weatherRisk: 'high',
+        weatherRiskLabel: '⚠️ Convective Rain Risk',
+        description: 'Cliffside coastal park overlooking rocky Bay of Bengal shores and the grounded cargo vessel MV Maa.',
+        imageUrl: 'https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=600&q=80',
+        hasPlanBReady: true,
+        planBAlternative: {
+          id: 'planb-vizag-museum',
+          title: 'Visakha Museum Heritage Galleries',
+          timeSlot: '02:00 PM',
+          duration: '2h',
+          cost: 40,
+          costDisplay: '₹40',
+          category: 'Culture',
+          location: 'Dutch Bungalow, Beach Road, Visakhapatnam',
+          isIndoor: true,
+          weatherRiskLabel: '🛡️ 100% Indoor Sheltered',
+          description: 'Air-cooled Dutch colonial bungalow housing naval antiquities, 1971 war relics, and royal portraits safe from rain.',
+          imageUrl: 'https://images.unsplash.com/photo-1582510003544-4d00b7f74220?auto=format&fit=crop&w=600&q=80',
+          shelterReason: 'Coastal rain squalls detected. Swapped to indoor naval antiquities museum.',
+          costDelta: '₹0'
+        }
+      },
+      {
+        title: 'Rushikonda Beach & Coastal Sands',
+        duration: '2.5h',
+        period: 'evening',
+        cost: 0,
+        category: 'Adventure',
+        location: 'Rushikonda, Visakhapatnam',
+        isIndoor: false,
+        weatherRisk: 'low',
+        weatherRiskLabel: '🏖️ Golden Hour',
+        description: 'Blue Flag-certified golden sand cove known for crystal waters, surfing, and scenic rocky headlands.',
+        imageUrl: 'https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=600&q=80'
+      },
+      {
+        title: 'Simhachalam Temple (Varaha Lakshmi Narasimha)',
+        duration: '2.5h',
+        period: 'morning',
+        cost: 100,
+        category: 'Spiritual',
+        location: 'Simhachalam Hill Range, Visakhapatnam',
+        isIndoor: false,
+        weatherRisk: 'low',
+        weatherRiskLabel: '🪔 Sacred Morning',
+        description: 'Ancient 11th-century hill shrine celebrated for its ornate Chola-Ganga stone carving and 96-pillar Kalyana Mandapam.',
+        imageUrl: 'https://images.unsplash.com/photo-1590050752117-238cb0fb12b1?auto=format&fit=crop&w=600&q=80'
+      },
+      {
+        title: 'Dolphin\'s Nose Promontory & Hilltop Lighthouse',
+        duration: '2h',
+        period: 'afternoon',
+        cost: 30,
+        category: 'History',
+        location: 'Southern Port Ridge, Visakhapatnam',
+        isIndoor: false,
+        weatherRisk: 'low',
+        weatherRiskLabel: '⚓ Maritime Vista',
+        description: 'Natural dolphin head-shaped basalt rock projecting into the sea, featuring a 358-meter lighthouse overlooking the harbor.',
+        imageUrl: 'https://images.unsplash.com/photo-1600100397608-f010f4439c05?auto=format&fit=crop&w=600&q=80'
+      },
+      {
+        title: 'Yarada Beach Coastal Cove',
+        duration: '2h',
+        period: 'evening',
+        cost: 30,
+        category: 'Relaxation',
+        location: 'Yarada Village, Visakhapatnam',
+        isIndoor: false,
+        weatherRisk: 'low',
+        weatherRiskLabel: '🌅 Sunset Overlook',
+        description: 'Pristine secluded beach embraced by lush green hills on three sides and the azure Bay of Bengal on the fourth.',
+        imageUrl: 'https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=600&q=80'
+      },
+      {
+        title: 'Thotlakonda Buddhist Complex',
+        duration: '2h',
+        period: 'morning',
+        cost: 25,
+        category: 'History',
+        location: 'Mangamaripeta Hill, Visakhapatnam',
+        isIndoor: false,
+        weatherRisk: 'low',
+        weatherRiskLabel: '🪷 Monastic Heritage',
+        description: '2,000-year-old Hinayana Buddhist monastery ruins perched on a hill above the sea with stupas and stone viharas.',
+        imageUrl: 'https://images.unsplash.com/photo-1599661046289-e31897846e41?auto=format&fit=crop&w=600&q=80'
+      },
+      {
+        title: 'Bheemili Beach & Dutch Outpost Ruins',
+        duration: '2h',
+        period: 'afternoon',
+        cost: 0,
+        category: 'History',
+        location: 'Bheemunipatnam, Visakhapatnam',
+        isIndoor: false,
+        weatherRisk: 'low',
+        weatherRiskLabel: '🏛️ Dutch Maritime Ruins',
+        description: 'Historic 17th-century Dutch maritime settlement at the mouth of the Gosthani River with colonial cemetery ruins.',
+        imageUrl: 'https://images.unsplash.com/photo-1596178065887-1198b6148b2b?auto=format&fit=crop&w=600&q=80'
+      },
+      {
+        title: 'Jagadamba Center & Waltair Seafood Trail',
+        duration: '2h',
+        period: 'evening',
+        cost: 350,
+        category: 'Food',
+        location: 'Jagadamba Junction, Visakhapatnam',
+        isIndoor: true,
+        weatherRisk: 'low',
+        weatherRiskLabel: '🍽️ Regional Andhra Cuisine',
+        description: 'Curated culinary tasting of authentic coastal Andhra delicacies, Royyala Iguru, and Madugula halwa.',
+        imageUrl: 'https://images.unsplash.com/photo-1563379091339-03b21ab4a4f8?auto=format&fit=crop&w=600&q=80'
+      }
+    ]
+  },
+  vizag: {
+    city: 'Visakhapatnam',
+    region: 'Andhra Pradesh',
+    themeDescriptors: [
+      'Beach Road & Naval Heritage Circuit',
+      'Scenic Heights, Panoramic Hills & Coastal Sands',
+      'Sacred Temples & Historic Dolphin\'s Nose Vistas',
+      'Monastic Antiquities & Dutch Maritime Trails'
+    ],
+    stops: [
+      {
+        title: 'INS Kursura Submarine Museum',
+        duration: '2h',
+        period: 'morning',
+        cost: 70,
+        category: 'History',
+        location: 'Beach Road, Visakhapatnam',
+        isIndoor: true,
+        weatherRisk: 'low',
+        weatherRiskLabel: '🏛️ Indoor Submarine Museum',
+        description: 'Authentic Soviet-built submarine decommissioned and preserved as South Asia\'s first submarine museum along the coastal sands.',
+        imageUrl: 'https://images.unsplash.com/photo-1599661046289-e31897846e41?auto=format&fit=crop&w=600&q=80'
+      },
+      {
+        title: 'TU 142 Aircraft Museum',
+        duration: '1.5h',
+        period: 'afternoon',
+        cost: 50,
+        category: 'History',
+        location: 'Opposite Kursura, Beach Road, Visakhapatnam',
+        isIndoor: true,
+        weatherRisk: 'low',
+        weatherRiskLabel: '✈️ Covered Aviation Gallery',
+        description: 'Decommissioned Tupolev maritime anti-submarine reconnaissance aircraft transformed into an interactive naval aviation museum.',
+        imageUrl: 'https://images.unsplash.com/photo-1587474260584-136574528ed5?auto=format&fit=crop&w=600&q=80'
+      },
+      {
+        title: 'Ramakrishna Beach Promenade & Sunset Walk',
+        duration: '2h',
+        period: 'evening',
+        cost: 0,
+        category: 'Relaxation',
+        location: 'Beach Road, Visakhapatnam',
+        isIndoor: false,
+        weatherRisk: 'low',
+        weatherRiskLabel: '🌊 Coastal Sunset',
+        description: 'Iconic seafront promenade known for the Kali Temple vista, maritime monuments, and refreshing Bay of Bengal evening breeze.',
+        imageUrl: 'https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=600&q=80'
+      },
+      {
+        title: 'Kailasagiri Hilltop Park & Coastal Ropeway',
+        duration: '2.5h',
+        period: 'morning',
+        cost: 120,
+        category: 'Nature',
+        location: 'Hill Crest, Kailasagiri, Visakhapatnam',
+        isIndoor: false,
+        weatherRisk: 'low',
+        weatherRiskLabel: '☀️ Panoramic Heights',
+        description: 'Scenic 360-foot hilltop park featuring colossal Shiva-Parvati statues, floral clock, and aerial cable car views of the coastline.',
+        imageUrl: 'https://images.unsplash.com/photo-1589182373726-e4f658ab50f0?auto=format&fit=crop&w=600&q=80'
+      },
+      {
+        title: 'Tenneti Seafront Coastal Park',
+        duration: '1.5h',
+        period: 'afternoon',
+        cost: 20,
+        category: 'Nature',
+        location: 'Jodugullapalem, Beach Road, Visakhapatnam',
+        isIndoor: false,
+        weatherRisk: 'high',
+        weatherRiskLabel: '⚠️ Convective Rain Risk',
+        description: 'Cliffside coastal park overlooking rocky Bay of Bengal shores and the grounded cargo vessel MV Maa.',
+        imageUrl: 'https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=600&q=80',
+        hasPlanBReady: true,
+        planBAlternative: {
+          id: 'planb-vizag-museum',
+          title: 'Visakha Museum Heritage Galleries',
+          timeSlot: '02:00 PM',
+          duration: '2h',
+          cost: 40,
+          costDisplay: '₹40',
+          category: 'Culture',
+          location: 'Dutch Bungalow, Beach Road, Visakhapatnam',
+          isIndoor: true,
+          weatherRiskLabel: '🛡️ 100% Indoor Sheltered',
+          description: 'Air-cooled Dutch colonial bungalow housing naval antiquities, 1971 war relics, and royal portraits safe from rain.',
+          imageUrl: 'https://images.unsplash.com/photo-1582510003544-4d00b7f74220?auto=format&fit=crop&w=600&q=80',
+          shelterReason: 'Coastal rain squalls detected. Swapped to indoor naval antiquities museum.',
+          costDelta: '₹0'
+        }
+      },
+      {
+        title: 'Rushikonda Beach & Coastal Sands',
+        duration: '2.5h',
+        period: 'evening',
+        cost: 0,
+        category: 'Adventure',
+        location: 'Rushikonda, Visakhapatnam',
+        isIndoor: false,
+        weatherRisk: 'low',
+        weatherRiskLabel: '🏖️ Golden Hour',
+        description: 'Blue Flag-certified golden sand cove known for crystal waters, surfing, and scenic rocky headlands.',
+        imageUrl: 'https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=600&q=80'
+      },
+      {
+        title: 'Simhachalam Temple (Varaha Lakshmi Narasimha)',
+        duration: '2.5h',
+        period: 'morning',
+        cost: 100,
+        category: 'Spiritual',
+        location: 'Simhachalam Hill Range, Visakhapatnam',
+        isIndoor: false,
+        weatherRisk: 'low',
+        weatherRiskLabel: '🪔 Sacred Morning',
+        description: 'Ancient 11th-century hill shrine celebrated for its ornate Chola-Ganga stone carving and 96-pillar Kalyana Mandapam.',
+        imageUrl: 'https://images.unsplash.com/photo-1590050752117-238cb0fb12b1?auto=format&fit=crop&w=600&q=80'
+      },
+      {
+        title: 'Dolphin\'s Nose Promontory & Hilltop Lighthouse',
+        duration: '2h',
+        period: 'afternoon',
+        cost: 30,
+        category: 'History',
+        location: 'Southern Port Ridge, Visakhapatnam',
+        isIndoor: false,
+        weatherRisk: 'low',
+        weatherRiskLabel: '⚓ Maritime Vista',
+        description: 'Natural dolphin head-shaped basalt rock projecting into the sea, featuring a 358-meter lighthouse overlooking the harbor.',
+        imageUrl: 'https://images.unsplash.com/photo-1600100397608-f010f4439c05?auto=format&fit=crop&w=600&q=80'
+      },
+      {
+        title: 'Yarada Beach Coastal Cove',
+        duration: '2h',
+        period: 'evening',
+        cost: 30,
+        category: 'Relaxation',
+        location: 'Yarada Village, Visakhapatnam',
+        isIndoor: false,
+        weatherRisk: 'low',
+        weatherRiskLabel: '🌅 Sunset Overlook',
+        description: 'Pristine secluded beach embraced by lush green hills on three sides and the azure Bay of Bengal on the fourth.',
+        imageUrl: 'https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=600&q=80'
+      },
+      {
+        title: 'Thotlakonda Buddhist Complex',
+        duration: '2h',
+        period: 'morning',
+        cost: 25,
+        category: 'History',
+        location: 'Mangamaripeta Hill, Visakhapatnam',
+        isIndoor: false,
+        weatherRisk: 'low',
+        weatherRiskLabel: '🪷 Monastic Heritage',
+        description: '2,000-year-old Hinayana Buddhist monastery ruins perched on a hill above the sea with stupas and stone viharas.',
+        imageUrl: 'https://images.unsplash.com/photo-1599661046289-e31897846e41?auto=format&fit=crop&w=600&q=80'
+      },
+      {
+        title: 'Bheemili Beach & Dutch Outpost Ruins',
+        duration: '2h',
+        period: 'afternoon',
+        cost: 0,
+        category: 'History',
+        location: 'Bheemunipatnam, Visakhapatnam',
+        isIndoor: false,
+        weatherRisk: 'low',
+        weatherRiskLabel: '🏛️ Dutch Maritime Ruins',
+        description: 'Historic 17th-century Dutch maritime settlement at the mouth of the Gosthani River with colonial cemetery ruins.',
+        imageUrl: 'https://images.unsplash.com/photo-1596178065887-1198b6148b2b?auto=format&fit=crop&w=600&q=80'
+      },
+      {
+        title: 'Jagadamba Center & Waltair Seafood Trail',
+        duration: '2h',
+        period: 'evening',
+        cost: 350,
+        category: 'Food',
+        location: 'Jagadamba Junction, Visakhapatnam',
+        isIndoor: true,
+        weatherRisk: 'low',
+        weatherRiskLabel: '🍽️ Regional Andhra Cuisine',
+        description: 'Curated culinary tasting of authentic coastal Andhra delicacies, Royyala Iguru, and Madugula halwa.',
+        imageUrl: 'https://images.unsplash.com/photo-1563379091339-03b21ab4a4f8?auto=format&fit=crop&w=600&q=80'
+      }
+    ]
+  },
   jaipur: {
     city: 'Jaipur',
     region: 'Rajasthan',
@@ -430,6 +985,11 @@ const CITY_DATABASE: Record<string, CityKnowledge> = {
   }
 };
 
+// Aliases for common destination variations and spellings
+CITY_DATABASE['bengaluru'] = CITY_DATABASE['bangalore'];
+CITY_DATABASE['banglore'] = CITY_DATABASE['bangalore'];
+CITY_DATABASE['vizag'] = CITY_DATABASE['visakhapatnam'];
+
 /**
  * Generate a deterministic demo itinerary based on the user's submitted configuration.
  * Adapts to:
@@ -468,6 +1028,7 @@ export function generateDeterministicItinerary(config: TripConfig): DayItinerary
   const budgetFactor = config.budgetTier === 'Budget-friendly' ? 0.5 : config.budgetTier === 'Premium' ? 2.5 : 1.0;
 
   const days: DayItinerary[] = [];
+  const usedStopTitles = new Set<string>();
 
   for (let i = 0; i < totalDays; i++) {
     const dayNumber = i + 1;
@@ -500,20 +1061,20 @@ export function generateDeterministicItinerary(config: TripConfig): DayItinerary
           location: `Central ${destName.split(',')[0]}`,
           isIndoor: false,
           weatherRisk: 'low' as const,
-          weatherRiskLabel: '☀️ Clear Morning',
+          weatherRiskLabel: '☀️ Clear Skies',
           description: `Iconic heritage architecture and centuries-old stonework in the heart of ${destName.split(',')[0]}.`,
           imageUrl: 'https://images.unsplash.com/photo-1599661046289-e31897846e41?auto=format&fit=crop&w=600&q=80'
         },
         {
           title: `${destName.split(',')[0]} Local Artisan Workshop & Bazaar`,
           duration: '2h',
-          period: 'afternoon' as const,
+          period: 'morning' as const,
           cost: 250,
           category: 'Culture',
           location: `Old Market, ${destName.split(',')[0]}`,
           isIndoor: true,
           weatherRisk: 'low' as const,
-          weatherRiskLabel: '☂️ Covered Studio',
+          weatherRiskLabel: '🏛️ Indoor Sheltered',
           description: `Discover time-honored local craftsmanship, textiles, and authentic regional goods.`,
           imageUrl: 'https://images.unsplash.com/photo-1600585154340-be6161a56a0c?auto=format&fit=crop&w=600&q=80'
         },
@@ -556,9 +1117,61 @@ export function generateDeterministicItinerary(config: TripConfig): DayItinerary
           location: `Heritage Quarter, ${destName.split(',')[0]}`,
           isIndoor: true,
           weatherRisk: 'low' as const,
-          weatherRiskLabel: '🍽️ Covered Haveli',
+          weatherRiskLabel: '🍽️ Covered Dining',
           description: `Authentic multi-course dinner celebrating regional delicacies tailored for ${config.travelerType.toLowerCase()} explorers.`,
           imageUrl: 'https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?auto=format&fit=crop&w=600&q=80'
+        },
+        {
+          title: `${destName.split(',')[0]} Botanical Gardens & Fern Sanctuary`,
+          duration: '2h',
+          period: 'morning' as const,
+          cost: 100,
+          category: 'Nature',
+          location: `Outer Circle, ${destName.split(',')[0]}`,
+          isIndoor: false,
+          weatherRisk: 'low' as const,
+          weatherRiskLabel: '☀️ Clear Skies',
+          description: `Lush shaded botanical reserve featuring regional flora, shaded pavilions, and calm walking paths.`,
+          imageUrl: 'https://images.unsplash.com/photo-1589182373726-e4f658ab50f0?auto=format&fit=crop&w=600&q=80'
+        },
+        {
+          title: `${destName.split(',')[0]} Historic Citadel & Echo Bastion`,
+          duration: '2.5h',
+          period: 'afternoon' as const,
+          cost: 150,
+          category: 'History',
+          location: `Hilltop, ${destName.split(',')[0]}`,
+          isIndoor: false,
+          weatherRisk: 'low' as const,
+          weatherRiskLabel: '☀️ Clear Skies',
+          description: `Centuries-old stone citadel ramparts with commanding views across the surrounding countryside.`,
+          imageUrl: 'https://images.unsplash.com/photo-1605649487212-47bdab064df7?auto=format&fit=crop&w=600&q=80'
+        },
+        {
+          title: `${destName.split(',')[0]} Twilight Waterfront Promenade`,
+          duration: '1.5h',
+          period: 'evening' as const,
+          cost: 0,
+          category: 'Relaxation',
+          location: `Waterfront, ${destName.split(',')[0]}`,
+          isIndoor: false,
+          weatherRisk: 'low' as const,
+          weatherRiskLabel: '🌊 Evening Breeze',
+          description: `Relaxing twilight promenade stroll along the waterside enjoying cooling breezes and city lights.`,
+          imageUrl: 'https://images.unsplash.com/photo-1570168007204-dfb528c6958f?auto=format&fit=crop&w=600&q=80'
+        },
+        {
+          title: `${destName.split(',')[0]} Traditional Spice Guild & Herb Bazaar`,
+          duration: '1.5h',
+          period: 'morning' as const,
+          cost: 120,
+          category: 'Food',
+          location: `Old Market, ${destName.split(',')[0]}`,
+          isIndoor: false,
+          weatherRisk: 'low' as const,
+          weatherRiskLabel: '☀️ Clear Skies',
+          description: `Aromatic spice market exploring regional seasonings, teas, and hand-rolled confections.`,
+          imageUrl: 'https://images.unsplash.com/photo-1596178065887-1198b6148b2b?auto=format&fit=crop&w=600&q=80'
         }
       ]
     };
@@ -567,19 +1180,41 @@ export function generateDeterministicItinerary(config: TripConfig): DayItinerary
       knowledge.themeDescriptors[i % knowledge.themeDescriptors.length] ||
       `${knowledge.city} Curated Discovery & Cultural Highlights`;
 
-    // Pick stops according to pace
-    const candidateStops = [...knowledge.stops];
+    // Filter candidate stops: pick stops not yet used in previous days
+    const unusedCandidateStops = knowledge.stops.filter((s) => !usedStopTitles.has(s.title));
 
     // Prioritize user's interests if any match
     if (config.interests && config.interests.length > 0) {
-      candidateStops.sort((a, b) => {
+      unusedCandidateStops.sort((a, b) => {
         const aMatch = config.interests.includes(a.category as any) ? 1 : 0;
         const bMatch = config.interests.includes(b.category as any) ? 1 : 0;
         return bMatch - aMatch;
       });
     }
 
-    const dayStops = candidateStops.slice(0, activitiesCount);
+    const dayStops = unusedCandidateStops.slice(0, activitiesCount);
+
+    // If dayStops run out of unused stops, generate unique distinct extension stops
+    while (dayStops.length < activitiesCount) {
+      const extIdx = dayStops.length + 1;
+      const extTitle = `${knowledge.city} Day ${dayNumber} Curated Exploration ${extIdx}`;
+      dayStops.push({
+        title: extTitle,
+        duration: '2h',
+        period: extIdx === 1 ? 'morning' : extIdx === 2 ? 'afternoon' : 'evening',
+        cost: 200,
+        category: 'Culture',
+        location: `${knowledge.city} Historic Quarter`,
+        isIndoor: false,
+        weatherRisk: 'low',
+        weatherRiskLabel: '☀️ Clear Skies',
+        description: `Scenic excursion and local exploration through ${knowledge.city}.`,
+        imageUrl: 'https://images.unsplash.com/photo-1599661046289-e31897846e41?auto=format&fit=crop&w=600&q=80'
+      });
+    }
+
+    // Mark these stops as used across subsequent days
+    dayStops.forEach((s) => usedStopTitles.add(s.title));
 
     // Provide standard time slots based on count
     const timeSlots =
@@ -589,24 +1224,35 @@ export function generateDeterministicItinerary(config: TripConfig): DayItinerary
         ? ['08:00 AM', '11:30 AM', '03:00 PM', '06:30 PM']
         : ['09:00 AM', '01:30 PM', '05:30 PM'];
 
+    const isRainDay = dayNumber === 2;
+
+    // Pick index of outdoor activity on rain day to have Plan B
+    let weatherSensitiveIdx = -1;
+    if (isRainDay) {
+      // Find first outdoor activity (or second activity if possible)
+      weatherSensitiveIdx = dayStops.findIndex((s, idx) => !s.isIndoor && idx > 0);
+      if (weatherSensitiveIdx === -1) {
+        weatherSensitiveIdx = dayStops.findIndex((s) => !s.isIndoor);
+      }
+    }
+
     const activities: Activity[] = dayStops.map((stop, sIdx) => {
       const actId = `act-${dayNumber}-${sIdx + 1}`;
       const scaledCost = Math.round(stop.cost * budgetFactor);
       const costDisplay = scaledCost === 0 ? 'Free' : `₹${scaledCost.toLocaleString('en-IN')}`;
 
-      // Guarantee Plan B is available on Day 2 for testing weather & adaptive contingencies
-      const isWeatherSensitiveDay2 = dayNumber === 2 && sIdx === 1;
-      const hasPlanB = stop.hasPlanBReady || isWeatherSensitiveDay2;
+      const isThisStopWeatherThreatened = sIdx === weatherSensitiveIdx;
+      const hasPlanB = isThisStopWeatherThreatened;
 
-      let planBAlt = stop.planBAlternative;
-      if (isWeatherSensitiveDay2 && !planBAlt) {
-        planBAlt = {
+      let planBAlt: PlanBAlternative | undefined = undefined;
+      if (isThisStopWeatherThreatened) {
+        planBAlt = stop.planBAlternative || {
           id: `planb-day2-${knowledge.city.toLowerCase()}`,
           title: `${knowledge.city} Heritage State Museum & Indoor Arts Studio`,
-          timeSlot: timeSlots[sIdx],
+          timeSlot: timeSlots[sIdx] || '02:00 PM',
           duration: '2h',
-          cost: Math.round(250 * budgetFactor),
-          costDisplay: `₹${Math.round(250 * budgetFactor)}`,
+          cost: Math.round(200 * budgetFactor),
+          costDisplay: `₹${Math.round(200 * budgetFactor)}`,
           category: 'Culture',
           location: `${knowledge.city} Museum Grounds`,
           isIndoor: true,
@@ -617,6 +1263,14 @@ export function generateDeterministicItinerary(config: TripConfig): DayItinerary
           costDelta: '-₹150 (Saved)'
         };
       }
+
+      // Strictly consistent weather risk
+      const finalWeatherRisk = isThisStopWeatherThreatened ? ('high' as const) : ('low' as const);
+      const finalWeatherRiskLabel = isThisStopWeatherThreatened
+        ? '⚠️ 65% Rain Risk'
+        : stop.isIndoor
+        ? '🏛️ Indoor Sheltered'
+        : '☀️ Clear Skies';
 
       return {
         id: actId,
@@ -630,18 +1284,17 @@ export function generateDeterministicItinerary(config: TripConfig): DayItinerary
         location: stop.location,
         coordinates: { x: 80 + sIdx * 60, y: 70 + sIdx * 50 },
         isIndoor: stop.isIndoor,
-        weatherRisk: isWeatherSensitiveDay2 ? 'high' : stop.weatherRisk,
-        weatherRiskLabel: isWeatherSensitiveDay2 ? '⚠️ 65% Rain Risk' : stop.weatherRiskLabel,
+        weatherRisk: finalWeatherRisk,
+        weatherRiskLabel: finalWeatherRiskLabel,
         description: stop.description,
         imageUrl: stop.imageUrl,
-        isVisited: dayNumber === 1 && sIdx === 0, // Mark first stop visited as demo baseline
-        isLocked: sIdx === 0,
+        isVisited: false,
+        isLocked: false,
         hasPlanBReady: hasPlanB,
         planBAlternative: planBAlt
       };
     });
 
-    const isRainDay = dayNumber === 2;
     const weatherSummary = isRainDay
       ? 'Showers 25°C • 65% Rain at 2 PM'
       : `${24 + (i % 5)}°C • Clear & Golden`;

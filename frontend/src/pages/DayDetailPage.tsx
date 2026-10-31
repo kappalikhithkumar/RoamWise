@@ -35,7 +35,7 @@ export const DayDetailPage: React.FC = () => {
   }
 
   // Find if this day has any activity with a Plan B ready
-  const planBActivity = currentDay.activities.find((a) => a.hasPlanBReady && a.planBAlternative);
+  const planBActivity = currentDay.activities.find((a) => a.hasPlanBReady && a.planBAlternative && a.weatherRisk === 'high');
   const isPlanBApplied = currentDay.activities.some((a) => a.isPlanBAlternative);
 
   const handleSwitchToPlanB = (originalActivityId: string) => {
@@ -141,7 +141,7 @@ export const DayDetailPage: React.FC = () => {
                     </span>
                   </div>
                   <p className="text-xs text-[#414845] mt-0.5">
-                    Outdoor stop <span className="font-bold text-primary">"{planBActivity.title}"</span> has severe rain risk ({planBActivity.weatherRiskLabel}).
+                    Outdoor stop <span className="font-bold text-primary">"{planBActivity.title}"</span> has elevated weather risk ({planBActivity.weatherRiskLabel}).
                   </p>
                 </div>
               </div>
@@ -231,7 +231,7 @@ export const DayDetailPage: React.FC = () => {
           <div className="relative mt-6 pl-4 sm:pl-6 border-l-2 border-[#D8E9DD] flex flex-col gap-6">
             {currentDay.activities.map((act) => {
               const isCompleted = act.isVisited;
-              const hasAlert = act.hasPlanBReady;
+              const hasAlert = act.hasPlanBReady && act.weatherRisk === 'high' && !act.isPlanBAlternative;
               const isSwapped = act.isPlanBAlternative;
 
               return (

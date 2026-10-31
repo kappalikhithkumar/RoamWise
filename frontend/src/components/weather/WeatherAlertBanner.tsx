@@ -6,9 +6,11 @@ export const WeatherAlertBanner: React.FC = () => {
 
   // Find day 2 activity that has Plan B ready
   const day2 = state.days.find((d) => d.dayNumber === 2);
-  const targetActivity = day2?.activities.find((a) => a.hasPlanBReady);
+  const targetActivity = day2?.activities.find((a) => a.hasPlanBReady && a.weatherRisk === 'high' && !a.isPlanBAlternative);
 
   if (!targetActivity) return null;
+
+  const destName = targetActivity.location || state.config?.destination || 'your destination';
 
   return (
     <aside className="relative overflow-hidden rounded-2xl bg-tertiary-container text-on-tertiary-container p-space-md shadow-md border border-tertiary/20">
@@ -26,7 +28,7 @@ export const WeatherAlertBanner: React.FC = () => {
           </div>
 
           <p className="font-body text-xs text-on-tertiary-container leading-relaxed">
-            Rain risk spikes to 65% in Jaipur Old City during afternoon open-air visits. We have automatically structured a sheltered Plan B museum alternative.
+            Rain risk increases during open-air visits to {targetActivity.title} ({destName}). We have automatically structured a sheltered Plan B alternative.
           </p>
 
           <div className="mt-space-sm flex items-center justify-between pt-1 border-t border-on-tertiary-container/10">

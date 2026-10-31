@@ -1,9 +1,10 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useTrip } from '../context/TripContext';
 import { Header } from '../components/common/Header';
 import { BottomNav } from '../components/common/BottomNav';
 import { PlanBBottomSheet } from '../components/plan-b/PlanBBottomSheet';
+import { apiService } from '../services/api';
 
 interface CityWeather {
   id: string;
@@ -127,13 +128,70 @@ const CITIES: CityWeather[] = [
 
 export const WeatherPage: React.FC = () => {
   const navigate = useNavigate();
-  const { applyPlanB } = useTrip();
+  const { state, applyPlanB } = useTrip();
 
-  const [selectedCityId, setSelectedCityId] = useState('jaipur');
+  const destPrimary = state.config.destination.split(',')[0].split('➔')[0].trim();
+  const [selectedCityId, setSelectedCityId] = useState(destPrimary.toLowerCase());
   const [planBSwapped, setPlanBSwapped] = useState(false);
   const [scheduleShifted, setScheduleShifted] = useState(false);
+  const [liveWeather, setLiveWeather] = useState<any>(null);
 
-  const activeCity = CITIES.find((c) => c.id === selectedCityId) || CITIES[0];
+  // Dynamic city list combining active destination with default hubs
+  const citiesList = React.useMemo(() => {
+    const existing = CITIES.find((c) => c.name.toLowerCase() === destPrimary.toLowerCase());
+    if (existing) return CITIES;
+    const dynamicCity: CityWeather = {
+      id: destPrimary.toLowerCase(),
+      name: destPrimary,
+      stopLabel: 'Active Destination',
+      daysLabel: `${state.config.startDate} – ${state.config.endDate}`,
+      temp: liveWeather?.current?.temperature || 26,
+      high: (liveWeather?.current?.temperature || 26) + 4,
+      low: (liveWeather?.current?.temperature || 26) - 5,
+      condition: liveWeather?.current?.condition || 'Clear & Pleasant',
+      conditionIcon: liveWeather?.current?.icon || 'wb_sunny',
+      conditionDesc: `${liveWeather?.current?.condition || 'Pleasant atmospheric conditions'} in ${destPrimary}`,
+      region: `${destPrimary} • Active Expedition`,
+      statusBadge: 'Ongoing Expedition',
+      humidity: `${liveWeather?.current?.humidity || 52}%`,
+      humidityDesc: 'Comfortable',
+      uvIndex: `${liveWeather?.current?.uvIndex || 5} Mod`,
+      uvDesc: 'Peak Midday',
+      aqi: 95,
+      aqiDesc: 'Satisfactory',
+      wind: liveWeather?.current?.wind || '12 km/h',
+      windDesc: 'Gentle Breeze',
+      visibility: '8.5 km',
+      visibilityDesc: 'Good Optics',
+      precip: `${liveWeather?.current?.rainRisk || 10}%`,
+      precipDesc: (liveWeather?.current?.rainRisk || 10) > 40 ? 'Rain Probability High' : 'Dry & Clear',
+      goldenHour: '05:20 PM – 05:55 PM',
+      goldenHourRemaining: 'Today',
+      sunTimes: `Sunset ${liveWeather?.current?.sunset || '05:45 PM'} • Sunrise ${liveWeather?.current?.sunrise || '06:15 AM'}`
+    };
+    return [dynamicCity, ...CITIES];
+  }, [destPrimary, liveWeather, state.config]);
+
+  const activeCity = citiesList.find((c) => c.id === selectedCityId) || citiesList[0];
+
+  useEffect(() => {
+    let isMounted = true;
+    const fetchWeather = async () => {
+      try {
+        const queryName = activeCity.name;
+        const res = await apiService.getWeather(queryName);
+        if (isMounted && res) {
+          setLiveWeather(res);
+        }
+      } catch (err) {
+        console.info('Live weather fetch bypassed:', err);
+      }
+    };
+    fetchWeather();
+    return () => {
+      isMounted = false;
+    };
+  }, [activeCity.name]);
 
   const handleInstantPlanBSwap = () => {
     applyPlanB(2, 'act-2-3');
@@ -150,20 +208,20 @@ export const WeatherPage: React.FC = () => {
           <section className="w-full px-gutter pt-space-sm pb-space-xs">
             <div className="flex items-center justify-between mb-space-xs">
               <span className="font-label-sm text-xs text-on-surface-variant uppercase tracking-wider flex items-center gap-1 font-semibold">
-                <span className="w-1.5 h-1.5 rounded-full bg-surface-tint" />
-                Active Golden Triangle Circuit
+                <span className={`w-2 h-2 rounded-full ${liveWeather?.isLive ? 'bg-emerald-500 animate-pulse' : 'bg-amber'}`} />
+                {state.config.destination.split(',')[0]} Expedition
               </span>
-              <span className="font-label-sm text-xs text-on-surface-variant flex items-center gap-1">
-                <span className="material-symbols-outlined text-[14px] text-tertiary-fixed-dim animate-spin" style={{ animationDuration: '6s' }}>
-                  sync
+              <div className="flex items-center gap-1.5 text-xs text-on-surface-variant">
+                <span className="font-medium text-[11px]">{liveWeather?.provider || 'Open-Meteo Weather API'}</span>
+                <span className={`px-1.5 py-0.5 rounded text-[10px] font-bold ${liveWeather?.isLive ? 'bg-emerald-100 text-emerald-800' : 'bg-amber/20 text-amber-900'}`}>
+                  {liveWeather?.isLive ? 'LIVE' : 'SIMULATED'}
                 </span>
-                Simulated Radar (Demo)
-              </span>
+              </div>
             </div>
 
             {/* Multi-city Horizontally Scrollable Pills */}
             <div className="flex items-center gap-2 overflow-x-auto no-scrollbar py-1">
-              {CITIES.map((city) => {
+              {citiesList.map((city) => {
                 const isSelected = city.id === selectedCityId;
                 return (
                   <button
@@ -337,7 +395,15 @@ export const WeatherPage: React.FC = () => {
             </div>
           </section>
 
-          {/* Official IMD Weather Alert Banner */}
+          {/* Live Weather Provider & Status Footer */}
+          {liveWeather && (
+            <div className="w-full px-gutter mt-2 flex items-center justify-between text-[11px] text-[#414845]">
+              <span className="font-medium">{liveWeather.providerAttribution || 'Weather data by Open-Meteo.com (CC-BY 4.0)'}</span>
+              <span>Updated: {liveWeather.lastUpdated}</span>
+            </div>
+          )}
+
+          {/* Weather Alert & Plan B Banner */}
           <section className="w-full px-gutter mt-space-md">
             <div className="w-full rounded-2xl bg-tertiary-fixed/30 p-space-sm flex items-start gap-space-sm border border-tertiary-fixed-dim/40 shadow-sm">
               <div className="w-8 h-8 rounded-full bg-tertiary-fixed-dim text-tertiary-container flex items-center justify-center flex-shrink-0 mt-0.5">
@@ -348,12 +414,20 @@ export const WeatherPage: React.FC = () => {
               <div className="flex-1 flex flex-col gap-1">
                 <div className="flex items-center justify-between">
                   <span className="font-label-md text-xs font-bold text-tertiary-container uppercase tracking-wide">
-                    SIMULATED IMD WATCH (DEMO MODEL)
+                    {liveWeather?.isLive
+                      ? (liveWeather.alerts && liveWeather.alerts.length > 0
+                          ? liveWeather.alerts[0].title
+                          : `LIVE ${activeCity.name.toUpperCase()} ATMOSPHERIC MONITOR`)
+                      : 'SIMULATED ADVISORY (OFFLINE FALLBACK)'}
                   </span>
-                  <span className="font-label-sm text-[11px] text-tertiary-container font-medium">Demo Stream</span>
+                  <span className={`font-label-sm text-[10px] font-bold px-1.5 py-0.5 rounded ${liveWeather?.isLive ? 'bg-emerald-100 text-emerald-800' : 'bg-amber/30 text-amber-900'}`}>
+                    {liveWeather?.isLive ? 'LIVE' : 'SIMULATED'}
+                  </span>
                 </div>
                 <p className="font-body-sm text-xs text-on-surface leading-snug">
-                  Isolated thundershowers expected across East Rajasthan late afternoon tomorrow. Intercity transit corridors remain unaffected.
+                  {liveWeather?.alerts && liveWeather.alerts.length > 0
+                    ? liveWeather.alerts[0].description
+                    : `Current conditions indicate ${activeCity.conditionDesc}. Outdoor walking routes remain favorable.`}
                 </p>
                 <button
                   type="button"

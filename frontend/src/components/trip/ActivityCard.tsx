@@ -127,11 +127,11 @@ export const ActivityCard: React.FC<ActivityCardProps> = ({
         </div>
 
         {/* Plan B Trigger Button if weather threat is present */}
-        {activity.hasPlanBReady && (
+        {activity.hasPlanBReady && activity.weatherRisk === 'high' && !activity.isPlanBAlternative && (
           <div className="mt-2.5 pt-2 border-t border-error/20 flex items-center justify-between">
             <span className="font-label text-[11px] text-error font-medium flex items-center gap-1">
               <span className="material-symbols-outlined text-[14px]">warning</span>
-              Rain Alert at 2 PM
+              {activity.weatherRiskLabel.includes('⚠️') ? activity.weatherRiskLabel : `⚠️ ${activity.weatherRiskLabel} Alert`}
             </span>
             <button
               type="button"

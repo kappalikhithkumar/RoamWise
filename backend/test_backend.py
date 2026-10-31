@@ -36,6 +36,15 @@ try:
     assert data["status"] == "healthy"
     assert data["database"] == "connected"
 
+    print("\n--- 1B. Testing Fresh Empty Database: Must have 0 trips and NO automatic seeding ---")
+    res_empty = client.get("/api/trips")
+    empty_data = res_empty.get_json()
+    print("Empty trips list response:", res_empty.status_code, empty_data)
+    assert res_empty.status_code == 200
+    assert "trips" in empty_data
+    assert len(empty_data["trips"]) == 0, f"Expected 0 trips in empty database, got {len(empty_data['trips'])}"
+    print("Empty database verified: 0 trips returned, no automatic sample insertion.")
+
     print("\n--- 2. Testing POST /api/trips ---")
     sample_trip = {
         "destination": "Jaipur -> Delhi -> Agra",

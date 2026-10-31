@@ -15,7 +15,7 @@ export const Header: React.FC<HeaderProps> = ({
   onBack
 }) => {
   const navigate = useNavigate();
-  const { state, isBackendOnline, isSyncing } = useTrip();
+  const { state, isBackendOnline, isSyncing, isDemoMode, exitDemoMode, hasActiveTrip } = useTrip();
 
   const handleBack = () => {
     if (onBack) {
@@ -24,6 +24,14 @@ export const Header: React.FC<HeaderProps> = ({
       navigate(-1);
     }
   };
+
+  const displayTitle = title || (hasActiveTrip && state.config.destination
+    ? `${state.config.destination.split(',')[0]} Expedition`
+    : 'Explore & Discover');
+
+  const displayWeatherCity = hasActiveTrip && state.config.destination
+    ? state.config.destination.split(',')[0]
+    : 'India';
 
   return (
     <header className="fixed top-0 w-full z-40 pt-safe bg-white/90 backdrop-blur-xl shadow-[0_1px_8px_rgba(23,63,53,0.05)] border-b border-[#25332E]/10">
@@ -65,9 +73,22 @@ export const Header: React.FC<HeaderProps> = ({
                 }
               />
             </div>
-            <span className="font-heading text-base sm:text-lg font-bold text-primary leading-tight truncate max-w-[200px] sm:max-w-xs">
-              {title || state.config.destination.split(',')[0] + ' Expedition'}
-            </span>
+            <div className="flex items-center gap-1.5">
+              <span className="font-heading text-base sm:text-lg font-bold text-primary leading-tight truncate max-w-[170px] sm:max-w-xs">
+                {displayTitle}
+              </span>
+              {isDemoMode && (
+                <button
+                  onClick={exitDemoMode}
+                  title="Exit Demo Mode"
+                  className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-amber/25 text-primary border border-amber/40 hover:bg-amber/35 transition flex items-center gap-1"
+                >
+                  <span className="w-1.5 h-1.5 rounded-full bg-amber animate-pulse" />
+                  <span>DEMO</span>
+                  <span className="material-symbols-outlined text-[12px]">close</span>
+                </button>
+              )}
+            </div>
           </div>
         </div>
 
@@ -80,7 +101,7 @@ export const Header: React.FC<HeaderProps> = ({
           >
             <span className="material-symbols-outlined text-amber text-[16px]">partly_cloudy_day</span>
             <span className="font-label text-xs font-semibold text-primary">
-              {state.config.destination.split(',')[0]} · 22°C
+              {displayWeatherCity} · 22°C
             </span>
           </button>
 

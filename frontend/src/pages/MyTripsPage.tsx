@@ -6,7 +6,14 @@ import { BottomNav } from '../components/common/BottomNav';
 
 export const MyTripsPage: React.FC = () => {
   const navigate = useNavigate();
-  const { savedTrips, selectTrip, deleteTrip } = useTrip();
+  const {
+    savedTrips,
+    selectTrip,
+    deleteTrip,
+    isDemoMode,
+    enterDemoMode,
+    exitDemoMode
+  } = useTrip();
   const [activeFilter, setActiveFilter] = useState<'all' | 'ongoing' | 'upcoming' | 'completed'>('all');
 
   const ongoingTrip = savedTrips.find((t) => t.status === 'ongoing');
@@ -20,6 +27,30 @@ export const MyTripsPage: React.FC = () => {
 
       {/* Main Content Area */}
       <main className="flex-1 max-w-4xl w-full mx-auto px-4 sm:px-6 pt-20">
+        {/* Demo Mode Notice Banner (When running in presentation/demo mode) */}
+        {isDemoMode && (
+          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 p-3.5 my-3 rounded-xl bg-amber/15 border border-amber/35 text-primary shadow-sm">
+            <div className="flex items-center gap-2.5">
+              <span className="material-symbols-outlined text-amber text-[22px]">science</span>
+              <div>
+                <div className="flex items-center gap-2">
+                  <span className="text-xs font-bold uppercase tracking-wider text-primary">Demo Presentation Mode</span>
+                  <span className="px-1.5 py-0.2 rounded text-[10px] bg-amber/25 font-bold text-primary">Sample Data</span>
+                </div>
+                <p className="text-xs text-[#414845] mt-0.5">
+                  Displaying sample trips for testing and UI demonstration. The production SQLite database is untouched.
+                </p>
+              </div>
+            </div>
+            <button
+              onClick={exitDemoMode}
+              className="px-3.5 py-1.5 rounded-lg bg-white border border-amber/40 text-xs font-bold text-primary hover:bg-[#FFF8F0] active:scale-95 transition shadow-sm shrink-0 flex items-center gap-1"
+            >
+              <span className="material-symbols-outlined text-[15px]">close</span>
+              <span>Exit Demo Mode</span>
+            </button>
+          </div>
+        )}
         
         {/* Title & Action Row */}
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 py-3">
@@ -90,10 +121,72 @@ export const MyTripsPage: React.FC = () => {
         </div>
 
         <div className="flex flex-col gap-8 mt-6">
-          {/* ========================================================================= */}
-          {/* SECTION 1: ACTIVE RIGHT NOW (Screen 01 Spec)                             */}
-          {/* ========================================================================= */}
-          {(activeFilter === 'all' || activeFilter === 'ongoing') && ongoingTrip && (
+          {savedTrips.length === 0 ? (
+            <div className="rounded-2xl bg-white border border-[#25332E]/10 p-10 text-center shadow-card flex flex-col items-center justify-center my-4">
+              <div className="w-16 h-16 rounded-full bg-[#EDFDF5] border border-[#D8E9DD] flex items-center justify-center text-primary mb-4">
+                <span className="material-symbols-outlined text-3xl">travel_explore</span>
+              </div>
+              <h2 className="text-xl font-bold font-display text-primary">No Expeditions Planned Yet</h2>
+              <p className="text-sm text-[#414845] max-w-md mt-1 mb-6">
+                You haven't saved any trips yet. Create your first adaptive journey tailored to your rhythm and real-time conditions, or load demo sample data for presentation.
+              </p>
+              <div className="flex flex-wrap items-center justify-center gap-3">
+                <button
+                  onClick={() => navigate('/plan')}
+                  className="px-5 py-2.5 rounded-xl bg-primary text-white text-xs font-bold hover:bg-[#204E43] active:scale-95 transition shadow-sm flex items-center gap-2"
+                >
+                  <span className="material-symbols-outlined text-[18px]">add</span>
+                  <span>Plan Your First Journey</span>
+                </button>
+                <button
+                  onClick={enterDemoMode}
+                  className="px-4 py-2.5 rounded-xl bg-[#EDFDF5] text-primary border border-[#D8E9DD] text-xs font-semibold hover:bg-secondary-container active:scale-95 transition flex items-center gap-2"
+                >
+                  <span className="material-symbols-outlined text-[18px]">play_circle</span>
+                  <span>Try Demo Mode</span>
+                </button>
+              </div>
+            </div>
+          ) : (
+            <>
+              {/* Filter empty messages if specific filter is active with 0 results */}
+              {activeFilter === 'ongoing' && !ongoingTrip && (
+                <div className="p-8 rounded-2xl bg-white border border-[#25332E]/10 text-center my-2 shadow-sm">
+                  <span className="material-symbols-outlined text-3xl text-primary mb-2">directions_walk</span>
+                  <p className="text-sm font-semibold text-primary">No Ongoing Expeditions</p>
+                  <p className="text-xs text-[#414845] mt-0.5">You have no trips currently marked in transit.</p>
+                  <button onClick={() => setActiveFilter('all')} className="mt-3 px-3 py-1.5 rounded-lg bg-[#EDFDF5] text-primary text-xs font-bold hover:bg-secondary-container transition">
+                    View All Trips ({savedTrips.length})
+                  </button>
+                </div>
+              )}
+
+              {activeFilter === 'upcoming' && upcomingTrips.length === 0 && (
+                <div className="p-8 rounded-2xl bg-white border border-[#25332E]/10 text-center my-2 shadow-sm">
+                  <span className="material-symbols-outlined text-3xl text-primary mb-2">flight_takeoff</span>
+                  <p className="text-sm font-semibold text-primary">No Upcoming Expeditions</p>
+                  <p className="text-xs text-[#414845] mt-0.5">No upcoming itineraries currently scheduled.</p>
+                  <button onClick={() => setActiveFilter('all')} className="mt-3 px-3 py-1.5 rounded-lg bg-[#EDFDF5] text-primary text-xs font-bold hover:bg-secondary-container transition">
+                    View All Trips ({savedTrips.length})
+                  </button>
+                </div>
+              )}
+
+              {activeFilter === 'completed' && completedTrips.length === 0 && (
+                <div className="p-8 rounded-2xl bg-white border border-[#25332E]/10 text-center my-2 shadow-sm">
+                  <span className="material-symbols-outlined text-3xl text-primary mb-2">history_edu</span>
+                  <p className="text-sm font-semibold text-primary">No Completed Memories Yet</p>
+                  <p className="text-xs text-[#414845] mt-0.5">Your past expedition logs will be archived here once finished.</p>
+                  <button onClick={() => setActiveFilter('all')} className="mt-3 px-3 py-1.5 rounded-lg bg-[#EDFDF5] text-primary text-xs font-bold hover:bg-secondary-container transition">
+                    View All Trips ({savedTrips.length})
+                  </button>
+                </div>
+              )}
+
+              {/* ========================================================================= */}
+              {/* SECTION 1: ACTIVE RIGHT NOW (Screen 01 Spec)                             */}
+              {/* ========================================================================= */}
+              {(activeFilter === 'all' || activeFilter === 'ongoing') && ongoingTrip && (
             <section className="flex flex-col gap-3">
               <div className="flex items-center gap-2">
                 <span className="w-2 h-2 rounded-full bg-emerald-600 animate-pulse" />
@@ -328,6 +421,8 @@ export const MyTripsPage: React.FC = () => {
                 ))}
               </div>
             </section>
+          )}
+            </>
           )}
         </div>
       </main>

@@ -129,6 +129,26 @@ export const apiService = {
   },
 
   /**
+   * AI Itinerary Generation via Gemini
+   */
+  async generateItinerary(config: TripConfig): Promise<{ success: boolean; itinerary: any; tagline: string; days: DayItinerary[]; generationSource: string }> {
+    return request<{ success: boolean; itinerary: any; tagline: string; days: DayItinerary[]; generationSource: string }>('/trips/generate', {
+      method: 'POST',
+      body: JSON.stringify(config)
+    });
+  },
+
+  /**
+   * AI Adaptive Re-planning via Gemini
+   */
+  async replanTrip(payload: { trip: any; scenarioText: string; delayMinutes?: number; activeDayNumber?: number }): Promise<{ success: boolean; proposal: any; generationSource: string }> {
+    return request<{ success: boolean; proposal: any; generationSource: string }>('/trips/replan', {
+      method: 'POST',
+      body: JSON.stringify(payload)
+    });
+  },
+
+  /**
    * Fetch weather forecast for a destination
    */
   async getWeather(destination: string = 'Jaipur, Rajasthan') {

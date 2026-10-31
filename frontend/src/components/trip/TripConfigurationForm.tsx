@@ -10,11 +10,7 @@ interface StopItem {
   city: string;
 }
 
-const DEFAULT_STOPS: StopItem[] = [
-  { id: 'stop-1', name: 'Jaipur, Rajasthan', desc: 'Stop 1 • Gateway City', city: 'Jaipur' },
-  { id: 'stop-2', name: 'Delhi, NCR', desc: 'Stop 2 • Capital Circuit', city: 'Delhi' },
-  { id: 'stop-3', name: 'Agra, Uttar Pradesh', desc: 'Stop 3 • Heritage Wonder', city: 'Agra' }
-];
+const DEFAULT_STOPS: StopItem[] = [];
 
 const SUGGESTED_ORDER_STOPS: StopItem[] = [
   { id: 'stop-opt-1', name: 'Delhi, NCR', desc: 'Stop 1 • Capital Circuit (Hub)', city: 'Delhi' },
@@ -23,11 +19,24 @@ const SUGGESTED_ORDER_STOPS: StopItem[] = [
 ];
 
 const QUICK_ADD_CITIES = [
+  { name: 'Visakhapatnam, Andhra Pradesh', desc: 'Coastal Submarine & Hilltop Shrines', city: 'Visakhapatnam' },
+  { name: 'Goa', desc: 'Latin Quarters & Coastal Beaches', city: 'Goa' },
+  { name: 'Jaipur, Rajasthan', desc: 'Pink City & Amber Fortresses', city: 'Jaipur' },
+  { name: 'Munnar, Kerala', desc: 'Tea Gardens & Misty Valleys', city: 'Munnar' },
   { name: 'Udaipur, Rajasthan', desc: 'Lakes & Royal Palaces', city: 'Udaipur' },
   { name: 'Varanasi, Uttar Pradesh', desc: 'Sacred Ghats & Evening Aarti', city: 'Varanasi' },
-  { name: 'Jodhpur, Rajasthan', desc: 'Blue City & Mehrangarh Fort', city: 'Jodhpur' },
-  { name: 'Rishikesh, Uttarakhand', desc: 'Yoga Capital & Foothills', city: 'Rishikesh' }
+  { name: 'Hyderabad, Telangana', desc: 'Historic Pearls & Nizami Heritage', city: 'Hyderabad' }
 ];
+
+const getDefaultDates = () => {
+  const now = new Date();
+  const start = new Date(now.getTime() + 7 * 24 * 60 * 60 * 1000);
+  const end = new Date(now.getTime() + 10 * 24 * 60 * 60 * 1000);
+  return {
+    start: start.toISOString().split('T')[0],
+    end: end.toISOString().split('T')[0]
+  };
+};
 
 const INTEREST_OPTIONS: { id: InterestType; label: string; icon: string }[] = [
   { id: 'Adventure', label: 'Adventure', icon: 'hiking' },
@@ -47,7 +56,7 @@ export const TripConfigurationForm: React.FC = () => {
   // Region Scope
   const [isDomestic, setIsDomestic] = useState<boolean>(true);
 
-  // Multi-stop destinations
+  // Multi-stop destinations - starts clean with empty stops
   const [stops, setStops] = useState<StopItem[]>(DEFAULT_STOPS);
   const [searchCity, setSearchCity] = useState('');
   const [quickCityIdx, setQuickCityIdx] = useState(0);
@@ -55,9 +64,10 @@ export const TripConfigurationForm: React.FC = () => {
   const [suggestionApplied, setSuggestionApplied] = useState(false);
   const [highlightSuggestion, setHighlightSuggestion] = useState(false);
 
-  // Dates
-  const [startDate, setStartDate] = useState('2025-10-18');
-  const [endDate, setEndDate] = useState('2025-10-24');
+  // Dynamic upcoming dates (defaults to 7 days from now for 4 days)
+  const defaultDates = getDefaultDates();
+  const [startDate, setStartDate] = useState(defaultDates.start);
+  const [endDate, setEndDate] = useState(defaultDates.end);
 
   // Budget
   const [budgetTier, setBudgetTier] = useState<BudgetTier>('Moderate');
@@ -82,7 +92,7 @@ export const TripConfigurationForm: React.FC = () => {
   const getDuration = () => {
     const s = new Date(startDate);
     const e = new Date(endDate);
-    if (isNaN(s.getTime()) || isNaN(e.getTime())) return { days: 7, nights: 6 };
+    if (isNaN(s.getTime()) || isNaN(e.getTime())) return { days: 4, nights: 3 };
     const diff = Math.max(1, Math.round((e.getTime() - s.getTime()) / (1000 * 60 * 60 * 24)) + 1);
     return { days: diff, nights: Math.max(0, diff - 1) };
   };
@@ -106,7 +116,7 @@ export const TripConfigurationForm: React.FC = () => {
     }
 
     const newStop: StopItem = {
-      id: `stop-${Date.now()}`,
+      id: `stop-${Date.now()}-${Math.random().toString(36).substr(2, 4)}`,
       name: nameToAdd,
       desc: `Stop ${stops.length + 1} • ${descToAdd}`,
       city: cityToAdd
@@ -116,9 +126,20 @@ export const TripConfigurationForm: React.FC = () => {
     if (errors.destination) setErrors({ ...errors, destination: undefined });
   };
 
+  // Quick Add Specific Destination
+  const handleAddSpecificStop = (name: string, desc: string, city: string) => {
+    const newStop: StopItem = {
+      id: `stop-${Date.now()}-${Math.random().toString(36).substr(2, 4)}`,
+      name,
+      desc: `Stop ${stops.length + 1} • ${desc}`,
+      city
+    };
+    setStops([...stops, newStop]);
+    if (errors.destination) setErrors({ ...errors, destination: undefined });
+  };
+
   // Handle Remove Stop
   const handleRemoveStop = (id: string) => {
-    if (stops.length <= 1) return;
     const remaining = stops.filter((s) => s.id !== id);
     setStops(
       remaining.map((s, idx) => ({
@@ -286,51 +307,76 @@ export const TripConfigurationForm: React.FC = () => {
 
         {/* Ordered Multi-Stop Interactive List */}
         <div className="flex flex-col gap-2.5">
-          {stops.map((stop, index) => (
-            <div
-              key={stop.id}
-              className={`group flex items-center justify-between p-3 rounded-xl transition-all ${
-                suggestionApplied ? 'bg-secondary-container/50 border border-primary/20' : 'bg-surface-container-low'
-              }`}
-            >
-              <div className="flex items-center gap-2.5 min-w-0 flex-1">
-                {/* Reorder controls */}
-                <div className="flex flex-col gap-0.5 text-outline">
-                  <button
-                    type="button"
-                    disabled={index === 0}
-                    onClick={() => handleMoveStop(index, 'up')}
-                    className="hover:text-primary disabled:opacity-30 disabled:hover:text-outline transition-colors"
-                    title="Move stop up"
-                  >
-                    <span className="material-symbols-outlined text-[16px]">keyboard_arrow_up</span>
-                  </button>
-                  <button
-                    type="button"
-                    disabled={index === stops.length - 1}
-                    onClick={() => handleMoveStop(index, 'down')}
-                    className="hover:text-primary disabled:opacity-30 disabled:hover:text-outline transition-colors"
-                    title="Move stop down"
-                  >
-                    <span className="material-symbols-outlined text-[16px]">keyboard_arrow_down</span>
-                  </button>
-                </div>
-
-                <div className="w-6 h-6 rounded-full bg-primary text-on-primary flex items-center justify-center font-label-sm text-xs font-semibold shrink-0">
-                  {index + 1}
-                </div>
-
-                <div className="flex flex-col min-w-0">
-                  <span className="font-label-lg text-sm text-on-surface font-semibold truncate">
-                    {stop.name}
-                  </span>
-                  <span className="font-body-sm text-xs text-on-surface-variant truncate">
-                    {stop.desc}
-                  </span>
-                </div>
+          {stops.length === 0 ? (
+            <div className="p-4 rounded-xl border border-dashed border-[#25332E]/20 bg-surface-container-low text-center flex flex-col items-center gap-2.5">
+              <div className="w-10 h-10 rounded-full bg-surface-container flex items-center justify-center text-primary">
+                <span className="material-symbols-outlined text-[22px]">explore</span>
               </div>
+              <div className="flex flex-col items-center">
+                <h4 className="font-headline-sm text-xs font-bold text-primary">No destinations selected yet</h4>
+                <p className="font-body-sm text-[11px] text-on-surface-variant max-w-sm mt-0.5">
+                  Type any destination below or tap a quick-add hub to start structuring your expedition route:
+                </p>
+              </div>
+              <div className="flex flex-wrap justify-center gap-1.5 pt-1">
+                {QUICK_ADD_CITIES.map((c) => (
+                  <button
+                    key={c.name}
+                    type="button"
+                    onClick={() => handleAddSpecificStop(c.name, c.desc, c.city)}
+                    className="px-2.5 py-1 rounded-full bg-surface-container hover:bg-primary hover:text-on-primary text-primary font-label-sm text-[11px] font-semibold transition-all flex items-center gap-1 shadow-2xs active:scale-95"
+                  >
+                    <span>+</span>
+                    <span>{c.city}</span>
+                  </button>
+                ))}
+              </div>
+            </div>
+          ) : (
+            stops.map((stop, index) => (
+              <div
+                key={stop.id}
+                className={`group flex items-center justify-between p-3 rounded-xl transition-all ${
+                  suggestionApplied ? 'bg-secondary-container/50 border border-primary/20' : 'bg-surface-container-low'
+                }`}
+              >
+                <div className="flex items-center gap-2.5 min-w-0 flex-1">
+                  {/* Reorder controls */}
+                  <div className="flex flex-col gap-0.5 text-outline">
+                    <button
+                      type="button"
+                      disabled={index === 0}
+                      onClick={() => handleMoveStop(index, 'up')}
+                      className="hover:text-primary disabled:opacity-30 disabled:hover:text-outline transition-colors"
+                      title="Move stop up"
+                    >
+                      <span className="material-symbols-outlined text-[16px]">keyboard_arrow_up</span>
+                    </button>
+                    <button
+                      type="button"
+                      disabled={index === stops.length - 1}
+                      onClick={() => handleMoveStop(index, 'down')}
+                      className="hover:text-primary disabled:opacity-30 disabled:hover:text-outline transition-colors"
+                      title="Move stop down"
+                    >
+                      <span className="material-symbols-outlined text-[16px]">keyboard_arrow_down</span>
+                    </button>
+                  </div>
 
-              {stops.length > 1 && (
+                  <div className="w-6 h-6 rounded-full bg-primary text-on-primary flex items-center justify-center font-label-sm text-xs font-semibold shrink-0">
+                    {index + 1}
+                  </div>
+
+                  <div className="flex flex-col min-w-0">
+                    <span className="font-label-lg text-sm text-on-surface font-semibold truncate">
+                      {stop.name}
+                    </span>
+                    <span className="font-body-sm text-xs text-on-surface-variant truncate">
+                      {stop.desc}
+                    </span>
+                  </div>
+                </div>
+
                 <button
                   type="button"
                   onClick={() => handleRemoveStop(stop.id)}
@@ -339,9 +385,9 @@ export const TripConfigurationForm: React.FC = () => {
                 >
                   <span className="material-symbols-outlined text-[18px]">close</span>
                 </button>
-              )}
-            </div>
-          ))}
+              </div>
+            ))
+          )}
         </div>
 
         {/* Add Destination Inline Block */}
@@ -358,7 +404,7 @@ export const TripConfigurationForm: React.FC = () => {
                   handleAddStop();
                 }
               }}
-              placeholder="Search & add destination (e.g. Udaipur, Pushkar)..."
+              placeholder="Search & add destination (e.g. Visakhapatnam, Munnar)..."
               className="w-full bg-surface-container rounded-xl py-2.5 pl-10 pr-3 font-body-md text-xs text-on-surface placeholder:text-on-surface-variant/60 focus:outline-none focus:bg-surface-container-lowest focus:ring-1 focus:ring-primary transition-all"
             />
           </div>
@@ -372,8 +418,8 @@ export const TripConfigurationForm: React.FC = () => {
           </button>
         </div>
 
-        {/* Route Optimization Trigger Button */}
-        {!suggestionApplied && (
+        {/* Route Optimization Trigger Button - only for multi-stop circuits */}
+        {stops.length >= 2 && !suggestionApplied && (
           <button
             type="button"
             onClick={() => {
@@ -392,8 +438,8 @@ export const TripConfigurationForm: React.FC = () => {
           </button>
         )}
 
-        {/* Prominent AI Route Suggestion Card */}
-        {!suggestionDismissed && !suggestionApplied && (
+        {/* Prominent AI Route Suggestion Card - only for multi-stop circuits containing Golden Triangle cities */}
+        {stops.length >= 2 && stops.some((s) => s.city.toLowerCase().includes('jaipur')) && stops.some((s) => s.city.toLowerCase().includes('delhi') || s.city.toLowerCase().includes('agra')) && !suggestionDismissed && !suggestionApplied && (
           <div
             className={`rounded-xl p-3.5 bg-surface-container-low flex flex-col gap-3 relative overflow-hidden transition-all duration-300 ${
               highlightSuggestion ? 'ring-2 ring-primary bg-secondary-container/30' : ''
