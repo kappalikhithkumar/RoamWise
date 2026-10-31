@@ -1,0 +1,268 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>RoamWise — Serene Expedition Design Gallery</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Manrope:wght@600;700;800&display=swap" rel="stylesheet">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            primary: '#173F35',
+            secondary: '#D8E9DD',
+            amber: '#E5A45B',
+            charcoal: '#25332E',
+            canvas: '#F7F5EF',
+            sage: '#EDFDF5'
+          },
+          fontFamily: {
+            sans: ['Inter', 'sans-serif'],
+            display: ['Manrope', 'sans-serif']
+          }
+        }
+      }
+    }
+  </script>
+  <style>
+    body {
+      background-color: #F7F5EF;
+      color: #25332E;
+      font-family: 'Inter', sans-serif;
+    }
+    .font-display {
+      font-family: 'Manrope', sans-serif;
+    }
+    .screenshot-card {
+      transition: transform 0.2s ease, box-shadow 0.2s ease;
+    }
+    .screenshot-card:hover {
+      transform: translateY(-4px);
+      box-shadow: 0 16px 32px -8px rgba(23, 63, 53, 0.12);
+    }
+  </style>
+</head>
+<body class="min-h-screen">
+
+  <!-- Header -->
+  <header class="bg-[#173F35] text-white border-b border-[#25332E]/20 sticky top-0 z-30 shadow-md">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 sm:py-6">
+      <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+        <div>
+          <div class="flex items-center gap-2">
+            <span class="inline-flex items-center justify-center w-8 h-8 rounded-lg bg-[#E5A45B] text-[#173F35] font-bold text-lg font-display">R</span>
+            <h1 class="text-2xl sm:text-3xl font-extrabold tracking-tight font-display">RoamWise</h1>
+            <span class="ml-2 px-2.5 py-0.5 rounded-full text-xs font-semibold bg-[#D8E9DD] text-[#173F35]">Serene Expedition</span>
+          </div>
+          <p class="mt-1 text-sm text-[#D8E9DD]/80">
+            Design Reference v2 Gallery • Stitch Project ID: <code class="text-[#E5A45B] bg-[#25332E]/50 px-1.5 py-0.5 rounded text-xs font-mono">641303983514701727</code>
+          </p>
+        </div>
+        <div class="flex items-center gap-3">
+          <div class="text-right hidden sm:block">
+            <div class="text-xs uppercase tracking-wider text-[#D8E9DD]/70">Screen Inventory</div>
+            <div class="text-xl font-bold font-display text-white">24 Screens • 100% Downloaded</div>
+          </div>
+          <a href="DESIGN.md" target="_blank" class="px-3.5 py-2 text-xs font-semibold rounded-lg bg-[#D8E9DD] text-[#173F35] hover:bg-white transition flex items-center gap-1.5 shadow-sm">
+            <span>View DESIGN.md</span>
+            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"/></svg>
+          </a>
+        </div>
+      </div>
+
+      <!-- Filter Bar -->
+      <div class="mt-5 flex flex-wrap items-center gap-2 pt-4 border-t border-white/10" id="filter-bar">
+        <button onclick="filterCategory('All')" class="filter-btn active px-3 py-1.5 rounded-full text-xs font-semibold bg-[#E5A45B] text-[#173F35] transition">All (24)</button>
+        <button onclick="filterCategory('Home & Discovery')" class="filter-btn px-3 py-1.5 rounded-full text-xs font-semibold bg-white/10 text-white hover:bg-white/20 transition">Home & Discovery</button>
+        <button onclick="filterCategory('Trip Planning & AI')" class="filter-btn px-3 py-1.5 rounded-full text-xs font-semibold bg-white/10 text-white hover:bg-white/20 transition">Trip Planning & AI</button>
+        <button onclick="filterCategory('Itinerary & Plan B')" class="filter-btn px-3 py-1.5 rounded-full text-xs font-semibold bg-white/10 text-white hover:bg-white/20 transition">Itinerary & Plan B</button>
+        <button onclick="filterCategory('Weather & Alerts')" class="filter-btn px-3 py-1.5 rounded-full text-xs font-semibold bg-white/10 text-white hover:bg-white/20 transition">Weather & Alerts</button>
+        <button onclick="filterCategory('Onboarding & Auth')" class="filter-btn px-3 py-1.5 rounded-full text-xs font-semibold bg-white/10 text-white hover:bg-white/20 transition">Onboarding & Auth</button>
+        <button onclick="filterCategory('Profile & Settings')" class="filter-btn px-3 py-1.5 rounded-full text-xs font-semibold bg-white/10 text-white hover:bg-white/20 transition">Profile & Settings</button>
+      </div>
+    </div>
+  </header>
+
+  <!-- Main Container -->
+  <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    
+    <!-- Search and Count Bar -->
+    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
+      <div class="text-sm font-medium text-[#25332E]/80">
+        Showing <span id="visible-count" class="font-bold text-[#173F35]">24</span> screens
+      </div>
+      <div class="relative w-full sm:w-72">
+        <input type="text" id="search-input" oninput="handleSearch()" placeholder="Search by screen title or ID..." class="w-full px-3.5 py-2 pl-9 rounded-lg border border-[#25332E]/20 bg-white text-sm focus:outline-none focus:ring-2 focus:ring-[#173F35]">
+        <svg class="w-4 h-4 absolute left-3 top-3 text-[#25332E]/50" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
+      </div>
+    </div>
+
+    <!-- Grid of Screens -->
+    <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6" id="screens-grid">
+      <!-- Generated via JS -->
+    </div>
+  </main>
+
+  <!-- Lightbox Modal -->
+  <div id="modal" class="fixed inset-0 z-50 hidden bg-[#25332E]/85 backdrop-blur-sm flex items-center justify-center p-2 sm:p-4">
+    <div class="relative bg-white rounded-2xl max-w-5xl w-full max-h-[95vh] flex flex-col shadow-2xl overflow-hidden">
+      <!-- Modal Header -->
+      <div class="px-5 py-3.5 bg-[#173F35] text-white flex items-center justify-between">
+        <div>
+          <span id="modal-category" class="text-xs uppercase tracking-wider text-[#E5A45B] font-semibold">Category</span>
+          <h2 id="modal-title" class="text-base sm:text-lg font-bold font-display leading-tight">Screen Title</h2>
+          <div class="text-xs text-[#D8E9DD]/70 font-mono mt-0.5">ID: <span id="modal-id">---</span></div>
+        </div>
+        <div class="flex items-center gap-3">
+          <a id="modal-html-link" href="#" target="_blank" class="px-3 py-1.5 rounded-lg bg-[#D8E9DD] text-[#173F35] text-xs font-semibold hover:bg-white transition flex items-center gap-1">
+            <span>Open HTML</span>
+            <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"/></svg>
+          </a>
+          <button onclick="closeModal()" class="w-8 h-8 rounded-full bg-white/10 hover:bg-white/20 text-white flex items-center justify-center transition">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+          </button>
+        </div>
+      </div>
+      
+      <!-- Modal Body (Scrollable Image) -->
+      <div class="flex-1 overflow-auto bg-[#F7F5EF] p-4 flex items-center justify-center">
+        <div class="relative max-w-md w-full bg-white rounded-xl shadow-lg border border-[#25332E]/10 overflow-hidden">
+          <img id="modal-img" src="" alt="Screen Preview" class="w-full h-auto object-cover">
+        </div>
+      </div>
+
+      <!-- Modal Footer (Navigation) -->
+      <div class="px-5 py-2.5 bg-white border-t border-[#25332E]/10 flex items-center justify-between text-xs text-[#25332E]/70">
+        <div>Use <kbd class="px-1.5 py-0.5 bg-gray-100 border border-gray-300 rounded font-mono">←</kbd> and <kbd class="px-1.5 py-0.5 bg-gray-100 border border-gray-300 rounded font-mono">→</kbd> keys or buttons to navigate</div>
+        <div class="flex items-center gap-2">
+          <button onclick="prevModal()" class="px-3 py-1 rounded bg-[#D8E9DD] hover:bg-[#D8E9DD]/80 font-semibold text-[#173F35] transition">Previous</button>
+          <button onclick="nextModal()" class="px-3 py-1 rounded bg-[#173F35] hover:bg-[#173F35]/90 font-semibold text-white transition">Next</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const screens = [{"index": 1, "screenId": "96afba7dc1f847b1b2f4d14a351ecf8e", "title": "RoamWise - My Trips", "category": "Trips", "htmlFile": "screens/01_my_trips.html", "screenshotFile": "assets/01_my_trips.jpg", "width": 780, "height": 4128}, {"index": 2, "screenId": "d2b0808946e64ad1b1dbac572887e7ee", "title": "RoamWise - Itinerary & Plan B Dashboard", "category": "Itinerary & Plan B", "htmlFile": "screens/02_itinerary_plan_b_dashboard.html", "screenshotFile": "assets/02_itinerary_plan_b_dashboard.jpg", "width": 780, "height": 3622}, {"index": 3, "screenId": "2e11ef9a14c14f439edf875c43709e99", "title": "RoamWise - Settings & Preferences", "category": "Profile & Settings", "htmlFile": "screens/03_settings_preferences.html", "screenshotFile": "assets/03_settings_preferences.jpg", "width": 780, "height": 3748}, {"index": 4, "screenId": "c5a8b0ec7ea74e3fb783bb5d61db1738", "title": "RoamWise - Explore Destinations", "category": "Discovery", "htmlFile": "screens/04_explore_destinations.html", "screenshotFile": "assets/04_explore_destinations.jpg", "width": 780, "height": 5894}, {"index": 5, "screenId": "96ad0f50258c48cd9eee4fdb7272fdb2", "title": "RoamWise - Welcome", "category": "Onboarding & Auth", "htmlFile": "screens/05_welcome.html", "screenshotFile": "assets/05_welcome.jpg", "width": 780, "height": 1768}, {"index": 6, "screenId": "254c78f688c34a508d69fc84598f455a", "title": "RoamWise - User Profile", "category": "Profile & Settings", "htmlFile": "screens/06_user_profile.html", "screenshotFile": "assets/06_user_profile.jpg", "width": 780, "height": 3280}, {"index": 7, "screenId": "f2865ecfd2134a6cadab08d6e8811e8b", "title": "RoamWise - Detailed Daily Itinerary", "category": "Itinerary & Plan B", "htmlFile": "screens/07_detailed_daily_itinerary.html", "screenshotFile": "assets/07_detailed_daily_itinerary.jpg", "width": 780, "height": 5160}, {"index": 8, "screenId": "d97769cc452f4f2ea3c81e8a000c9a0c", "title": "RoamWise - Home Dashboard", "category": "Home & Discovery", "htmlFile": "screens/08_home_dashboard.html", "screenshotFile": "assets/08_home_dashboard.jpg", "width": 780, "height": 3780}, {"index": 9, "screenId": "25894f0c6b094213a5d4713347269040", "title": "RoamWise - Updated Itinerary", "category": "Trip Planning & AI", "htmlFile": "screens/09_updated_itinerary.html", "screenshotFile": "assets/09_updated_itinerary.jpg", "width": 780, "height": 4394}, {"index": 10, "screenId": "87e80755158b4d1a89584189d339b53f", "title": "RoamWise - AI Itinerary Generation", "category": "Trip Planning & AI", "htmlFile": "screens/10_ai_itinerary_generation.html", "screenshotFile": "assets/10_ai_itinerary_generation.jpg", "width": 780, "height": 2360}, {"index": 11, "screenId": "0c4889a6dff24e6cb58dcba1ab3b4ac8", "title": "RoamWise - Welcome & Onboarding", "category": "Onboarding & Auth", "htmlFile": "screens/11_welcome_onboarding.html", "screenshotFile": "assets/11_welcome_onboarding.jpg", "width": 780, "height": 1898}, {"index": 12, "screenId": "7f7c331396be40d293795607221cd063", "title": "RoamWise - Adaptive Plan B", "category": "Itinerary & Plan B", "htmlFile": "screens/12_adaptive_plan_b.html", "screenshotFile": "assets/12_adaptive_plan_b.jpg", "width": 780, "height": 3396}, {"index": 13, "screenId": "885164e4054240148a9bb272b576e508", "title": "RoamWise - Itinerary Dashboard", "category": "Itinerary & Plan B", "htmlFile": "screens/13_itinerary_dashboard.html", "screenshotFile": "assets/13_itinerary_dashboard.jpg", "width": 780, "height": 6320}, {"index": 14, "screenId": "ef425219e54d47acb8dcee2536bc18f4", "title": "RoamWise - Weather & Travel Alerts", "category": "Weather & Alerts", "htmlFile": "screens/14_weather_travel_alerts.html", "screenshotFile": "assets/14_weather_travel_alerts.jpg", "width": 780, "height": 4164}, {"index": 15, "screenId": "fe1667720a704ae88eba837667700530", "title": "RoamWise - Trip Configuration", "category": "Trip Planning & AI", "htmlFile": "screens/15_trip_configuration.html", "screenshotFile": "assets/15_trip_configuration.jpg", "width": 780, "height": 3252}, {"index": 16, "screenId": "2165ea0fd28d4266ae09e5637c1f01ed", "title": "RoamWise - Trip Configuration", "category": "Trip Planning & AI", "htmlFile": "screens/16_trip_configuration.html", "screenshotFile": "assets/16_trip_configuration.jpg", "width": 780, "height": 5422}, {"index": 17, "screenId": "bf3c3056cfe04061ab2aa966c410ea3d", "title": "RoamWise - Destination Detail: Varanasi", "category": "Discovery", "htmlFile": "screens/17_destination_detail_varanasi.html", "screenshotFile": "assets/17_destination_detail_varanasi.jpg", "width": 780, "height": 6050}, {"index": 18, "screenId": "17f65c379cd3434c80032365883c27e5", "title": "RoamWise - AI Trip Modification", "category": "Trip Planning & AI", "htmlFile": "screens/18_ai_trip_modification.html", "screenshotFile": "assets/18_ai_trip_modification.jpg", "width": 780, "height": 4282}, {"index": 19, "screenId": "2a32d804d82d4cb8acef051d7237e3c7", "title": "RoamWise - Live Weather Intelligence", "category": "Weather & Alerts", "htmlFile": "screens/19_live_weather_intelligence.html", "screenshotFile": "assets/19_live_weather_intelligence.jpg", "width": 780, "height": 4450}, {"index": 20, "screenId": "bda0e1a0e8a3424d9f9864aa367a9a89", "title": "RoamWise - Home Dashboard", "category": "Home & Discovery", "htmlFile": "screens/20_home_dashboard.html", "screenshotFile": "assets/20_home_dashboard.jpg", "width": 780, "height": 2878}, {"index": 21, "screenId": "5af7702debed4ab5af0ce3ee18ad2274", "title": "RoamWise - Profile Setup", "category": "Profile & Settings", "htmlFile": "screens/21_profile_setup.html", "screenshotFile": "assets/21_profile_setup.jpg", "width": 780, "height": 2662}, {"index": 22, "screenId": "ebd0663dcc104adca955a3b6fb158d00", "title": "RoamWise - Profile Completed", "category": "Profile & Settings", "htmlFile": "screens/22_profile_completed.html", "screenshotFile": "assets/22_profile_completed.jpg", "width": 780, "height": 1768}, {"index": 23, "screenId": "89cf68df54af4e238038dea25adcba0f", "title": "RoamWise - Log In", "category": "Onboarding & Auth", "htmlFile": "screens/23_log_in.html", "screenshotFile": "assets/23_log_in.jpg", "width": 780, "height": 1788}, {"index": 24, "screenId": "37e7717a7e384a419ec6f2f9bc9445b5", "title": "RoamWise - Sign Up", "category": "Onboarding & Auth", "htmlFile": "screens/24_sign_up.html", "screenshotFile": "assets/24_sign_up.jpg", "width": 780, "height": 2158}];
+    let currentCategory = 'All';
+    let currentQuery = '';
+    let currentModalIndex = 0;
+
+    function renderScreens() {
+      const grid = document.getElementById('screens-grid');
+      grid.innerHTML = '';
+
+      const filtered = screens.filter(s => {
+        const matchesCat = currentCategory === 'All' || s.category === currentCategory || (currentCategory === 'Home & Discovery' && (s.category === 'Discovery' || s.category === 'Trips'));
+        const q = currentQuery.toLowerCase();
+        const matchesQuery = s.title.toLowerCase().includes(q) || s.screenId.toLowerCase().includes(q);
+        return matchesCat && matchesQuery;
+      });
+
+      document.getElementById('visible-count').innerText = filtered.length;
+
+      filtered.forEach((s) => {
+        const card = document.createElement('div');
+        card.className = 'screenshot-card bg-white rounded-2xl border border-[#25332E]/10 overflow-hidden shadow-sm flex flex-col';
+        card.innerHTML = `
+          <div class="relative bg-[#EDFDF5] border-b border-[#25332E]/10 cursor-pointer overflow-hidden aspect-[9/16] group" onclick="openModalById('${s.screenId}')">
+            <img src="${s.screenshotFile}" alt="${s.title}" class="w-full h-full object-cover object-top transition duration-300 group-hover:scale-105" loading="lazy">
+            <div class="absolute inset-0 bg-[#173F35]/30 opacity-0 group-hover:opacity-100 transition flex items-center justify-center">
+              <span class="px-3 py-1.5 rounded-full bg-white text-[#173F35] font-semibold text-xs shadow-md">Click to Enlarge</span>
+            </div>
+            <div class="absolute top-2.5 left-2.5 px-2 py-0.5 rounded-md bg-[#173F35]/90 text-white text-[11px] font-mono font-bold tracking-tight">
+              #${String(s.index).padStart(2, '0')}
+            </div>
+            <div class="absolute top-2.5 right-2.5 px-2 py-0.5 rounded-full bg-[#E5A45B] text-[#173F35] text-[10px] font-semibold">
+              ${s.category}
+            </div>
+          </div>
+          <div class="p-4 flex-1 flex flex-col justify-between">
+            <div>
+              <h3 class="font-display font-bold text-sm text-[#25332E] line-clamp-1 mb-1" title="${s.title}">${s.title}</h3>
+              <p class="font-mono text-[11px] text-[#25332E]/60 truncate" title="${s.screenId}">ID: ${s.screenId}</p>
+            </div>
+            <div class="mt-4 pt-3 border-t border-[#25332E]/10 flex items-center justify-between gap-2">
+              <button onclick="openModalById('${s.screenId}')" class="text-xs font-semibold text-[#173F35] hover:text-[#E5A45B] transition flex items-center gap-1">
+                <span>View Full</span>
+              </button>
+              <a href="${s.htmlFile}" target="_blank" class="px-2.5 py-1 text-[11px] font-medium rounded-md bg-[#EDFDF5] text-[#173F35] hover:bg-[#D8E9DD] transition border border-[#D8E9DD]">
+                Raw HTML ↗
+              </a>
+            </div>
+          </div>
+        `;
+        grid.appendChild(card);
+      });
+    }
+
+    function filterCategory(cat) {
+      currentCategory = cat;
+      document.querySelectorAll('.filter-btn').forEach(btn => {
+        if (btn.innerText.startsWith(cat) || (cat === 'All' && btn.innerText.startsWith('All'))) {
+          btn.className = 'filter-btn active px-3 py-1.5 rounded-full text-xs font-semibold bg-[#E5A45B] text-[#173F35] transition';
+        } else {
+          btn.className = 'filter-btn px-3 py-1.5 rounded-full text-xs font-semibold bg-white/10 text-white hover:bg-white/20 transition';
+        }
+      });
+      renderScreens();
+    }
+
+    function handleSearch() {
+      currentQuery = document.getElementById('search-input').value;
+      renderScreens();
+    }
+
+    function openModalById(sid) {
+      const idx = screens.findIndex(s => s.screenId === sid);
+      if (idx !== -1) {
+        currentModalIndex = idx;
+        updateModal();
+        document.getElementById('modal').classList.remove('hidden');
+        document.body.style.overflow = 'hidden';
+      }
+    }
+
+    function updateModal() {
+      const s = screens[currentModalIndex];
+      document.getElementById('modal-title').innerText = s.title;
+      document.getElementById('modal-id').innerText = s.screenId;
+      document.getElementById('modal-category').innerText = s.category;
+      document.getElementById('modal-img').src = s.screenshotFile;
+      document.getElementById('modal-html-link').href = s.htmlFile;
+    }
+
+    function closeModal() {
+      document.getElementById('modal').classList.add('hidden');
+      document.body.style.overflow = 'auto';
+    }
+
+    function nextModal() {
+      currentModalIndex = (currentModalIndex + 1) % screens.length;
+      updateModal();
+    }
+
+    function prevModal() {
+      currentModalIndex = (currentModalIndex - 1 + screens.length) % screens.length;
+      updateModal();
+    }
+
+    // Keyboard support
+    window.addEventListener('keydown', (e) => {
+      const modal = document.getElementById('modal');
+      if (!modal.classList.contains('hidden')) {
+        if (e.key === 'Escape') closeModal();
+        if (e.key === 'ArrowRight') nextModal();
+        if (e.key === 'ArrowLeft') prevModal();
+      }
+    });
+
+    // Initial render
+    renderScreens();
+  </script>
+</body>
+</html>

@@ -97,7 +97,24 @@ export const INITIAL_JAIPUR_DAYS: DayItinerary[] = [
         description: 'Perched on the Aravalli ridge offering panoramic evening vistas of the entire illuminated Pink City skyline.',
         imageUrl: 'https://images.unsplash.com/photo-1600100397608-f010f4439c05?auto=format&fit=crop&w=600&q=80',
         isVisited: false,
-        isLocked: false
+        isLocked: false,
+        hasPlanBReady: true,
+        planBAlternative: {
+          id: 'planb-act-1-4',
+          title: 'Anokhi Haveli Handblock Museum & Artisan Cafe',
+          timeSlot: '05:00 PM',
+          duration: '2h',
+          cost: 350,
+          costDisplay: '₹350',
+          category: 'Culture',
+          location: 'Kheri Gate, Amer, Jaipur',
+          isIndoor: true,
+          weatherRiskLabel: '🏺 Indoor Haveli Studio',
+          description: 'Restored 16th-century stone haveli dedicated to traditional block printing with live artisan demonstrations and courtyard cafe.',
+          imageUrl: 'https://images.unsplash.com/photo-1600585154340-be6161a56a0c?auto=format&fit=crop&w=600&q=80',
+          shelterReason: 'High wind & rain forecast on Aravalli ridge. Indoor artisan workshop provides complete shelter.',
+          costDelta: '-₹300 (Saved)'
+        }
       }
     ]
   },
@@ -413,5 +430,105 @@ export const INITIAL_JAIPUR_DAYS: DayItinerary[] = [
         isLocked: false
       }
     ]
+  }
+];
+
+export const MOCK_TRIPS: import('../types').TripSummary[] = [
+  {
+    id: 'trip-active-1',
+    title: 'Himachal Monsoon & Valleys',
+    subtitle: 'Shimla ➔ Manali ➔ Kasol • High Altitude Transit',
+    status: 'ongoing',
+    dates: 'Oct 28 – Nov 03, 2026',
+    duration: '7 Days',
+    destinations: ['Shimla', 'Manali', 'Kasol'],
+    imageUrl: 'https://images.unsplash.com/photo-1626621341517-bbf3d9990a23?auto=format&fit=crop&w=800&q=80',
+    progressPercent: 72,
+    currentDay: 3,
+    totalDays: 7,
+    weatherSummary: 'Manali • 18°C ⛅ Rain at 2:00 PM',
+    alertCount: 2,
+    hasPlanBAlert: true
+  },
+  {
+    id: 'trip-upcoming-1',
+    title: 'Kashmir Autumn Valley Expedition',
+    subtitle: 'Srinagar ➔ Gulmarg ➔ Pahalgam',
+    status: 'upcoming',
+    dates: 'Nov 14 – Nov 20, 2026',
+    duration: '6 Days',
+    destinations: ['Srinagar', 'Gulmarg', 'Pahalgam'],
+    imageUrl: 'https://images.unsplash.com/photo-1595815771614-ade9d652a65d?auto=format&fit=crop&w=800&q=80',
+    progressPercent: 0,
+    currentDay: 0,
+    totalDays: 6,
+    weatherSummary: 'Crisp Autumn · 12°C',
+    alertCount: 0,
+    hasPlanBAlert: false
+  },
+  {
+    id: 'trip-upcoming-2',
+    title: 'Kerala Backwaters & Tea Trails',
+    subtitle: 'Kochi ➔ Munnar ➔ Alleppey',
+    status: 'upcoming',
+    dates: 'Dec 12 – Dec 18, 2026',
+    duration: '7 Days',
+    destinations: ['Kochi', 'Munnar', 'Alleppey'],
+    imageUrl: 'https://images.unsplash.com/photo-1602216056096-3b40cc0c9944?auto=format&fit=crop&w=800&q=80',
+    progressPercent: 0,
+    currentDay: 0,
+    totalDays: 7,
+    weatherSummary: 'Tropical Breeze · 26°C',
+    alertCount: 0,
+    hasPlanBAlert: false
+  },
+  {
+    id: 'trip-completed-1',
+    title: 'Hampi & Badami Heritage Trail',
+    subtitle: 'Hampi ➔ Badami ➔ Aihole • Ancient Architecture',
+    status: 'completed',
+    dates: 'Nov 04 – Nov 08, 2025',
+    duration: '5 Days',
+    destinations: ['Hampi', 'Badami', 'Aihole'],
+    imageUrl: 'https://images.unsplash.com/photo-1600100397608-f010e42e47e0?auto=format&fit=crop&w=800&q=80',
+    progressPercent: 100,
+    currentDay: 5,
+    totalDays: 5,
+    weatherSummary: 'Sunny · 29°C',
+    alertCount: 0,
+    hasPlanBAlert: false
+  }
+];
+
+export const CURATED_CIRCUITS: import('../types').CuratedCircuit[] = [
+  {
+    id: 'circuit-1',
+    title: 'Golden Triangle & Royal Rajasthan',
+    route: 'Delhi ➔ Agra ➔ Jaipur',
+    duration: '7 Days, 6 Nights',
+    bestSeason: 'Oct – Mar',
+    highlights: ['Amer Fort', 'Taj Mahal', 'Qutub Minar', 'Boutique Haveli Stays'],
+    imageUrl: 'https://images.unsplash.com/photo-1599661046289-e31897846e41?auto=format&fit=crop&w=600&q=80',
+    rating: 4.9
+  },
+  {
+    id: 'circuit-2',
+    title: 'Western Ghats Monsoon Trail',
+    route: 'Munnar ➔ Wayanad ➔ Coorg',
+    duration: '6 Days, 5 Nights',
+    bestSeason: 'Jul – Nov',
+    highlights: ['Tea Sanctuaries', 'Spice Trails', 'Rainforest Treehouses', 'Mist Trekking'],
+    imageUrl: 'https://images.unsplash.com/photo-1506744038136-46273834b3fb?auto=format&fit=crop&w=600&q=80',
+    rating: 4.8
+  },
+  {
+    id: 'circuit-3',
+    title: 'Eastern Himalayan Tea & Monasteries',
+    route: 'Darjeeling ➔ Gangtok ➔ Pelling',
+    duration: '8 Days, 7 Nights',
+    bestSeason: 'Oct – May',
+    highlights: ['Kanchenjunga Dawn', 'Rumtek Monastery', 'Heritage Toy Train', 'High Altitude Passes'],
+    imageUrl: 'https://images.unsplash.com/photo-1544735716-392fe2489ffa?auto=format&fit=crop&w=600&q=80',
+    rating: 4.95
   }
 ];

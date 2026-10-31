@@ -1,4 +1,32 @@
-export type TabType = 'trip' | 'weather' | 'map' | 'alerts' | 'profile';
+export type TabType = 'home' | 'trips' | 'trip' | 'weather' | 'map' | 'alerts' | 'profile';
+
+export interface TripSummary {
+  id: string;
+  title: string;
+  subtitle: string;
+  status: 'ongoing' | 'upcoming' | 'completed' | 'draft';
+  dates: string;
+  duration: string;
+  destinations: string[];
+  imageUrl: string;
+  progressPercent?: number;
+  currentDay?: number;
+  totalDays?: number;
+  weatherSummary?: string;
+  alertCount?: number;
+  hasPlanBAlert?: boolean;
+}
+
+export interface CuratedCircuit {
+  id: string;
+  title: string;
+  route: string;
+  duration: string;
+  bestSeason: string;
+  highlights: string[];
+  imageUrl: string;
+  rating: number;
+}
 
 export type BudgetTier = 'Budget-friendly' | 'Moderate' | 'Premium';
 export type TravelPace = 'Relaxed' | 'Balanced' | 'Packed';
@@ -15,6 +43,8 @@ export type InterestType =
 
 export interface TripConfig {
   destination: string;
+  destinations?: string[];
+  isDomestic?: boolean;
   startDate: string; // e.g. "2026-11-14"
   endDate: string;   // e.g. "2026-11-18"
   budgetTier: BudgetTier;

@@ -1,0 +1,527 @@
+<!DOCTYPE html>
+
+<html lang="en"><head><meta charset="utf-8"/><meta content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" name="viewport"/><meta content="mobile_stack" name="shell-type"/><link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" rel="stylesheet"/><link href="https://fonts.googleapis.com" rel="preconnect"/><link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/><link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;family=Manrope:wght@600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/><script src="https://cdn.tailwindcss.com"></script><script id="tailwind-config">tailwind.config = { darkMode: "class", theme: { extend: { colors: { "inverse-surface": "#25332e", "outline": "#717975", "error-container": "#ffdad6", "on-background": "#101e1a", "on-primary-container": "#82aa9d", "primary-fixed": "#c1ecdd", "on-secondary": "#ffffff", "on-secondary-container": "#58685f", "on-surface": "#101e1a", "surface-dim": "#ceded6", "inverse-primary": "#a6cfc1", "secondary-fixed": "#d6e7db", "on-surface-variant": "#414845", "primary": "#002920", "surface-container-lowest": "#ffffff", "on-tertiary-container": "#d4954e", "inverse-on-surface": "#e4f4ed", "surface-container": "#e1f2ea", "outline-variant": "#c0c8c4", "secondary-container": "#d6e7db", "on-primary-fixed": "#002019", "on-error": "#ffffff", "tertiary-container": "#543000", "surface-tint": "#3f665a", "tertiary-fixed": "#ffdcbb", "tertiary-fixed-dim": "#fdb96e", "primary-container": "#173f35", "surface-container-low": "#e7f7ef", "surface": "#edfdf5", "error": "#ba1a1a", "on-secondary-fixed": "#101e17", "on-tertiary-fixed": "#2c1700", "on-error-container": "#93000a", "surface-container-high": "#dcece4", "on-primary": "#ffffff", "surface-bright": "#edfdf5", "on-primary-fixed-variant": "#274e43", "on-tertiary": "#ffffff", "surface-container-highest": "#d6e6df", "tertiary": "#361d00", "on-tertiary-fixed-variant": "#683d00", "background": "#edfdf5", "secondary": "#526259", "surface-variant": "#d6e6df", "secondary-fixed-dim": "#bacbbf", "primary-fixed-dim": "#a6cfc1", "on-secondary-fixed-variant": "#3b4a41" }, borderRadius: { "DEFAULT": "0.25rem", "lg": "0.5rem", "xl": "0.75rem", "full": "9999px" }, spacing: { "space-xs": "0.25rem", "margin": "1rem", "gutter": "1rem", "gutter-tablet": "1.5rem", "space-md": "1rem", "space-xl": "2rem", "margin-tablet": "2rem", "gutter-desktop": "2rem", "margin-desktop": "3rem", "space-lg": "1.5rem", "space-sm": "0.5rem" }, fontFamily: { "headline-sm": ["Manrope"], "label-sm": ["Inter"], "headline-lg": ["Manrope"], "label-lg": ["Inter"], "label-md": ["Inter"], "body-md": ["Inter"], "body-lg": ["Inter"], "headline-md": ["Manrope"], "display-lg": ["Manrope"], "body-sm": ["Inter"], "display-lg-mobile": ["Manrope"] }, fontSize: { "headline-sm": ["18px", { "lineHeight": "24px", "letterSpacing": "0em", "fontWeight": "600" }], "label-sm": ["10px", { "lineHeight": "12px", "letterSpacing": "0.04em", "fontWeight": "600" }], "headline-lg": ["28px", { "lineHeight": "36px", "letterSpacing": "-0.015em", "fontWeight": "600" }], "label-lg": ["14px", { "lineHeight": "18px", "letterSpacing": "0.02em", "fontWeight": "600" }], "label-md": ["12px", { "lineHeight": "16px", "letterSpacing": "0.02em", "fontWeight": "500" }], "body-md": ["14px", { "lineHeight": "20px", "letterSpacing": "0em", "fontWeight": "400" }], "body-lg": ["16px", { "lineHeight": "24px", "letterSpacing": "-0.005em", "fontWeight": "400" }], "headline-md": ["22px", { "lineHeight": "28px", "letterSpacing": "-0.01em", "fontWeight": "600" }], "display-lg": ["40px", { "lineHeight": "48px", "letterSpacing": "-0.02em", "fontWeight": "700" }], "body-sm": ["12px", { "lineHeight": "16px", "letterSpacing": "0.01em", "fontWeight": "400" }], "display-lg-mobile": ["32px", { "lineHeight": "40px", "letterSpacing": "-0.02em", "fontWeight": "700" }] } } } };</script><style>@layer base{html,body{width:100%;margin:0;padding:0;min-height:100%;}body{overscroll-behavior-y:none;-webkit-tap-highlight-color:transparent;}.pb-safe{padding-bottom:calc(env(safe-area-inset-bottom,0px));}.pt-safe{padding-top:calc(env(safe-area-inset-top,0px));}}::-webkit-scrollbar{display:none;}</style><style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head><body class="bg-surface text-on-surface antialiased flex flex-col min-h-screen"><header class="fixed top-0 w-full z-50 pt-safe bg-surface/70 backdrop-blur-xl shadow-[0_1px_8px_rgba(0,0,0,0.04)]"><div class="h-14 px-gutter flex items-center justify-between"><div class="flex items-center gap-space-sm"><button aria-label="Go Back" class="w-11 h-11 flex items-center justify-center rounded-full text-on-surface hover:text-primary-container active:bg-secondary-container/40 transition-colors" onclick="history.back()"><span class="material-symbols-outlined text-[22px]">arrow_back</span></button><h1 class="font-headline-sm text-headline-sm text-primary-container truncate">Destination Detail</h1></div><div class="flex items-center gap-space-xs"><button aria-label="Share" class="w-11 h-11 flex items-center justify-center rounded-full text-on-surface-variant hover:text-on-surface active:bg-secondary-container/40 transition-colors"><span class="material-symbols-outlined text-[20px]">share</span></button><button aria-label="Bookmark" class="w-11 h-11 flex items-center justify-center rounded-full text-on-surface-variant hover:text-on-surface active:bg-secondary-container/40 transition-colors"><span class="material-symbols-outlined text-[20px]">bookmark_border</span></button><div class="w-8 h-8 rounded-full bg-primary flex items-center justify-center ml-space-xs shrink-0"><span class="material-symbols-outlined text-on-primary text-[18px]">person</span></div></div></div></header><main class="flex flex-col relative w-full pt-14 pb-safe bg-surface min-h-screen"><div class="flex flex-col w-full pb-28">
+<!-- Immersive Destination Hero Section -->
+<section class="relative w-full overflow-hidden">
+<div class="w-full h-96 bg-cover bg-center relative flex flex-col justify-between p-margin" data-alt="Dusk panoramic shot of Varanasi Dashashwamedh Ghat along the holy sacred Ganges river during grand evening Ganga Aarti. Golden warm glow from brass fire chalices and hundreds of floating earthen diya oil lamps reflecting on dark jade water. Ancient sandstone temple towers rise under deep indigo twilight sky. Muted forest green riverbank shadows with saffron amber torch reflections." style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuBCapZhCPgKpLNmJ_064baeFY9Wf-xEIjOJ1cOURSghEmrD0le6Yqq-G29hzaNvVVxU0BMWNFQwsm7dNZWqULIoRQcMdO6l3u4ZV-D6UplQX0vSaZe7_h_n-DqBS9qTPhQ6ufD6pPd3XHRpnEg4es16u7RNUhx_f2IDrzADCikRgR1zdTHgv_oVw571KFYlnZwk78hRJD3qy4X3Ea_P-VXbhlG15PLXtRLbHW-qjg')">
+<!-- Gradient Scrim for Content Readability -->
+<div class="absolute inset-0 bg-gradient-to-t from-primary via-primary/40 to-black/30 pointer-events-none"></div>
+<!-- Hero Top Floating Badges -->
+<div class="relative z-10 flex items-center justify-between">
+<div class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-surface/90 backdrop-blur-md text-primary shadow-sm">
+<span class="material-symbols-outlined text-[16px] text-on-tertiary-container" style="font-variation-settings: 'FILL' 1;">location_on</span>
+<span class="font-label-md text-label-md tracking-wide">Varanasi, UP • India</span>
+</div>
+<div class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-primary/70 backdrop-blur-md text-primary-fixed shadow-sm">
+<span class="material-symbols-outlined text-[14px]">auto_awesome</span>
+<span class="font-label-sm text-label-sm font-semibold">Living Heritage</span>
+</div>
+</div>
+<!-- Hero Bottom Content -->
+<div class="relative z-10 flex flex-col gap-space-xs text-on-primary">
+<div class="flex items-center gap-2">
+<span class="px-2 py-0.5 rounded-full bg-tertiary-fixed text-on-tertiary-fixed font-label-sm text-label-sm uppercase font-bold tracking-wider">Ancient Sanctuary</span>
+<span class="font-label-sm text-label-sm text-surface-container-high/80">3,000+ Yrs Continuously Inhabited</span>
+</div>
+<h2 class="font-display-lg-mobile text-display-lg-mobile text-surface leading-tight drop-shadow-sm">
+          Varanasi
+        </h2>
+<p class="font-body-md text-body-md text-surface-container-low max-w-sm">
+          The Living Heart of Indian Heritage, Eternal Ghats &amp; River Mysticism
+        </p>
+</div>
+</div>
+<!-- Quick Glance Floating Stat Bar -->
+<div class="px-margin -mt-6 relative z-20">
+<div class="bg-surface-container-lowest rounded-xl p-space-md shadow-md flex items-center justify-between text-on-surface">
+<div class="flex flex-col items-center flex-1 text-center">
+<div class="flex items-center gap-0.5 text-on-tertiary-container">
+<span class="material-symbols-outlined text-[18px]" style="font-variation-settings: 'FILL' 1;">star</span>
+<span class="font-label-lg text-label-lg font-bold text-on-surface">4.9</span>
+</div>
+<span class="font-label-sm text-label-sm text-secondary">1.4k Reviews</span>
+</div>
+<div class="w-px h-8 bg-surface-container-highest"></div>
+<div class="flex flex-col items-center flex-1 text-center">
+<div class="flex items-center gap-1 text-primary-container">
+<span class="material-symbols-outlined text-[18px]">schedule</span>
+<span class="font-label-lg text-label-lg font-bold text-on-surface">3–4 Days</span>
+</div>
+<span class="font-label-sm text-label-sm text-secondary">Ideal Pace</span>
+</div>
+<div class="w-px h-8 bg-surface-container-highest"></div>
+<div class="flex flex-col items-center flex-1 text-center">
+<div class="flex items-center gap-0.5 text-primary-container">
+<span class="material-symbols-outlined text-[18px]">payments</span>
+<span class="font-label-lg text-label-lg font-bold text-on-surface">₹3.2k</span>
+</div>
+<span class="font-label-sm text-label-sm text-secondary">Avg Daily</span>
+</div>
+<div class="w-px h-8 bg-surface-container-highest"></div>
+<div class="flex flex-col items-center flex-1 text-center">
+<div class="flex items-center gap-0.5 text-on-tertiary-container">
+<span class="material-symbols-outlined text-[18px]">wb_sunny</span>
+<span class="font-label-lg text-label-lg font-bold text-on-surface">26°C</span>
+</div>
+<span class="font-label-sm text-label-sm text-secondary">Clear Sky</span>
+</div>
+</div>
+</div>
+</section>
+<!-- Destination Overview & AI Travel DNA -->
+<section class="px-margin mt-space-lg flex flex-col gap-space-md">
+<!-- AI DNA Affinity Match Card -->
+<div class="bg-surface-container rounded-xl p-space-md flex items-start gap-3 shadow-sm">
+<div class="w-10 h-10 rounded-full bg-primary-container text-on-primary flex items-center justify-center shrink-0">
+<span class="material-symbols-outlined text-[20px]">psychology</span>
+</div>
+<div class="flex flex-col flex-1">
+<div class="flex items-center justify-between">
+<span class="font-label-sm text-label-sm uppercase font-bold text-primary-container tracking-wider">RoamWise Intelligence</span>
+<span class="font-label-md text-label-md font-bold text-on-tertiary-container">96% DNA Match</span>
+</div>
+<p class="font-body-sm text-body-sm text-on-surface mt-0.5">
+          Strong alignment with your profile for Living Antiquity, immersive architectural walking trails, and sacred sonic traditions.
+        </p>
+</div>
+</div>
+<!-- Editorial Narrative Overview -->
+<div class="bg-surface-container-lowest rounded-xl p-space-md shadow-sm flex flex-col gap-space-xs">
+<div class="flex items-center gap-2 text-primary-container">
+<span class="material-symbols-outlined text-[20px]">auto_stories</span>
+<h3 class="font-headline-sm text-headline-sm text-on-surface">Timeless Urban Tapestry</h3>
+</div>
+<p class="font-body-md text-body-md text-on-surface-variant leading-relaxed">
+        Revered as Kashi and Benares, Varanasi stands on the crescent curve of Mother Ganga. A sensory symphony of sandalwood smoke, temple carillons, labyrinthine lanes lined with legendary silk-weaving looms, and transformative dawn rowboat journeys past eighty-four historic stone ghats.
+      </p>
+<div class="flex flex-wrap gap-2 mt-space-xs">
+<span class="px-2.5 py-1 rounded-full bg-secondary-container text-on-secondary-fixed font-label-sm text-label-sm">Ghat Heritage</span>
+<span class="px-2.5 py-1 rounded-full bg-secondary-container text-on-secondary-fixed font-label-sm text-label-sm">Silk Weaving</span>
+<span class="px-2.5 py-1 rounded-full bg-secondary-container text-on-secondary-fixed font-label-sm text-label-sm">Spiritual Rituals</span>
+<span class="px-2.5 py-1 rounded-full bg-secondary-container text-on-secondary-fixed font-label-sm text-label-sm">Vedic Philosophy</span>
+</div>
+</div>
+</section>
+<!-- Interactive Map Preview -->
+<section class="px-margin mt-space-lg flex flex-col gap-space-sm">
+<div class="flex items-center justify-between">
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-primary-container text-[20px]">map</span>
+<h3 class="font-headline-sm text-headline-sm text-on-surface">Spatial Route Map</h3>
+</div>
+<span class="font-label-md text-label-md text-primary-container font-semibold">Interactive</span>
+</div>
+<div class="w-full h-44 rounded-xl bg-cover bg-center relative overflow-hidden shadow-sm flex items-end p-space-sm" data-location="Dashashwamedh Ghat, Varanasi, Uttar Pradesh, India" style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuD4rhbwPgSYfJb--q0M9SBETAKp9w-UXEgmZ_vyU_XviJcv5GfGJnTGTMBVGyt6K4TdyxCRloGXGJLEgjCMiRV1ZvbYAxudCnXaQICENhlOQ6iFoQzg4BXV-X4kvlqpfTOZpEcyAAvuMHmPT4zOEg3lTmiW7vohwCO1E5w_9qfHsm2bGKDposOcJVckOGc2dtUgA8YKXjhJWTYd5z5vJNZH5s10NloqbTagU83EYQ')">
+<div class="absolute inset-0 bg-primary/20 pointer-events-none"></div>
+<!-- Overlaid Spatial Waypoint Badges -->
+<div class="relative z-10 w-full flex items-center justify-between bg-surface-container-lowest/90 backdrop-blur-md rounded-lg p-2.5 text-on-surface">
+<div class="flex items-center gap-2">
+<div class="w-7 h-7 rounded-full bg-primary-container text-on-primary flex items-center justify-center font-label-sm text-label-sm font-bold">
+            12
+          </div>
+<div class="flex flex-col">
+<span class="font-label-md text-label-md font-semibold text-on-surface">Curated Stops Identified</span>
+<span class="font-body-sm text-body-sm text-secondary">Walking circuit along River Ganga</span>
+</div>
+</div>
+<button class="px-3 py-1.5 rounded-lg bg-primary-container text-on-primary font-label-sm text-label-sm font-medium">
+          Open Map
+        </button>
+</div>
+</div>
+</section>
+<!-- Popular Attractions Carousel / List -->
+<section class="mt-space-lg flex flex-col gap-space-sm">
+<div class="px-margin flex items-center justify-between">
+<div>
+<h3 class="font-headline-sm text-headline-sm text-on-surface">Key Sanctuary Stops</h3>
+<p class="font-body-sm text-body-sm text-secondary">Essential places grounded in millennia of history</p>
+</div>
+<button class="text-primary-container font-label-md text-label-md font-semibold">View All (18)</button>
+</div>
+<!-- Horizontal Scrolling Attractions Strip -->
+<div class="flex gap-space-md overflow-x-auto px-margin pt-1 pb-2">
+<!-- Stop 1: Dashashwamedh Ghat -->
+<div class="w-72 shrink-0 bg-surface-container-lowest rounded-xl shadow-sm overflow-hidden flex flex-col">
+<div class="w-full h-40 bg-cover bg-center relative" data-alt="Intense close-up photograph of Dashashwamedh Ghat priests holding multi-tiered burning brass lamps during the sacred Maha Ganga Aarti at nightfall. Saffron silk robes, river ripples reflecting amber tongues of flame, crowds on wooden boats under deep forest emerald shadows." style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuD7xMjEktNwjjxFyMZ8eqbsglfoy-CVnCYjz0E6bV7ztpr7DSXmuaYLEdLpEmzcxL2xsfN9spM39Hp26QBwaGooRH3kQz3jvpkXfT2FOwg3sXb-E3ulYbdsLem_f70HdGrl5thyC0yWE0ld6BMqTgTVUONIExx9KtqnNdxDjipx4y6zYFgsqXb3AR0sgfq2Kp0iNqVRnMoWAUurzpTqE2pm6iKpszDMebW0w9NxZQ')">
+<div class="absolute top-2 right-2 px-2 py-0.5 rounded-full bg-surface-container-lowest/90 backdrop-blur-md text-primary font-label-sm text-label-sm font-bold">
+            Free Entry
+          </div>
+</div>
+<div class="p-space-sm flex flex-col gap-1">
+<div class="flex items-center justify-between">
+<span class="font-label-sm text-label-sm text-on-tertiary-container uppercase font-bold tracking-wider">Riverfront Landmark</span>
+<span class="font-label-sm text-label-sm text-secondary flex items-center gap-0.5">
+<span class="material-symbols-outlined text-[14px]">timer</span> 2 Hours
+            </span>
+</div>
+<h4 class="font-headline-sm text-headline-sm text-on-surface">Dashashwamedh Ghat</h4>
+<p class="font-body-sm text-body-sm text-on-surface-variant line-clamp-2">
+            The epicenter of spiritual river life hosting the choreographed, resonant evening Aarti spectacle.
+          </p>
+</div>
+</div>
+<!-- Stop 2: Kashi Vishwanath -->
+<div class="w-72 shrink-0 bg-surface-container-lowest rounded-xl shadow-sm overflow-hidden flex flex-col">
+<div class="w-full h-40 bg-cover bg-center relative" data-alt="Gilded spire and sandstone carved pillars of the Kashi Vishwanath Golden Temple in Varanasi. Warm early morning sunlight glinting off gold leaf kalash pinnacle, intricate architectural relief, serene devotees in natural cotton linen." style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuADgBjQcfuPDCep6793CdcdE5U50v7nOVm7Up59RCUJdKSJjD-mF8TFpAOkPTbCi1FU-8pAWVk3E2OE4-lHpHPgXCMwcIW9X0HUQ-AbobqBv_D0e1wLi5V2ELN9A_CuZnsituUDnwOZePyl0C17bvllmDhuchkX6wxk30nfCxVQyHUZfCOZHr2M3u0hPN3jM9sB5sywfF_2u8PyutbFhck2jkNa8Jp7g7EGQFZQeg')">
+<div class="absolute top-2 right-2 px-2 py-0.5 rounded-full bg-surface-container-lowest/90 backdrop-blur-md text-primary font-label-sm text-label-sm font-bold">
+            ₹300 Darshan
+          </div>
+</div>
+<div class="p-space-sm flex flex-col gap-1">
+<div class="flex items-center justify-between">
+<span class="font-label-sm text-label-sm text-on-tertiary-container uppercase font-bold tracking-wider">Sacred Shrine</span>
+<span class="font-label-sm text-label-sm text-secondary flex items-center gap-0.5">
+<span class="material-symbols-outlined text-[14px]">timer</span> 1.5 Hours
+            </span>
+</div>
+<h4 class="font-headline-sm text-headline-sm text-on-surface">Kashi Vishwanath</h4>
+<p class="font-body-sm text-body-sm text-on-surface-variant line-clamp-2">
+            One of the twelve sacred Jyotirlingas, newly linked via an expansive sandstone corridor to the holy river.
+          </p>
+</div>
+</div>
+<!-- Stop 3: Assi Ghat -->
+<div class="w-72 shrink-0 bg-surface-container-lowest rounded-xl shadow-sm overflow-hidden flex flex-col">
+<div class="w-full h-40 bg-cover bg-center relative" data-alt="Assi Ghat southern steps at sunrise during Subah-e-Banaras. Indian classical musicians playing sitar and tabla on a decorated wooden platform with pastel pink and morning mist rising from river waters." style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuDz-4ou_9_-ulFcj_cCSx1YZFDj4aEtVemwFYvKCtNUIfP_rUHmaVWzMLnd8NkeO02oVYPu082RdJVwfRe5ifTO-wpb0DWp-bzCYOi06zGyHsWc5pxcCo87z6bEJsqKvGA5q5JL2JkgDKQNYK3yt5xOYeWjdCyAKmE8MwyylM7LlqwxYbgpiWVR4hSNr9IC6x9xAfOFfnR9CZyWMlezFrGOXt50cM21EfHDG0SZ-w')">
+<div class="absolute top-2 right-2 px-2 py-0.5 rounded-full bg-surface-container-lowest/90 backdrop-blur-md text-primary font-label-sm text-label-sm font-bold">
+            Free Entry
+          </div>
+</div>
+<div class="p-space-sm flex flex-col gap-1">
+<div class="flex items-center justify-between">
+<span class="font-label-sm text-label-sm text-on-tertiary-container uppercase font-bold tracking-wider">Dawn Gathering</span>
+<span class="font-label-sm text-label-sm text-secondary flex items-center gap-0.5">
+<span class="material-symbols-outlined text-[14px]">timer</span> 2 Hours
+            </span>
+</div>
+<h4 class="font-headline-sm text-headline-sm text-on-surface">Assi Ghat</h4>
+<p class="font-body-sm text-body-sm text-on-surface-variant line-clamp-2">
+            Renowned for Subah-e-Banaras dawn raga performances, open-air yoga, and scholarly university cafes.
+          </p>
+</div>
+</div>
+<!-- Stop 4: Sarnath Stupa -->
+<div class="w-72 shrink-0 bg-surface-container-lowest rounded-xl shadow-sm overflow-hidden flex flex-col">
+<div class="w-full h-40 bg-cover bg-center relative" data-alt="Majestic cylindrical stone Dhamek Stupa at Sarnath surrounded by lush emerald green manicured gardens and ancient monastic brick ruins under bright soft blue sky, peaceful Buddhist sanctuary." style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuB2r1xTCfAR_EDjM0wZpyjwqkov--pUQ6JPWi2ZJI_vjkOV_6YHYsO25HyCjw85lu_8kdm1xqw1eOgUzIvPsVi4YaN9RUUukAr3Dg3jREbxAb3xJxV8jAYZacS52DyG_AXr4rFdIk5n1ahGLPIU9n8a-qGqd4BC3VYJqdUv6yngDgXvHIov_Ma__YvMswwZFZx5Pk7A11u87QpMEM-dXyTksJRw0e0YbWCvE-jArA')">
+<div class="absolute top-2 right-2 px-2 py-0.5 rounded-full bg-surface-container-lowest/90 backdrop-blur-md text-primary font-label-sm text-label-sm font-bold">
+            ₹250 Entry
+          </div>
+</div>
+<div class="p-space-sm flex flex-col gap-1">
+<div class="flex items-center justify-between">
+<span class="font-label-sm text-label-sm text-on-tertiary-container uppercase font-bold tracking-wider">Buddhist Haven (10km)</span>
+<span class="font-label-sm text-label-sm text-secondary flex items-center gap-0.5">
+<span class="material-symbols-outlined text-[14px]">timer</span> 3 Hours
+            </span>
+</div>
+<h4 class="font-headline-sm text-headline-sm text-on-surface">Sarnath Stupas &amp; Park</h4>
+<p class="font-body-sm text-body-sm text-on-surface-variant line-clamp-2">
+            The serene deer park where Gautama Buddha delivered his first discourse after enlightenment.
+          </p>
+</div>
+</div>
+</div>
+</section>
+<!-- Curated Experiences (Editorial Cards) -->
+<section class="px-margin mt-space-lg flex flex-col gap-space-sm">
+<div class="flex items-center justify-between">
+<div>
+<h3 class="font-headline-sm text-headline-sm text-on-surface">Immersive Experiences</h3>
+<p class="font-body-sm text-body-sm text-secondary">Vetted activities for deeper cultural absorption</p>
+</div>
+<span class="material-symbols-outlined text-primary-container">explore</span>
+</div>
+<div class="flex flex-col gap-space-sm">
+<!-- Experience Item 1 -->
+<div class="bg-surface-container-lowest rounded-xl p-space-sm shadow-sm flex items-center gap-space-sm">
+<div class="w-20 h-20 rounded-lg bg-cover bg-center shrink-0" data-alt="Handcrafted wooden oars dipping into calm river water at dawn in Varanasi, distant silhouettes of ancient temple spires cloaked in soft morning fog with flock of migratory Siberian gulls flying overhead." style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuDvO8CMA_7KxxMML64UW6LNM3UtWRhkn2TEdZBxkEpIuGETnINaNO5DU0NEGUjQq8oGzER4BIDl7zPXz-BZ4OJ6TzWO-m-mzBHrXyE_BOWTnsf_1u_l9OdRh0jmuwb28J3KZD09P8Zwe0R7mQDBMySf4vrr7psvJohywMj-AiXW38byMCJjoq8jBF7cOZBm3R_53vDjmC2Pe0CD-FvuRGpSHtJx_YhZwvkLIVDiIQ')">
+</div>
+<div class="flex flex-col flex-1 min-w-0">
+<div class="flex items-center justify-between">
+<span class="font-label-sm text-label-sm text-on-tertiary-container font-semibold">05:30 AM Sunrise</span>
+<span class="font-label-sm text-label-sm font-bold text-on-surface">₹450/hr</span>
+</div>
+<h4 class="font-label-lg text-label-lg font-bold text-on-surface truncate">Silent Wooden Boat Rowing</h4>
+<p class="font-body-sm text-body-sm text-on-surface-variant line-clamp-1">
+            Drift silently along 84 ghats as temple bells ring and dawn mist unveils the bathing rituals.
+          </p>
+<div class="flex items-center gap-2 mt-1">
+<span class="font-label-sm text-label-sm text-secondary">✦ Highly Recommended</span>
+</div>
+</div>
+</div>
+<!-- Experience Item 2 -->
+<div class="bg-surface-container-lowest rounded-xl p-space-sm shadow-sm flex items-center gap-space-sm">
+<div class="w-20 h-20 rounded-lg bg-cover bg-center shrink-0" data-alt="Artisanal clay cups of thick creamy Varanasi Blue Lassi topped with crushed pistachios, saffron strands, and fresh pomegranate seeds on an old weathered wooden counter in a narrow Banarasi lane." style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuAUJAofXPX_MIwexBRh9KomwVjDNzavU1XW9QXgklKvIxPdSGnzrCp0AAnIzVUFm7Um80qCeE4HExj4yxH88iExjMMMJFmIQMd0T3TUq3whaiqJ5T6F6k0IVzqlssJIV8tJyw_5HrWnEQWpfxEEAdJH2Bprmhyt1mu3gW5BLgVH_7MGV8plGdPklSWK4X0y_W3S9Rzw0yBJdS39UrqC7PMPr7zsHgUX9ejX2Mi7sA')">
+</div>
+<div class="flex flex-col flex-1 min-w-0">
+<div class="flex items-center justify-between">
+<span class="font-label-sm text-label-sm text-on-tertiary-container font-semibold">Culinary Trail</span>
+<span class="font-label-sm text-label-sm font-bold text-on-surface">~₹350</span>
+</div>
+<h4 class="font-label-lg text-label-lg font-bold text-on-surface truncate">Heritage Old Alley Food Walk</h4>
+<p class="font-body-sm text-body-sm text-on-surface-variant line-clamp-1">
+            Savor hot Kachori Sabzi, malaiyo winter froth, creamy lassi &amp; signature Banarasi meetha paan.
+          </p>
+<div class="flex items-center gap-2 mt-1">
+<span class="font-label-sm text-label-sm text-secondary">✦ Self-Guided or Guided</span>
+</div>
+</div>
+</div>
+<!-- Experience Item 3 -->
+<div class="bg-surface-container-lowest rounded-xl p-space-sm shadow-sm flex items-center gap-space-sm">
+<div class="w-20 h-20 rounded-lg bg-cover bg-center shrink-0" data-alt="Traditional wooden handloom in Madanpura Varanasi with weaver interlacing pure gold zari threads into deep emerald green silk fabric, atmospheric natural light shaft through brick room." style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuAINXiZcC8xN4HkAfCE4YHBYZile-ZNoG-7Qp9CQW6cyCetATV6YPVTQWJa39_JtT6boAax3TgL7PDwE9Rv68IO1ajc72RPOyoB7i0eWkYm0ZLtHGhE8RS2zYt4AdMJqyumnGFRLUwyXSwwUTPMPNDSTufFPU4h_10BM82rXCuKuhZqQlfpXIpZJA0vI3vVIxadAGsvxQxC-vGUk5_FhZaD1yk83MDLyLVV91LgUA')">
+</div>
+<div class="flex flex-col flex-1 min-w-0">
+<div class="flex items-center justify-between">
+<span class="font-label-sm text-label-sm text-on-tertiary-container font-semibold">Artisan Encounter</span>
+<span class="font-label-sm text-label-sm font-bold text-on-surface">Free Visit</span>
+</div>
+<h4 class="font-label-lg text-label-lg font-bold text-on-surface truncate">Banarasi Silk Loom Workshop</h4>
+<p class="font-body-sm text-body-sm text-on-surface-variant line-clamp-1">
+            Meet generational master weavers in Madanpura and witness hand-spun gold Zari craftsmanship.
+          </p>
+<div class="flex items-center gap-2 mt-1">
+<span class="font-label-sm text-label-sm text-secondary">✦ Madanpura Quarter</span>
+</div>
+</div>
+</div>
+<!-- Experience Item 4 -->
+<div class="bg-surface-container-lowest rounded-xl p-space-sm shadow-sm flex items-center gap-space-sm">
+<div class="w-20 h-20 rounded-lg bg-cover bg-center shrink-0" data-alt="Rooftop terrace overlooking river Ganga at sunset, Indian classical sitar musician in traditional white kurta performing with earthen oil lamps lit all around, orange dusk sky." style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuCvw3iT8QXuqK7vbXvOWQKJTuT3XUqE0pWu95Fi0AH460o8wFD3DHXzgBTD5FSbB3gfoPKXPHTglhcsNOEkFiQS7nR3A0QHx89HtbD3YBzQMRGyN2Pp3AmH8Op076yMxlGzJWsc8jc31vz2XxG7t7gfM65hCxWIwh6BDIV8csUWSef1j0C2w-fG5UYKSOLQZ9fdK7KH9ruwuCPGslo15TXKX5M-HyBZjdV9pdai-A')">
+</div>
+<div class="flex flex-col flex-1 min-w-0">
+<div class="flex items-center justify-between">
+<span class="font-label-sm text-label-sm text-on-tertiary-container font-semibold">Sonic Tradition</span>
+<span class="font-label-sm text-label-sm font-bold text-on-surface">₹600</span>
+</div>
+<h4 class="font-label-lg text-label-lg font-bold text-on-surface truncate">Rooftop Classical Sitar Recital</h4>
+<p class="font-body-sm text-body-sm text-on-surface-variant line-clamp-1">
+            Intimate evening ragas echoing the centuries-old Benares Gharana musical legacy.
+          </p>
+<div class="flex items-center gap-2 mt-1">
+<span class="font-label-sm text-label-sm text-secondary">✦ Sunset Hour (18:00)</span>
+</div>
+</div>
+</div>
+</div>
+</section>
+<!-- Weather & Climate Guide -->
+<section class="px-margin mt-space-lg flex flex-col gap-space-sm">
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-primary-container text-[20px]">thermostat</span>
+<h3 class="font-headline-sm text-headline-sm text-on-surface">Climate &amp; Optimal Season</h3>
+</div>
+<div class="bg-surface-container-lowest rounded-xl p-space-md shadow-sm flex flex-col gap-space-sm">
+<div class="flex items-center justify-between">
+<div class="flex flex-col">
+<span class="font-label-sm text-label-sm text-on-tertiary-container font-bold uppercase tracking-wider">Current Period: Optimal Window</span>
+<span class="font-headline-sm text-headline-sm text-primary-container">Autumn &amp; Winter Peak</span>
+</div>
+<div class="px-3 py-1 rounded-full bg-secondary-container text-on-secondary-fixed font-label-md text-label-md font-bold">
+          Oct – Mar
+        </div>
+</div>
+<div class="grid grid-cols-2 gap-2 mt-1">
+<div class="p-2.5 rounded-lg bg-surface-container flex flex-col">
+<span class="font-label-sm text-label-sm text-secondary">Daytime Averages</span>
+<span class="font-label-lg text-label-lg font-bold text-on-surface">22°C – 28°C</span>
+<span class="font-body-sm text-body-sm text-on-surface-variant">Pleasant sunshine &amp; light breeze</span>
+</div>
+<div class="p-2.5 rounded-lg bg-surface-container flex flex-col">
+<span class="font-label-sm text-label-sm text-secondary">Morning &amp; Night</span>
+<span class="font-label-lg text-label-lg font-bold text-on-surface">12°C – 18°C</span>
+<span class="font-body-sm text-body-sm text-on-surface-variant">Crisp air, mist on riverbanks</span>
+</div>
+</div>
+<!-- Monsoon Warning Banner -->
+<div class="p-2.5 rounded-lg bg-surface-container-high flex items-start gap-2 text-on-surface-variant">
+<span class="material-symbols-outlined text-on-tertiary-container text-[18px] shrink-0 mt-0.5">info</span>
+<p class="font-body-sm text-body-sm">
+<strong class="text-on-surface font-semibold">Monsoon Note (Jul – Sep):</strong> River water levels surge dramatically, submerging steps and temporarily pausing wooden boat operations.
+        </p>
+</div>
+</div>
+</section>
+<!-- Practical Travel Essentials Grid -->
+<section class="px-margin mt-space-lg flex flex-col gap-space-sm">
+<div class="flex items-center justify-between">
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-primary-container text-[20px]">tune</span>
+<h3 class="font-headline-sm text-headline-sm text-on-surface">Travel Practicalities</h3>
+</div>
+<span class="font-label-sm text-label-sm text-secondary font-medium">Field Notes</span>
+</div>
+<div class="grid grid-cols-1 gap-2.5">
+<!-- Transit item 1 -->
+<div class="bg-surface-container-lowest rounded-xl p-space-sm shadow-sm flex items-start gap-3">
+<div class="w-9 h-9 rounded-lg bg-secondary-container text-on-secondary-fixed flex items-center justify-center shrink-0">
+<span class="material-symbols-outlined text-[20px]">flight</span>
+</div>
+<div class="flex flex-col">
+<h4 class="font-label-lg text-label-lg font-bold text-on-surface">Airport Access (VNS)</h4>
+<p class="font-body-sm text-body-sm text-on-surface-variant">
+            Lal Bahadur Shastri Airport is 24 km northwest (~45 mins by prepaid taxi or app-based cab).
+          </p>
+</div>
+</div>
+<!-- Transit item 2 -->
+<div class="bg-surface-container-lowest rounded-xl p-space-sm shadow-sm flex items-start gap-3">
+<div class="w-9 h-9 rounded-lg bg-secondary-container text-on-secondary-fixed flex items-center justify-center shrink-0">
+<span class="material-symbols-outlined text-[20px]">train</span>
+</div>
+<div class="flex flex-col">
+<h4 class="font-label-lg text-label-lg font-bold text-on-surface">Railway Hubs</h4>
+<p class="font-body-sm text-body-sm text-on-surface-variant">
+            Varanasi Junction (BSB) in town center &amp; Pt. Deen Dayal Upadhyaya (DDU) for major express lines.
+          </p>
+</div>
+</div>
+<!-- Transit item 3 -->
+<div class="bg-surface-container-lowest rounded-xl p-space-sm shadow-sm flex items-start gap-3">
+<div class="w-9 h-9 rounded-lg bg-secondary-container text-on-secondary-fixed flex items-center justify-center shrink-0">
+<span class="material-symbols-outlined text-[20px]">electric_rickshaw</span>
+</div>
+<div class="flex flex-col">
+<h4 class="font-label-lg text-label-lg font-bold text-on-surface">Local Commute</h4>
+<p class="font-body-sm text-body-sm text-on-surface-variant">
+            Silent E-rickshaws dominate city avenues; narrow ghat alleys (galis) are entirely pedestrian-only.
+          </p>
+</div>
+</div>
+<!-- Transit item 4: Cultural etiquette -->
+<div class="bg-surface-container-lowest rounded-xl p-space-sm shadow-sm flex items-start gap-3">
+<div class="w-9 h-9 rounded-lg bg-secondary-container text-on-secondary-fixed flex items-center justify-center shrink-0">
+<span class="material-symbols-outlined text-[20px]">front_hand</span>
+</div>
+<div class="flex flex-col">
+<h4 class="font-label-lg text-label-lg font-bold text-on-surface">Sacred Etiquette</h4>
+<p class="font-body-sm text-body-sm text-on-surface-variant">
+            Dress modestly covering shoulders and knees; refrain strictly from photographing cremation rites at Manikarnika.
+          </p>
+</div>
+</div>
+</div>
+</section>
+<!-- Regional Circuit Extensions (Nearby Destinations) -->
+<section class="px-margin mt-space-lg mb-4 flex flex-col gap-space-sm">
+<div class="flex items-center justify-between">
+<div>
+<h3 class="font-headline-sm text-headline-sm text-on-surface">Regional Circuit Links</h3>
+<p class="font-body-sm text-body-sm text-secondary">Complementary journeys easily paired from Varanasi</p>
+</div>
+<span class="material-symbols-outlined text-primary-container">alt_route</span>
+</div>
+<div class="flex flex-col gap-2.5">
+<!-- Extension 1 -->
+<div class="bg-surface-container-lowest rounded-xl p-space-sm shadow-sm flex items-center justify-between">
+<div class="flex items-center gap-3">
+<div class="w-11 h-11 rounded-lg bg-surface-container flex items-center justify-center text-primary-container font-bold font-label-md text-label-md">
+            PRG
+          </div>
+<div class="flex flex-col">
+<span class="font-label-lg text-label-lg font-bold text-on-surface">Prayagraj, UP</span>
+<span class="font-body-sm text-body-sm text-secondary">Triveni Sangam River Confluence</span>
+</div>
+</div>
+<div class="flex flex-col items-end">
+<span class="font-label-sm text-label-sm font-semibold text-primary-container">120 km</span>
+<span class="font-body-sm text-body-sm text-secondary">2.5h Vande Bharat</span>
+</div>
+</div>
+<!-- Extension 2 -->
+<div class="bg-surface-container-lowest rounded-xl p-space-sm shadow-sm flex items-center justify-between">
+<div class="flex items-center gap-3">
+<div class="w-11 h-11 rounded-lg bg-surface-container flex items-center justify-center text-primary-container font-bold font-label-md text-label-md">
+            AYD
+          </div>
+<div class="flex flex-col">
+<span class="font-label-lg text-label-lg font-bold text-on-surface">Ayodhya, UP</span>
+<span class="font-body-sm text-body-sm text-secondary">Shri Ram Mandir &amp; Sarayu Ghats</span>
+</div>
+</div>
+<div class="flex flex-col items-end">
+<span class="font-label-sm text-label-sm font-semibold text-primary-container">200 km</span>
+<span class="font-body-sm text-body-sm text-secondary">3.5h Direct Train</span>
+</div>
+</div>
+<!-- Extension 3 -->
+<div class="bg-surface-container-lowest rounded-xl p-space-sm shadow-sm flex items-center justify-between">
+<div class="flex items-center gap-3">
+<div class="w-11 h-11 rounded-lg bg-surface-container flex items-center justify-center text-primary-container font-bold font-label-md text-label-md">
+            BOD
+          </div>
+<div class="flex flex-col">
+<span class="font-label-lg text-label-lg font-bold text-on-surface">Bodh Gaya, Bihar</span>
+<span class="font-body-sm text-body-sm text-secondary">UNESCO Bodhi Tree Sanctuary</span>
+</div>
+</div>
+<div class="flex flex-col items-end">
+<span class="font-label-sm text-label-sm font-semibold text-primary-container">250 km</span>
+<span class="font-body-sm text-body-sm text-secondary">4.5h Rail Link</span>
+</div>
+</div>
+</div>
+</section>
+<!-- Sticky Bottom Ergonomic Booking/Itinerary Tray -->
+<aside class="fixed bottom-0 left-0 right-0 z-40 bg-surface/90 backdrop-blur-xl px-margin py-3 pb-safe shadow-[0_-4px_24px_rgba(0,41,32,0.08)] flex items-center gap-space-sm max-w-md mx-auto">
+<!-- Secondary Partner Share / Micro Action Button -->
+<button aria-label="Save or Share with Partner" class="h-12 w-12 rounded-xl bg-surface-container flex items-center justify-center text-primary-container active:scale-95 transition-transform shrink-0" id="shareItineraryBtn">
+<span class="material-symbols-outlined text-[22px]">person_add</span>
+</button>
+<!-- Primary Primary CTA -->
+<button class="h-12 flex-1 rounded-xl bg-primary-container text-on-primary font-label-lg text-label-lg font-semibold flex items-center justify-center gap-2 active:scale-98 transition-transform shadow-md" id="addToJourneyBtn">
+<span class="material-symbols-outlined text-[18px]">add_circle</span>
+<span>Add to My Journey ✦</span>
+</button>
+</aside>
+<!-- Toast Notification Overlay for Local Action Feedback -->
+<div class="fixed top-16 left-4 right-4 z-50 transition-all duration-300 transform -translate-y-20 opacity-0 pointer-events-none bg-inverse-surface text-inverse-on-surface px-4 py-3 rounded-xl shadow-xl flex items-center justify-between" id="toastAlert">
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-on-tertiary-container text-[20px]">check_circle</span>
+<span class="font-body-sm text-body-sm" id="toastMessage">Added Varanasi to your Journey Circuit</span>
+</div>
+<span class="font-label-sm text-label-sm uppercase font-bold text-on-tertiary-container">Undo</span>
+</div>
+</div>
+<script>
+  (function() {
+    const addBtn = document.getElementById('addToJourneyBtn');
+    const shareBtn = document.getElementById('shareItineraryBtn');
+    const toast = document.getElementById('toastAlert');
+    const toastMsg = document.getElementById('toastMessage');
+
+    let toastTimer = null;
+
+    function showToast(message) {
+      if (toastTimer) clearTimeout(toastTimer);
+      toastMsg.textContent = message;
+      toast.classList.remove('-translate-y-20', 'opacity-0', 'pointer-events-none');
+      toast.classList.add('translate-y-0', 'opacity-100');
+
+      toastTimer = setTimeout(() => {
+        toast.classList.add('-translate-y-20', 'opacity-0', 'pointer-events-none');
+        toast.classList.remove('translate-y-0', 'opacity-100');
+      }, 2600);
+    }
+
+    if (addBtn) {
+      addBtn.addEventListener('click', () => {
+        showToast('Varanasi added to your active itinerary!');
+      });
+    }
+
+    if (shareBtn) {
+      shareBtn.addEventListener('click', () => {
+        showToast('Invitation link copied for your travel companion.');
+      });
+    }
+  })();
+</script></main></body></html>

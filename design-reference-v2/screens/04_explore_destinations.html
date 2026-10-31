@@ -1,0 +1,596 @@
+<!DOCTYPE html>
+
+<html lang="en"><head><meta charset="utf-8"/><meta content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" name="viewport"/><meta content="mobile_tab" name="shell-type"/><link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" rel="stylesheet"/><link href="https://fonts.googleapis.com" rel="preconnect"/><link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/><link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;family=Manrope:wght@600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/><script src="https://cdn.tailwindcss.com"></script><script id="tailwind-config">tailwind.config = { darkMode: "class", theme: { extend: { colors: { "inverse-surface": "#25332e", "outline": "#717975", "error-container": "#ffdad6", "on-background": "#101e1a", "on-primary-container": "#82aa9d", "primary-fixed": "#c1ecdd", "on-secondary": "#ffffff", "on-secondary-container": "#58685f", "on-surface": "#101e1a", "surface-dim": "#ceded6", "inverse-primary": "#a6cfc1", "secondary-fixed": "#d6e7db", "on-surface-variant": "#414845", "primary": "#002920", "surface-container-lowest": "#ffffff", "on-tertiary-container": "#d4954e", "inverse-on-surface": "#e4f4ed", "surface-container": "#e1f2ea", "outline-variant": "#c0c8c4", "secondary-container": "#d6e7db", "on-primary-fixed": "#002019", "on-error": "#ffffff", "tertiary-container": "#543000", "surface-tint": "#3f665a", "tertiary-fixed": "#ffdcbb", "tertiary-fixed-dim": "#fdb96e", "primary-container": "#173f35", "surface-container-low": "#e7f7ef", "surface": "#edfdf5", "error": "#ba1a1a", "on-secondary-fixed": "#101e17", "on-tertiary-fixed": "#2c1700", "on-error-container": "#93000a", "surface-container-high": "#dcece4", "on-primary": "#ffffff", "surface-bright": "#edfdf5", "on-primary-fixed-variant": "#274e43", "on-tertiary": "#ffffff", "surface-container-highest": "#d6e6df", "tertiary": "#361d00", "on-tertiary-fixed-variant": "#683d00", "background": "#edfdf5", "secondary": "#526259", "surface-variant": "#d6e6df", "secondary-fixed-dim": "#bacbbf", "primary-fixed-dim": "#a6cfc1", "on-secondary-fixed-variant": "#3b4a41" }, borderRadius: { "DEFAULT": "0.25rem", "lg": "0.5rem", "xl": "0.75rem", "full": "9999px" }, spacing: { "space-xs": "0.25rem", "margin": "1rem", "gutter": "1rem", "gutter-tablet": "1.5rem", "space-md": "1rem", "space-xl": "2rem", "margin-tablet": "2rem", "gutter-desktop": "2rem", "margin-desktop": "3rem", "space-lg": "1.5rem", "space-sm": "0.5rem" }, fontFamily: { "headline-sm": ["Manrope"], "label-sm": ["Inter"], "headline-lg": ["Manrope"], "label-lg": ["Inter"], "label-md": ["Inter"], "body-md": ["Inter"], "body-lg": ["Inter"], "headline-md": ["Manrope"], "display-lg": ["Manrope"], "body-sm": ["Inter"], "display-lg-mobile": ["Manrope"] }, fontSize: { "headline-sm": ["18px", { "lineHeight": "24px", "letterSpacing": "0em", "fontWeight": "600" }], "label-sm": ["10px", { "lineHeight": "12px", "letterSpacing": "0.04em", "fontWeight": "600" }], "headline-lg": ["28px", { "lineHeight": "36px", "letterSpacing": "-0.015em", "fontWeight": "600" }], "label-lg": ["14px", { "lineHeight": "18px", "letterSpacing": "0.02em", "fontWeight": "600" }], "label-md": ["12px", { "lineHeight": "16px", "letterSpacing": "0.02em", "fontWeight": "500" }], "body-md": ["14px", { "lineHeight": "20px", "letterSpacing": "0em", "fontWeight": "400" }], "body-lg": ["16px", { "lineHeight": "24px", "letterSpacing": "-0.005em", "fontWeight": "400" }], "headline-md": ["22px", { "lineHeight": "28px", "letterSpacing": "-0.01em", "fontWeight": "600" }], "display-lg": ["40px", { "lineHeight": "48px", "letterSpacing": "-0.02em", "fontWeight": "700" }], "body-sm": ["12px", { "lineHeight": "16px", "letterSpacing": "0.01em", "fontWeight": "400" }], "display-lg-mobile": ["32px", { "lineHeight": "40px", "letterSpacing": "-0.02em", "fontWeight": "700" }] } } } };</script><style>@layer base{html,body{width:100%;margin:0;padding:0;min-height:100%;}body{overscroll-behavior-y:none;-webkit-tap-highlight-color:transparent;}.pb-safe{padding-bottom:calc(env(safe-area-inset-bottom,0px));}.pt-safe{padding-top:calc(env(safe-area-inset-top,0px));}}::-webkit-scrollbar{display:none;}</style><style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head><body class="bg-surface text-on-surface antialiased flex flex-col min-h-screen"><header class="fixed top-0 w-full z-50 pt-safe bg-surface/80 backdrop-blur-xl shadow-[0_1px_8px_rgba(0,0,0,0.04)]"><div class="h-16 px-gutter flex items-center justify-between gap-space-sm"><div class="flex items-center gap-space-sm min-w-0"><h1 class="font-headline-sm text-headline-sm text-primary-container truncate">Explore Destinations</h1></div><div class="flex items-center gap-space-xs"><button aria-label="Search" class="w-11 h-11 flex items-center justify-center rounded-full text-on-surface-variant hover:text-on-surface active:bg-secondary-container/40 transition-colors"><span class="material-symbols-outlined text-[22px]">search</span></button><button aria-label="Favorites and Filters" class="w-11 h-11 flex items-center justify-center rounded-full text-on-surface-variant hover:text-on-surface active:bg-secondary-container/40 transition-colors"><span class="material-symbols-outlined text-[22px]">tune</span></button><div class="w-8 h-8 rounded-full bg-primary flex items-center justify-center ml-space-xs shrink-0"><span class="material-symbols-outlined text-on-primary text-[18px]">person</span></div></div></div></header><main class="flex flex-col relative w-full pt-16 pb-20 bg-surface min-h-screen"><div class="flex flex-col w-full pb-10 space-y-6">
+<!-- Search & Filter Area -->
+<section class="px-gutter pt-2 space-y-3">
+<div class="relative flex items-center">
+<div class="relative flex-1 flex items-center bg-surface-container-lowest rounded-xl shadow-sm pl-3.5 pr-2 py-2.5">
+<span class="material-symbols-outlined text-outline text-[20px] mr-2">search</span>
+<input class="w-full bg-transparent font-body-md text-body-md text-on-surface placeholder:text-outline focus:outline-none" placeholder="Search destinations, states, sights..." type="text"/>
+<button aria-label="Voice Search" class="w-8 h-8 rounded-full flex items-center justify-center text-on-surface-variant hover:text-primary transition-colors">
+<span class="material-symbols-outlined text-[19px]">mic</span>
+</button>
+</div>
+<button aria-label="Filters" class="ml-2 h-11 w-11 shrink-0 rounded-xl bg-primary-container text-on-primary flex items-center justify-center shadow-sm active:scale-95 transition-transform">
+<span class="material-symbols-outlined text-[20px]">tune</span>
+</button>
+</div>
+<!-- Quick Filter Pills Carousel -->
+<div class="flex items-center gap-2 overflow-x-auto no-scrollbar py-0.5 -mx-gutter px-gutter">
+<button class="filter-chip px-3.5 py-1.5 rounded-full font-label-md text-label-md bg-primary-container text-on-primary shrink-0 transition-all shadow-sm">
+        All
+      </button>
+<button class="filter-chip px-3.5 py-1.5 rounded-full font-label-md text-label-md bg-surface-container-low text-on-surface-variant shrink-0 transition-all hover:bg-secondary-container">
+        🔥 Trending
+      </button>
+<button class="filter-chip px-3.5 py-1.5 rounded-full font-label-md text-label-md bg-surface-container-low text-on-surface-variant shrink-0 transition-all hover:bg-secondary-container">
+        🏛️ Historical
+      </button>
+<button class="filter-chip px-3.5 py-1.5 rounded-full font-label-md text-label-md bg-surface-container-low text-on-surface-variant shrink-0 transition-all hover:bg-secondary-container">
+        🧘 Spiritual
+      </button>
+<button class="filter-chip px-3.5 py-1.5 rounded-full font-label-md text-label-md bg-surface-container-low text-on-surface-variant shrink-0 transition-all hover:bg-secondary-container">
+        🏔️ Nature &amp; Adventure
+      </button>
+<button class="filter-chip px-3.5 py-1.5 rounded-full font-label-md text-label-md bg-surface-container-low text-on-surface-variant shrink-0 transition-all hover:bg-secondary-container">
+        🍲 Food &amp; Culture
+      </button>
+<button class="filter-chip px-3.5 py-1.5 rounded-full font-label-md text-label-md bg-surface-container-low text-on-surface-variant shrink-0 transition-all hover:bg-secondary-container">
+        🛍️ Shopping &amp; Leisure
+      </button>
+</div>
+</section>
+<!-- Hero Spotlight / Trending Now -->
+<section class="space-y-3">
+<div class="flex items-center justify-between px-gutter">
+<div class="flex items-center gap-2">
+<span class="w-2 h-2 rounded-full bg-tertiary-fixed-dim animate-pulse"></span>
+<h2 class="font-headline-sm text-headline-sm text-primary-container">Trending in India Right Now</h2>
+</div>
+<span class="font-label-md text-label-md text-on-surface-variant">Live Pulse</span>
+</div>
+<!-- Spotlight Swiper Cards -->
+<div class="flex gap-4 overflow-x-auto no-scrollbar px-gutter">
+<!-- Card 1: Varanasi -->
+<article class="relative w-[304px] shrink-0 bg-surface-container-lowest rounded-2xl shadow-md overflow-hidden flex flex-col group cursor-pointer">
+<div class="relative h-52 w-full overflow-hidden">
+<img class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105" data-alt="Dusk at Dashashwamedh Ghat in Varanasi during the grand Ganga Aarti ceremony. Warm glowing brass lamps create atmospheric fire rings, while riverboats rest on deep reflective green waters. Ethereal spiritual atmosphere, natural ambient mist, cinematic Indian dusk." src="https://lh3.googleusercontent.com/aida-public/AB6AXuCnBIu8S1xsk3j6uZiVgFYzdTWFSLj8_rRY5tpajSX75A8T7ao7KL40-xTabdi8jSNHHpJNkbSOevddPvBjBUWF0pY8Xc1_6_Dcr7PnmQa1opJ0Ms3KQj0ISUwSCbly0tqE78cz6FrZd-VTheMNobqzHxhClgOpJ6TwxKG43-hbYFLnYGcSlwW2Ny9Bh8XEYdUVySHyb_fpLn4YmtjYD420DxUerxweCjMqAGBOaA"/>
+<div class="absolute inset-0 bg-gradient-to-t from-primary/80 via-primary/20 to-transparent"></div>
+<!-- Top Badges -->
+<div class="absolute top-3 inset-x-3 flex items-center justify-between">
+<span class="px-2.5 py-1 rounded-full bg-surface-container-lowest/85 backdrop-blur-md font-label-sm text-label-sm text-primary-container shadow-sm flex items-center gap-1">
+<span class="material-symbols-outlined text-[13px] text-tertiary-fixed-dim fill-1" style="font-variation-settings: 'FILL' 1;">star</span>
+              4.9 (1.2k)
+            </span>
+<button aria-label="Save Varanasi" class="bookmark-btn w-8 h-8 rounded-full bg-surface-container-lowest/85 backdrop-blur-md flex items-center justify-center text-primary-container shadow-sm active:scale-90 transition-transform">
+<span class="material-symbols-outlined text-[18px]">favorite_border</span>
+</button>
+</div>
+<!-- Bottom Over-image Pill -->
+<div class="absolute bottom-3 left-3 right-3 flex items-center justify-between text-on-primary">
+<span class="font-label-sm text-label-sm px-2 py-0.5 rounded-md bg-primary-container/80 backdrop-blur-md tracking-wide uppercase">
+              Spiritual &amp; Heritage
+            </span>
+<span class="font-label-sm text-label-sm flex items-center gap-1 bg-surface-container-lowest/20 backdrop-blur-sm px-2 py-0.5 rounded-md">
+<span class="material-symbols-outlined text-[14px]">thermostat</span> 22°C • Crisp
+            </span>
+</div>
+</div>
+<div class="p-4 flex flex-col space-y-2.5">
+<div>
+<div class="flex items-center gap-1.5 text-on-surface-variant font-label-sm text-label-sm mb-1">
+<span class="material-symbols-outlined text-[14px] text-primary">location_on</span>
+              Uttar Pradesh, North India
+            </div>
+<h3 class="font-headline-sm text-headline-sm text-on-surface line-clamp-1">Varanasi</h3>
+<p class="font-body-sm text-body-sm text-on-surface-variant line-clamp-1">The Eternal City of Ghats &amp; Mysticism</p>
+</div>
+<div class="pt-2 border-t-0 flex items-center justify-between font-label-md text-label-md text-on-surface-variant bg-surface-container-low px-3 py-2 rounded-xl">
+<div class="flex items-center gap-1">
+<span class="material-symbols-outlined text-[16px] text-primary">calendar_month</span>
+<span>Oct – Mar</span>
+</div>
+<div class="h-3 w-px bg-outline-variant"></div>
+<div class="font-label-md text-label-md text-primary font-semibold">
+              Avg ₹3,200<span class="font-body-sm text-body-sm text-on-surface-variant font-normal">/day</span>
+</div>
+</div>
+</div>
+</article>
+<!-- Card 2: Munnar -->
+<article class="relative w-[304px] shrink-0 bg-surface-container-lowest rounded-2xl shadow-md overflow-hidden flex flex-col group cursor-pointer">
+<div class="relative h-52 w-full overflow-hidden">
+<img class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105" data-alt="Misty morning rolling hills covered in emerald green tea gardens of Munnar Kerala India. Soft morning light drifting through dense mist over undulating plantations, winding dirt paths, serene tranquility, quiet luxury travel aesthetic." src="https://lh3.googleusercontent.com/aida-public/AB6AXuAGiuVHZpL94v_p7j2r43c5dQcj-sVcnDapWI4M87XlKzFuDCY3ia1XHEwnVJ61OTDW0uaq9hcoTbqazUJy4Dz-yCdlYmmaUyzeW4e2OyhB18lCRLElznkZeMBTiTdiIOwxcrTlwE7Y0L9HboLMdLdVZyRrEwxD-XIYWTPaIpbxnXLEHlH0AghvN5KUlx5kjHa59ZZ4X1080uotHAqON1pgP4p5ESN5qeMW8NhvdA"/>
+<div class="absolute inset-0 bg-gradient-to-t from-primary/80 via-primary/20 to-transparent"></div>
+<div class="absolute top-3 inset-x-3 flex items-center justify-between">
+<span class="px-2.5 py-1 rounded-full bg-surface-container-lowest/85 backdrop-blur-md font-label-sm text-label-sm text-primary-container shadow-sm flex items-center gap-1">
+<span class="material-symbols-outlined text-[13px] text-tertiary-fixed-dim fill-1" style="font-variation-settings: 'FILL' 1;">star</span>
+              4.8 (890)
+            </span>
+<button aria-label="Save Munnar" class="bookmark-btn w-8 h-8 rounded-full bg-surface-container-lowest/85 backdrop-blur-md flex items-center justify-center text-primary-container shadow-sm active:scale-90 transition-transform">
+<span class="material-symbols-outlined text-[18px]">favorite_border</span>
+</button>
+</div>
+<div class="absolute bottom-3 left-3 right-3 flex items-center justify-between text-on-primary">
+<span class="font-label-sm text-label-sm px-2 py-0.5 rounded-md bg-primary-container/80 backdrop-blur-md tracking-wide uppercase">
+              Nature &amp; Trekking
+            </span>
+<span class="font-label-sm text-label-sm flex items-center gap-1 bg-surface-container-lowest/20 backdrop-blur-sm px-2 py-0.5 rounded-md">
+<span class="material-symbols-outlined text-[14px]">thermostat</span> 17°C • Misty
+            </span>
+</div>
+</div>
+<div class="p-4 flex flex-col space-y-2.5">
+<div>
+<div class="flex items-center gap-1.5 text-on-surface-variant font-label-sm text-label-sm mb-1">
+<span class="material-symbols-outlined text-[14px] text-primary">location_on</span>
+              Idukki, Kerala
+            </div>
+<h3 class="font-headline-sm text-headline-sm text-on-surface line-clamp-1">Munnar</h3>
+<p class="font-body-sm text-body-sm text-on-surface-variant line-clamp-1">Verdant Tea Hills &amp; Cloud Forests</p>
+</div>
+<div class="pt-2 flex items-center justify-between font-label-md text-label-md text-on-surface-variant bg-surface-container-low px-3 py-2 rounded-xl">
+<div class="flex items-center gap-1">
+<span class="material-symbols-outlined text-[16px] text-primary">calendar_month</span>
+<span>Sep – May</span>
+</div>
+<div class="h-3 w-px bg-outline-variant"></div>
+<div class="font-label-md text-label-md text-primary font-semibold">
+              Avg ₹4,100<span class="font-body-sm text-body-sm text-on-surface-variant font-normal">/day</span>
+</div>
+</div>
+</div>
+</article>
+</div>
+</section>
+<!-- Section 1: Popular Destinations in India -->
+<section class="space-y-3">
+<div class="flex items-center justify-between px-gutter">
+<div>
+<h2 class="font-headline-sm text-headline-sm text-on-surface">Popular Destinations in India</h2>
+<p class="font-body-sm text-body-sm text-on-surface-variant">Timeless favorites loved by curious explorers</p>
+</div>
+<button class="font-label-md text-label-md text-primary font-semibold">View All</button>
+</div>
+<div class="flex gap-3.5 overflow-x-auto no-scrollbar px-gutter">
+<!-- Jaipur -->
+<article class="w-64 shrink-0 bg-surface-container-lowest rounded-2xl shadow-sm overflow-hidden flex flex-col group cursor-pointer">
+<div class="relative h-40 w-full overflow-hidden">
+<img class="w-full h-full object-cover transition-transform group-hover:scale-105" data-alt="Majestic pink terracotta stone facades and intricate jharokha balconies of Hawa Mahal Jaipur Rajasthan under clear sunny blue skies. Royal architectural details, quiet elegant composition, soft natural tones." src="https://lh3.googleusercontent.com/aida-public/AB6AXuAGvLW_Msw349f1XOkOIeSLmW-dfKfLO5Qeg2FiznCwV4lJjnNe9NgKNA9IXpjql4E6c-ANSWuolPEIoi2cvWxcxF3sWiLlW3etwL4RwlHvH895EFf834rjpKpotpFkOs3qmyeknoceuwZpkilx9LeIsViv54H40VF7JgHKFfqYhcTao0VZ2ooWiCQ-l7gZVX8RIW_jD-kG5ay27NFXU9a_Mq_vz0fRX7hB18e-bA"/>
+<div class="absolute top-2.5 right-2.5">
+<button aria-label="Bookmark Jaipur" class="bookmark-btn w-7 h-7 rounded-full bg-surface-container-lowest/90 backdrop-blur-md flex items-center justify-center text-primary-container shadow-sm">
+<span class="material-symbols-outlined text-[16px]">favorite_border</span>
+</button>
+</div>
+<span class="absolute bottom-2.5 left-2.5 px-2 py-0.5 rounded-full bg-primary-container/85 text-on-primary font-label-sm text-label-sm">
+            Pink City &amp; Royal Forts
+          </span>
+</div>
+<div class="p-3.5 flex flex-col space-y-2">
+<div class="flex items-center justify-between">
+<h3 class="font-headline-sm text-headline-sm text-on-surface">Jaipur</h3>
+<span class="font-label-sm text-label-sm text-on-surface-variant bg-surface-container px-1.5 py-0.5 rounded">Rajasthan</span>
+</div>
+<div class="flex items-center gap-2 font-label-sm text-label-sm text-on-surface-variant">
+<span class="flex items-center gap-0.5"><span class="material-symbols-outlined text-[13px] text-primary">schedule</span> 3–4 Days</span>
+<span>•</span>
+<span class="text-tertiary font-semibold">₹₹ Moderate</span>
+<span>•</span>
+<span class="flex items-center gap-0.5"><span class="material-symbols-outlined text-[13px]">thermostat</span> 26°C</span>
+</div>
+</div>
+</article>
+<!-- Udaipur -->
+<article class="w-64 shrink-0 bg-surface-container-lowest rounded-2xl shadow-sm overflow-hidden flex flex-col group cursor-pointer">
+<div class="relative h-40 w-full overflow-hidden">
+<img class="w-full h-full object-cover transition-transform group-hover:scale-105" data-alt="Lake Pichola in Udaipur with the white marble City Palace and Lake Palace gleaming under romantic twilight golden hour. Calm reflective rippling waters with Aravalli hills in the distant backdrop. Serene luxury aesthetic." src="https://lh3.googleusercontent.com/aida-public/AB6AXuDikbDpJVdd3tipJ6RoyLYHFYJ3jvo8fii9SaOFze40Qj4CWHBIMmMnHhSuK69rmB0w_5kb78hcYIyYuJWsLd5Y6IdR1Km0ZJpifhoZQ3OJlVRb0_qVDoQpGXMH0yOI-eGW2Q4AfOoY2v_Sn3VsT1O4UncTQxCvtI4ALur-Mun0-kosG2vSxaDRpGML7eOjX4EfQCXf96Br0M-WhtZZKbEkT7vSZVlNmGNxuQe1oQ"/>
+<div class="absolute top-2.5 right-2.5">
+<button aria-label="Bookmark Udaipur" class="bookmark-btn w-7 h-7 rounded-full bg-surface-container-lowest/90 backdrop-blur-md flex items-center justify-center text-primary-container shadow-sm">
+<span class="material-symbols-outlined text-[16px]">favorite_border</span>
+</button>
+</div>
+<span class="absolute bottom-2.5 left-2.5 px-2 py-0.5 rounded-full bg-primary-container/85 text-on-primary font-label-sm text-label-sm">
+            Marble Palaces &amp; Lakes
+          </span>
+</div>
+<div class="p-3.5 flex flex-col space-y-2">
+<div class="flex items-center justify-between">
+<h3 class="font-headline-sm text-headline-sm text-on-surface">Udaipur</h3>
+<span class="font-label-sm text-label-sm text-on-surface-variant bg-surface-container px-1.5 py-0.5 rounded">Rajasthan</span>
+</div>
+<div class="flex items-center gap-2 font-label-sm text-label-sm text-on-surface-variant">
+<span class="flex items-center gap-0.5"><span class="material-symbols-outlined text-[13px] text-primary">schedule</span> 2–3 Days</span>
+<span>•</span>
+<span class="text-tertiary font-semibold">₹₹₹ Luxury</span>
+<span>•</span>
+<span class="flex items-center gap-0.5"><span class="material-symbols-outlined text-[13px]">thermostat</span> 24°C</span>
+</div>
+</div>
+</article>
+<!-- Leh-Ladakh -->
+<article class="w-64 shrink-0 bg-surface-container-lowest rounded-2xl shadow-sm overflow-hidden flex flex-col group cursor-pointer">
+<div class="relative h-40 w-full overflow-hidden">
+<img class="w-full h-full object-cover transition-transform group-hover:scale-105" data-alt="Spectacular high-altitude desert mountains of Ladakh with Pangong Tso Lake intense azure blue waters and Thiksey monastery perched high on a rocky ridge under dramatic mountain skies." src="https://lh3.googleusercontent.com/aida-public/AB6AXuADucExQ9_Stad2eGqGf-qaVGWWYBqO54T_d2H1svcFF_dT2Ud1vcb3jOjLbR0ljd7jPftMl5ASmycC_FfANjiK-WkbJQ1vgvicQXemgeS7ZbMEeekwo4Std-t7TgReKOCmBtWxKutZVsQ6ZX9-THJMgKKHOwP7DQRPmpWFx5fjkh59f9xpntHVw45EXFioY02v4Ld7YXXP0vqz42v7E8I0B3sB2TUv6neNHrkt3g"/>
+<div class="absolute top-2.5 right-2.5">
+<button aria-label="Bookmark Leh" class="bookmark-btn w-7 h-7 rounded-full bg-surface-container-lowest/90 backdrop-blur-md flex items-center justify-center text-primary-container shadow-sm">
+<span class="material-symbols-outlined text-[16px]">favorite_border</span>
+</button>
+</div>
+<span class="absolute bottom-2.5 left-2.5 px-2 py-0.5 rounded-full bg-primary-container/85 text-on-primary font-label-sm text-label-sm">
+            High Altitude Passes
+          </span>
+</div>
+<div class="p-3.5 flex flex-col space-y-2">
+<div class="flex items-center justify-between">
+<h3 class="font-headline-sm text-headline-sm text-on-surface">Leh-Ladakh</h3>
+<span class="font-label-sm text-label-sm text-on-surface-variant bg-surface-container px-1.5 py-0.5 rounded">Ladakh</span>
+</div>
+<div class="flex items-center gap-2 font-label-sm text-label-sm text-on-surface-variant">
+<span class="flex items-center gap-0.5"><span class="material-symbols-outlined text-[13px] text-primary">schedule</span> 6–7 Days</span>
+<span>•</span>
+<span class="text-tertiary font-semibold">₹₹₹ Adventure</span>
+<span>•</span>
+<span class="flex items-center gap-0.5"><span class="material-symbols-outlined text-[13px]">thermostat</span> 11°C</span>
+</div>
+</div>
+</article>
+</div>
+</section>
+<!-- Section 2: Nature & Adventure -->
+<section class="space-y-3">
+<div class="flex items-center justify-between px-gutter">
+<div>
+<h2 class="font-headline-sm text-headline-sm text-on-surface">Nature &amp; Adventure</h2>
+<p class="font-body-sm text-body-sm text-on-surface-variant">Rugged trails, wild river gorges &amp; pristine forests</p>
+</div>
+<button class="font-label-md text-label-md text-primary font-semibold">View All</button>
+</div>
+<div class="grid grid-cols-1 gap-3.5 px-gutter">
+<!-- Rishikesh -->
+<article class="bg-surface-container-lowest rounded-2xl shadow-sm overflow-hidden flex flex-row group cursor-pointer">
+<div class="relative w-36 shrink-0 overflow-hidden">
+<img class="w-full h-full object-cover transition-transform group-hover:scale-105" data-alt="Turquoise waters of the Ganges surging through Himalayan foothills near Rishikesh with suspension bridge Laxman Jhula and forested green slopes under warm ambient daylight." src="https://lh3.googleusercontent.com/aida-public/AB6AXuBHoFq5mPLnYXiEDLtNQ67WqJlttxRMeSAzLdMEa-_n8dvsdwBBHhmjy2FVFvF7DikoPc5DTpXJbs7-qnYUagPDoaD7DLn5So7jPaZ3274tdVrQ9uEoR-dxln_0ohAa3EC1VS_lAwGZiQrYuqY-Es05hcWlfhs_D15j5GUEkDYFHjjZkkjVC6263ojNDj9fBbeVjD8HFUdpmlr3C2Y2AaZJo82xp_kQF3DvOcp2gg"/>
+<span class="absolute top-2 left-2 px-1.5 py-0.5 rounded bg-primary-container/90 text-on-primary font-label-sm text-label-sm">
+            Adventure
+          </span>
+</div>
+<div class="p-3.5 flex-1 flex flex-col justify-between">
+<div>
+<div class="flex items-start justify-between">
+<div>
+<span class="font-label-sm text-label-sm text-on-surface-variant">Uttarakhand</span>
+<h3 class="font-headline-sm text-headline-sm text-on-surface">Rishikesh</h3>
+</div>
+<button aria-label="Bookmark Rishikesh" class="bookmark-btn text-on-surface-variant hover:text-primary transition-colors">
+<span class="material-symbols-outlined text-[20px]">favorite_border</span>
+</button>
+</div>
+<p class="font-body-sm text-body-sm text-on-surface-variant line-clamp-1 mt-0.5">Ganga Rapids &amp; Himalayan Foothills</p>
+</div>
+<div class="flex items-center justify-between font-label-sm text-label-sm text-on-surface-variant mt-2 pt-2 border-t-0 bg-surface-container-low px-2.5 py-1.5 rounded-lg">
+<span>⏱️ 3 Days</span>
+<span>₹₹ Moderate</span>
+<span>🌤️ 21°C</span>
+</div>
+</div>
+</article>
+<!-- Meghalaya -->
+<article class="bg-surface-container-lowest rounded-2xl shadow-sm overflow-hidden flex flex-row group cursor-pointer">
+<div class="relative w-36 shrink-0 overflow-hidden">
+<img class="w-full h-full object-cover transition-transform group-hover:scale-105" data-alt="Double decker living root bridge woven from rubber fig tree roots over a clear crystal stream in deep subtropical rainforests of Cherrapunji Meghalaya with moss and lush cascading foliage." src="https://lh3.googleusercontent.com/aida-public/AB6AXuDVHDVSMb9OsNwh3wGUEIPUs27gQUsivBqwUZ1OzXh4xdAh9FhTJmvAuwAZEkx3DE5_NU2ZI0dHhKL68J2Oc1BZ12jAU8aXt5DRQeP8sCi7tWqKq5EW4DxdvKyyqXzeJVOlxswtuJKPqO86YZZTMQTbETqNtofMhkfzFwIkJAB5VrfjwDJR40-oBnzI6_xiA_gkC5NZgE-W3Ho6EVxppqIw37NVluruhhp3jUJPhg"/>
+<span class="absolute top-2 left-2 px-1.5 py-0.5 rounded bg-primary-container/90 text-on-primary font-label-sm text-label-sm">
+            Rainforest
+          </span>
+</div>
+<div class="p-3.5 flex-1 flex flex-col justify-between">
+<div>
+<div class="flex items-start justify-between">
+<div>
+<span class="font-label-sm text-label-sm text-on-surface-variant">Northeast India</span>
+<h3 class="font-headline-sm text-headline-sm text-on-surface">Meghalaya</h3>
+</div>
+<button aria-label="Bookmark Meghalaya" class="bookmark-btn text-on-surface-variant hover:text-primary transition-colors">
+<span class="material-symbols-outlined text-[20px]">favorite_border</span>
+</button>
+</div>
+<p class="font-body-sm text-body-sm text-on-surface-variant line-clamp-1 mt-0.5">Living Root Bridges &amp; Cherrapunji</p>
+</div>
+<div class="flex items-center justify-between font-label-sm text-label-sm text-on-surface-variant mt-2 pt-2 border-t-0 bg-surface-container-low px-2.5 py-1.5 rounded-lg">
+<span>⏱️ 5 Days</span>
+<span>₹₹ Explorer</span>
+<span>🌧️ 19°C</span>
+</div>
+</div>
+</article>
+</div>
+</section>
+<!-- Section 3: Spiritual Destinations -->
+<section class="space-y-3">
+<div class="flex items-center justify-between px-gutter">
+<div>
+<h2 class="font-headline-sm text-headline-sm text-on-surface">Spiritual Destinations</h2>
+<p class="font-body-sm text-body-sm text-on-surface-variant">Sacred sanctums, choral chants &amp; inner stillness</p>
+</div>
+<button class="font-label-md text-label-md text-primary font-semibold">View All</button>
+</div>
+<div class="flex gap-3.5 overflow-x-auto no-scrollbar px-gutter">
+<!-- Amritsar -->
+<article class="w-60 shrink-0 bg-surface-container-lowest rounded-2xl shadow-sm overflow-hidden flex flex-col group cursor-pointer">
+<div class="relative h-36 w-full overflow-hidden">
+<img class="w-full h-full object-cover transition-transform group-hover:scale-105" data-alt="Harmandir Sahib Golden Temple in Amritsar glittering in gold reflected perfectly on the still water of the Amrit Sarovar sacred pool under quiet dawn twilight. Devotees walking gently along marble parikrama." src="https://lh3.googleusercontent.com/aida-public/AB6AXuBmLrLiv69fStpTc9Fhtpxb_Dt9Hl71qrvbTVP9nPHvjHAWm9Inw2a8HKwV76JokjCdp1SpBCdlc--SNuudXIi7vw4BYtVnQsgE9MxLGjuWNIl_jYM5WnwJ2XcaIhZ0W_77W6kvaGr-q6YHPNE2ATYqT_pj_cqIjuNqLQ0DxQXRoTtJJ4O_sdjC2jduzlqWJXrjU079y88oVZVwWGmDOHWzzRje25ko_KEJlhiUFg"/>
+<div class="absolute top-2 right-2">
+<button aria-label="Bookmark Amritsar" class="bookmark-btn w-7 h-7 rounded-full bg-surface-container-lowest/90 backdrop-blur-md flex items-center justify-center text-primary-container shadow-sm">
+<span class="material-symbols-outlined text-[16px]">favorite_border</span>
+</button>
+</div>
+<span class="absolute bottom-2 left-2 px-2 py-0.5 rounded-full bg-primary-container/85 text-on-primary font-label-sm text-label-sm">
+            Golden Temple
+          </span>
+</div>
+<div class="p-3.5 space-y-1.5">
+<div class="flex items-center justify-between">
+<h3 class="font-headline-sm text-headline-sm text-on-surface">Amritsar</h3>
+<span class="font-label-sm text-label-sm text-on-surface-variant">Punjab</span>
+</div>
+<p class="font-body-sm text-body-sm text-on-surface-variant line-clamp-1">Golden Temple &amp; Langar Tradition</p>
+<div class="flex items-center justify-between font-label-sm text-label-sm text-on-surface-variant pt-1">
+<span>2 Days • ₹ Budget</span>
+<span class="text-primary font-semibold">20°C</span>
+</div>
+</div>
+</article>
+<!-- Madurai -->
+<article class="w-60 shrink-0 bg-surface-container-lowest rounded-2xl shadow-sm overflow-hidden flex flex-col group cursor-pointer">
+<div class="relative h-36 w-full overflow-hidden">
+<img class="w-full h-full object-cover transition-transform group-hover:scale-105" data-alt="Towering colorful sculpted gopurams of Meenakshi Amman Temple in Madurai Tamil Nadu with thousands of intricate painted stucco deities against sunny tropical sky." src="https://lh3.googleusercontent.com/aida-public/AB6AXuD8dRp_X2NttlNX9sD3b-CdptVOPfvxs-EfTZZRvHApadFzzBXpzHD0K24F1lbORKhMS7TUNI5IA58X1a8dCEQPuVFMUwUIV1MiyQRnLJdRYz-Xm65XWHuYg8TI9zCUCWboDsN32MEKK4Dsoz0hCc-bv-c2QX-VXRQv9jIIr22F5H1w8hcgXem6VX4UDfSZwZBxyFfRBqEUl6sc9eFowpupaUKNfn3YHWxxQPLj3Q"/>
+<div class="absolute top-2 right-2">
+<button aria-label="Bookmark Madurai" class="bookmark-btn w-7 h-7 rounded-full bg-surface-container-lowest/90 backdrop-blur-md flex items-center justify-center text-primary-container shadow-sm">
+<span class="material-symbols-outlined text-[16px]">favorite_border</span>
+</button>
+</div>
+<span class="absolute bottom-2 left-2 px-2 py-0.5 rounded-full bg-primary-container/85 text-on-primary font-label-sm text-label-sm">
+            Dravidian Gopurams
+          </span>
+</div>
+<div class="p-3.5 space-y-1.5">
+<div class="flex items-center justify-between">
+<h3 class="font-headline-sm text-headline-sm text-on-surface">Madurai</h3>
+<span class="font-label-sm text-label-sm text-on-surface-variant">Tamil Nadu</span>
+</div>
+<p class="font-body-sm text-body-sm text-on-surface-variant line-clamp-1">Meenakshi Temple Architecture</p>
+<div class="flex items-center justify-between font-label-sm text-label-sm text-on-surface-variant pt-1">
+<span>2 Days • ₹₹ Moderate</span>
+<span class="text-primary font-semibold">29°C</span>
+</div>
+</div>
+</article>
+</div>
+</section>
+<!-- Section 4: Historical Destinations -->
+<section class="space-y-3">
+<div class="flex items-center justify-between px-gutter">
+<div>
+<h2 class="font-headline-sm text-headline-sm text-on-surface">Historical Destinations</h2>
+<p class="font-body-sm text-body-sm text-on-surface-variant">Ancient dynasties, stone carvings &amp; storied ruins</p>
+</div>
+<button class="font-label-md text-label-md text-primary font-semibold">View All</button>
+</div>
+<div class="grid grid-cols-2 gap-3 px-gutter">
+<!-- Hampi -->
+<article class="bg-surface-container-lowest rounded-2xl shadow-sm overflow-hidden flex flex-col group cursor-pointer">
+<div class="relative h-32 w-full overflow-hidden">
+<img class="w-full h-full object-cover transition-transform group-hover:scale-105" data-alt="The stone chariot of Vittala Temple in Hampi surrounded by massive weathered granite boulders and ancient monolithic pillars illuminated by late afternoon golden sunset light." src="https://lh3.googleusercontent.com/aida-public/AB6AXuBJTXXiDLWwlAsl8tgEsvQOxvzqN1p3HgYs9rIsZgcE2n2xyWVBQq8oP2_FaPPijV8Zm9KQE0z5ABUifzrgAF0zkRkNmCoxiuzWdEZH8H0dl2Y3cnM9cDoCZalOzvVSdcwTsqpPzJlEExxxJhG56oKpD6wVMGZL6xxQ2zaJwNafzUhH-_YP4LR3J3EvLvyB7jJ--5F-VMyeGIgxWk_0s9ZKVBSFD1UwIQfJR9XiVA"/>
+<button aria-label="Bookmark Hampi" class="bookmark-btn absolute top-2 right-2 w-6 h-6 rounded-full bg-surface-container-lowest/85 backdrop-blur-md flex items-center justify-center text-primary-container shadow-sm">
+<span class="material-symbols-outlined text-[14px]">favorite_border</span>
+</button>
+</div>
+<div class="p-3 space-y-1">
+<span class="font-label-sm text-label-sm text-on-surface-variant">Karnataka</span>
+<h3 class="font-headline-sm text-headline-sm text-on-surface">Hampi</h3>
+<p class="font-body-sm text-body-sm text-on-surface-variant line-clamp-1">Vijayanagara Ruins &amp; Boulders</p>
+<div class="flex items-center justify-between font-label-sm text-label-sm text-primary pt-1">
+<span>3 Days</span>
+<span>28°C</span>
+</div>
+</div>
+</article>
+<!-- Khajuraho -->
+<article class="bg-surface-container-lowest rounded-2xl shadow-sm overflow-hidden flex flex-col group cursor-pointer">
+<div class="relative h-32 w-full overflow-hidden">
+<img class="w-full h-full object-cover transition-transform group-hover:scale-105" data-alt="Intricate sandstone temple carvings of Kandariya Mahadeva Temple in Khajuraho Madhya Pradesh against warm afternoon sky. Finely detailed UNESCO world heritage sculpture." src="https://lh3.googleusercontent.com/aida-public/AB6AXuA834W-W1JeVaQ4TvCjd1tk7-ptwMhkAugK48oJf0tva4BebuF1euiBSXB4YuGgQ0gMXJn4taKsLy1_Yoj2aWXLhd3e_XkG0o0iv_xsBWJgod5NB5VurrfEAZMP7Edw1lGyRJiovKWooQYSGJ2d9ZXx0FKn2tACy4Mps-y7Fj2m8DvGTly_oc_wqB0K1-Z111vmnSvB9945qqlk7qKIRlUuehJ_EZxifhpVC4HeGA"/>
+<button aria-label="Bookmark Khajuraho" class="bookmark-btn absolute top-2 right-2 w-6 h-6 rounded-full bg-surface-container-lowest/85 backdrop-blur-md flex items-center justify-center text-primary-container shadow-sm">
+<span class="material-symbols-outlined text-[14px]">favorite_border</span>
+</button>
+</div>
+<div class="p-3 space-y-1">
+<span class="font-label-sm text-label-sm text-on-surface-variant">Madhya Pradesh</span>
+<h3 class="font-headline-sm text-headline-sm text-on-surface">Khajuraho</h3>
+<p class="font-body-sm text-body-sm text-on-surface-variant line-clamp-1">UNESCO Sculpted Temples</p>
+<div class="flex items-center justify-between font-label-sm text-label-sm text-primary pt-1">
+<span>2 Days</span>
+<span>23°C</span>
+</div>
+</div>
+</article>
+</div>
+</section>
+<!-- Section 5: Food & Culture -->
+<section class="space-y-3">
+<div class="flex items-center justify-between px-gutter">
+<div>
+<h2 class="font-headline-sm text-headline-sm text-on-surface">Food &amp; Culture</h2>
+<p class="font-body-sm text-body-sm text-on-surface-variant">Culinary lineages, artisan streets &amp; living traditions</p>
+</div>
+<button class="font-label-md text-label-md text-primary font-semibold">View All</button>
+</div>
+<div class="grid grid-cols-1 gap-3.5 px-gutter">
+<!-- Lucknow -->
+<article class="bg-surface-container-lowest rounded-2xl shadow-sm overflow-hidden flex flex-row group cursor-pointer">
+<div class="relative w-32 shrink-0 overflow-hidden">
+<img class="w-full h-full object-cover transition-transform group-hover:scale-105" data-alt="Rumi Darwaza and grand Mughal architecture of Bara Imambara in Lucknow at twilight with soft street lamps lighting up evening food bazaar with aromatic Awadhi cuisine stalls." src="https://lh3.googleusercontent.com/aida-public/AB6AXuClBZvte45DAdSw3QTF3JvU7aBLNe_oJJG-70VnMnQJXw4q4yBcJHI05XSPYepJY2ROjVjYQyUQzZ_ciYmFGtPIy8N7_zCLtjLhy7XX1TWPcb8DPPOFbqLTxMA55s_rW7z6DtYSeXc8R018-ZGcXrOujjB4RPldfEuit2FDx5asDIGl15X1Kf99dMdDlKuJvrwcohoE1aU4LytkMAn3djPmcAhvbew5gGFlQUowBw"/>
+<span class="absolute top-2 left-2 px-1.5 py-0.5 rounded bg-tertiary text-on-tertiary font-label-sm text-label-sm">
+            Awadhi
+          </span>
+</div>
+<div class="p-3.5 flex-1 flex flex-col justify-between">
+<div>
+<div class="flex items-start justify-between">
+<div>
+<span class="font-label-sm text-label-sm text-on-surface-variant">Uttar Pradesh</span>
+<h3 class="font-headline-sm text-headline-sm text-on-surface">Lucknow</h3>
+</div>
+<button aria-label="Bookmark Lucknow" class="bookmark-btn text-on-surface-variant hover:text-primary transition-colors">
+<span class="material-symbols-outlined text-[20px]">favorite_border</span>
+</button>
+</div>
+<p class="font-body-sm text-body-sm text-on-surface-variant line-clamp-1 mt-0.5">Kebabs, Chikan Embroidery &amp; Imambaras</p>
+</div>
+<div class="flex items-center justify-between font-label-sm text-label-sm text-on-surface-variant mt-2 pt-2 border-t-0 bg-surface-container-low px-2.5 py-1 rounded-lg">
+<span>⏱️ 2–3 Days</span>
+<span>₹₹ Heritage</span>
+<span>✨ Food Capital</span>
+</div>
+</div>
+</article>
+<!-- Kolkata -->
+<article class="bg-surface-container-lowest rounded-2xl shadow-sm overflow-hidden flex flex-row group cursor-pointer">
+<div class="relative w-32 shrink-0 overflow-hidden">
+<img class="w-full h-full object-cover transition-transform group-hover:scale-105" data-alt="Victoria Memorial white marble palace framed with lush green maidan lawns in Kolkata with iconic yellow ambassador taxi cruising past tram tracks in vintage colonial afternoon ambiance." src="https://lh3.googleusercontent.com/aida-public/AB6AXuDHAsulJU63wn5Cvzn2mfEFf-H9V8OIEpG8BSM9pbUm97jn0_D7MKW2_ON9Fznj4nLQk0s1ubkBvyvoxQjlrH9bIAK_MokvrlJzt_rT89Jl4973j4aVyd_XBxBOa3jpiXBVz4LJ5m4SPcoy0jq0qjqF6yGaYvv5z70ZqHC7kFWxptHOGSL2yzU8w0Gv-I7Vr7n-PRv3TCHJmfTvnvENRXr6WeTgTV9ajr8vUEg_TA"/>
+<span class="absolute top-2 left-2 px-1.5 py-0.5 rounded bg-tertiary text-on-tertiary font-label-sm text-label-sm">
+            Heritage
+          </span>
+</div>
+<div class="p-3.5 flex-1 flex flex-col justify-between">
+<div>
+<div class="flex items-start justify-between">
+<div>
+<span class="font-label-sm text-label-sm text-on-surface-variant">West Bengal</span>
+<h3 class="font-headline-sm text-headline-sm text-on-surface">Kolkata</h3>
+</div>
+<button aria-label="Bookmark Kolkata" class="bookmark-btn text-on-surface-variant hover:text-primary transition-colors">
+<span class="material-symbols-outlined text-[20px]">favorite_border</span>
+</button>
+</div>
+<p class="font-body-sm text-body-sm text-on-surface-variant line-clamp-1 mt-0.5">Street Gastronomy &amp; Victoria Memorial</p>
+</div>
+<div class="flex items-center justify-between font-label-sm text-label-sm text-on-surface-variant mt-2 pt-2 border-t-0 bg-surface-container-low px-2.5 py-1 rounded-lg">
+<span>⏱️ 3 Days</span>
+<span>₹ Budget Friendly</span>
+<span>☕ Adda Culture</span>
+</div>
+</div>
+</article>
+</div>
+</section>
+<!-- Section 6: Shopping & Relaxation -->
+<section class="space-y-3">
+<div class="flex items-center justify-between px-gutter">
+<div>
+<h2 class="font-headline-sm text-headline-sm text-on-surface">Shopping &amp; Relaxation</h2>
+<p class="font-body-sm text-body-sm text-on-surface-variant">Coastal breezes, boutique quarters &amp; slow sundowners</p>
+</div>
+<button class="font-label-md text-label-md text-primary font-semibold">View All</button>
+</div>
+<div class="grid grid-cols-2 gap-3 px-gutter">
+<!-- Puducherry -->
+<article class="bg-surface-container-lowest rounded-2xl shadow-sm overflow-hidden flex flex-col group cursor-pointer">
+<div class="relative h-32 w-full overflow-hidden">
+<img class="w-full h-full object-cover transition-transform group-hover:scale-105" data-alt="Sunlit yellow colonial villa walls lined with vibrant bougainvillea flowers along clean cobbled streets of French White Town in Puducherry India with cozy boutique cafes." src="https://lh3.googleusercontent.com/aida-public/AB6AXuAKme2H--Ml09YEc0UcVN7Wse8e_OzA6EUIGlBC_xwjHl7KVjlAJINOTmMiUcIR7Wmi3NSRsebEO5GPQatSpK1sTFhOaS_A147LMEoO06FjF-cfHu_5ygKoZhj4_hVpW2XgrsBe4U63SMO_SlWR71GyhTAPFq2_5VkruKXrxD6hsZFxpqVY3VG1Adenc9CLLI8_XzdnBZjfQPKRktRhPTiejX-lj4hQQjHENYUKNw"/>
+<button aria-label="Bookmark Puducherry" class="bookmark-btn absolute top-2 right-2 w-6 h-6 rounded-full bg-surface-container-lowest/85 backdrop-blur-md flex items-center justify-center text-primary-container shadow-sm">
+<span class="material-symbols-outlined text-[14px]">favorite_border</span>
+</button>
+</div>
+<div class="p-3 space-y-1">
+<span class="font-label-sm text-label-sm text-on-surface-variant">Union Territory</span>
+<h3 class="font-headline-sm text-headline-sm text-on-surface">Puducherry</h3>
+<p class="font-body-sm text-body-sm text-on-surface-variant line-clamp-1">French Quarter &amp; Auroville</p>
+<div class="flex items-center justify-between font-label-sm text-label-sm text-primary pt-1">
+<span>3 Days</span>
+<span>27°C</span>
+</div>
+</div>
+</article>
+<!-- Goa -->
+<article class="bg-surface-container-lowest rounded-2xl shadow-sm overflow-hidden flex flex-col group cursor-pointer">
+<div class="relative h-32 w-full overflow-hidden">
+<img class="w-full h-full object-cover transition-transform group-hover:scale-105" data-alt="Peaceful secluded palm-fringed sandy beach in South Goa during golden sunset with tranquil gentle waves, seaside shacks, and tropical serene relaxation vibes." src="https://lh3.googleusercontent.com/aida-public/AB6AXuC7NiT9I2f_VRtAPN-6xKoBBntt79Nbuzpc25H3SIpK0qy-eBGHrZstYEHwrDwS6PKcwLwWZ0Dl2bHg9DQznOAt74tQ2csaePwBXaDrZyAPoPCQOPZh1MXby1Q7M7RimIDrpAxWGK71ZAWO1H3uRZ8XxoHg8JNf6ZJyAKi4HHv0A8bCHes4VJBqBd_hcvfTLSZ95-mpSgzlzxZzT0WWs8UImVfdyLLbEgeAWoKilg"/>
+<button aria-label="Bookmark Goa" class="bookmark-btn absolute top-2 right-2 w-6 h-6 rounded-full bg-surface-container-lowest/85 backdrop-blur-md flex items-center justify-center text-primary-container shadow-sm">
+<span class="material-symbols-outlined text-[14px]">favorite_border</span>
+</button>
+</div>
+<div class="p-3 space-y-1">
+<span class="font-label-sm text-label-sm text-on-surface-variant">West Coast</span>
+<h3 class="font-headline-sm text-headline-sm text-on-surface">Goa</h3>
+<p class="font-body-sm text-body-sm text-on-surface-variant line-clamp-1">Serene Beaches &amp; Flea Markets</p>
+<div class="flex items-center justify-between font-label-sm text-label-sm text-primary pt-1">
+<span>4 Days</span>
+<span>28°C</span>
+</div>
+</div>
+</article>
+</div>
+</section>
+<!-- Bottom Section: AI Curation Banner -->
+<section class="px-gutter pt-2">
+<div class="relative overflow-hidden bg-primary-container text-on-primary rounded-2xl p-5 shadow-lg flex flex-col space-y-4">
+<!-- Decorative Organic Background Pattern -->
+<div class="absolute -right-8 -bottom-8 w-36 h-36 rounded-full bg-primary/40 pointer-events-none"></div>
+<div class="absolute right-12 top-4 w-16 h-16 rounded-full bg-secondary-container/10 pointer-events-none"></div>
+<div class="relative z-10 flex items-start gap-3">
+<div class="w-10 h-10 rounded-xl bg-tertiary-fixed-dim/20 flex items-center justify-center shrink-0">
+<span class="material-symbols-outlined text-tertiary-fixed-dim text-[24px]">auto_awesome</span>
+</div>
+<div class="space-y-1">
+<h3 class="font-headline-sm text-headline-sm text-on-primary">Looking for something tailored?</h3>
+<p class="font-body-md text-body-md text-on-primary-container leading-snug">
+            Let RoamAI curate bespoke destinations matched precisely with your travel pace, season, and personality.
+          </p>
+</div>
+</div>
+<div class="relative z-10 pt-1">
+<button class="w-full py-3 px-4 rounded-xl bg-surface-container-lowest text-primary font-headline-sm text-headline-sm shadow-md flex items-center justify-center gap-2 active:scale-98 transition-transform hover:bg-surface-container-low">
+<span>Try Smart Match</span>
+<span class="material-symbols-outlined text-tertiary-fixed text-[18px]">temp_preferences_custom</span>
+</button>
+</div>
+</div>
+</section>
+</div>
+<script>
+  // Bookmark toggle interactive micro-behavior
+  document.querySelectorAll('.bookmark-btn').forEach(btn => {
+    btn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      const icon = btn.querySelector('.material-symbols-outlined');
+      if (icon) {
+        const isFilled = icon.textContent.trim() === 'favorite';
+        icon.textContent = isFilled ? 'favorite_border' : 'favorite';
+        if (!isFilled) {
+          icon.style.fontVariationSettings = "'FILL' 1";
+          icon.classList.add('text-error');
+        } else {
+          icon.style.fontVariationSettings = "'FILL' 0";
+          icon.classList.remove('text-error');
+        }
+      }
+    });
+  });
+
+  // Filter Pill toggle interactive micro-behavior
+  document.querySelectorAll('.filter-chip').forEach(pill => {
+    pill.addEventListener('click', () => {
+      document.querySelectorAll('.filter-chip').forEach(p => {
+        p.classList.remove('bg-primary-container', 'text-on-primary');
+        p.classList.add('bg-surface-container-low', 'text-on-surface-variant');
+      });
+      pill.classList.remove('bg-surface-container-low', 'text-on-surface-variant');
+      pill.classList.add('bg-primary-container', 'text-on-primary');
+    });
+  });
+</script></main><nav class="fixed bottom-0 w-full z-50 pb-safe bg-surface/85 backdrop-blur-xl shadow-[0_-2px_16px_rgba(23,63,53,0.06)]" data-active-classes="text-primary-container font-semibold"><div class="h-16 flex items-center justify-around px-space-xs"><a class="flex flex-col items-center justify-center min-w-[56px] min-h-[44px] text-on-surface-variant transition-colors" data-path="home" href="#"><span class="material-symbols-outlined text-[22px]">home</span><span class="font-label-sm text-label-sm mt-0.5">Home</span></a><a class="flex flex-col items-center justify-center min-w-[56px] min-h-[44px] text-on-surface-variant transition-colors" data-path="my-trips" href="#"><span class="material-symbols-outlined text-[22px]">luggage</span><span class="font-label-sm text-label-sm mt-0.5">My Trips</span></a><a aria-current="page" class="relative flex flex-col items-center justify-center min-w-[56px] min-h-[44px] transition-colors text-primary-container font-semibold" data-path="explore-destinations" href="#"><span class="material-symbols-outlined text-[22px]">explore</span><span class="font-label-sm text-label-sm mt-0.5">Explore</span><span class="w-1.5 h-1.5 rounded-full bg-tertiary-fixed-dim mt-0.5"></span></a><a class="flex flex-col items-center justify-center min-w-[56px] min-h-[44px] text-on-surface-variant transition-colors" data-path="plan-b" href="#"><span class="material-symbols-outlined text-[22px]">alt_route</span><span class="font-label-sm text-label-sm mt-0.5">Plan B</span></a><a class="flex flex-col items-center justify-center min-w-[56px] min-h-[44px] text-on-surface-variant transition-colors" data-path="profile" href="#"><span class="material-symbols-outlined text-[22px]">person_outline</span><span class="font-label-sm text-label-sm mt-0.5">Profile</span></a></div></nav></body></html>

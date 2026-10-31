@@ -2,308 +2,330 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useTrip } from '../context/TripContext';
 
+interface StageItem {
+  id: number;
+  label: string;
+  sublabel: string;
+  threshold: number; // progress % when this becomes active
+  completedThreshold: number; // progress % when this is completed
+}
+
+const GENERATION_STAGES: StageItem[] = [
+  { id: 1, label: 'Understanding your preferences', sublabel: 'Calibrated', threshold: 0, completedThreshold: 20 },
+  { id: 2, label: 'Analysing destinations', sublabel: 'Circuit Stops Matched', threshold: 20, completedThreshold: 38 },
+  { id: 3, label: 'Calculating travel time', sublabel: 'Vande Bharat & Expressways', threshold: 38, completedThreshold: 55 },
+  { id: 4, label: 'Finding suitable activities', sublabel: '18 Curated Spots', threshold: 55, completedThreshold: 72 },
+  { id: 5, label: 'Checking weather forecasts', sublabel: 'Live Syncing IMD Radar', threshold: 72, completedThreshold: 86 },
+  { id: 6, label: 'Balancing budget and travel pace', sublabel: 'Balanced Allocation', threshold: 86, completedThreshold: 95 },
+  { id: 7, label: 'Preparing your itinerary', sublabel: 'Finalizing', threshold: 95, completedThreshold: 100 }
+];
+
+const ENGINE_FACTS = [
+  'October in Rajasthan offers clear 26°C skies for Amber Fort, with zero monsoon delays anticipated.',
+  'Yamuna Expressway traffic flow is optimal between 07:00 and 10:30 for your Agra transfer.',
+  "Delhi evening light shows at Humayun's Tomb have been pinned for Golden Hour alignment."
+];
+
 export const GeneratingPage: React.FC = () => {
   const navigate = useNavigate();
   const { state } = useTrip();
-  const [progress, setProgress] = useState(25);
-  const [currentStep, setCurrentStep] = useState(1);
 
-  const destinationCity = state.config.destination.split(',')[0] || 'Jaipur';
+  const [progress, setProgress] = useState(15);
+  const [factIndex, setFactIndex] = useState(0);
 
+  // Dynamic route label from state
+  const destinationDisplay = state.config.destination || 'Jaipur ➔ Delhi ➔ Agra';
+  const paceDisplay = state.config.pace || 'Balanced';
+
+  // Calculate days duration
+  const getDays = () => {
+    if (!state.config.startDate || !state.config.endDate) return '7 Days';
+    const s = new Date(state.config.startDate);
+    const e = new Date(state.config.endDate);
+    if (isNaN(s.getTime()) || isNaN(e.getTime())) return '7 Days';
+    const diff = Math.max(1, Math.round((e.getTime() - s.getTime()) / (1000 * 60 * 60 * 24)) + 1);
+    return `${diff} Days`;
+  };
+
+  const daysDisplay = getDays();
+
+  // Progress animation timers
   useEffect(() => {
-    const timer1 = setTimeout(() => {
-      setProgress(55);
-      setCurrentStep(2);
-    }, 900);
-
-    const timer2 = setTimeout(() => {
-      setProgress(85);
-      setCurrentStep(3);
-    }, 1800);
-
-    const timer3 = setTimeout(() => {
-      setProgress(100);
-      setCurrentStep(4);
-    }, 2800);
-
-    const timer4 = setTimeout(() => {
-      navigate('/trip');
-    }, 3800);
+    const t1 = setTimeout(() => setProgress(35), 600);
+    const t2 = setTimeout(() => setProgress(58), 1300);
+    const t3 = setTimeout(() => setProgress(78), 2000);
+    const t4 = setTimeout(() => setProgress(92), 2700);
+    const t5 = setTimeout(() => setProgress(100), 3400);
+    const tComplete = setTimeout(() => navigate('/trip'), 4100);
 
     return () => {
-      clearTimeout(timer1);
-      clearTimeout(timer2);
-      clearTimeout(timer3);
-      clearTimeout(timer4);
+      clearTimeout(t1);
+      clearTimeout(t2);
+      clearTimeout(t3);
+      clearTimeout(t4);
+      clearTimeout(t5);
+      clearTimeout(tComplete);
     };
   }, [navigate]);
 
-  return (
-    <div className="flex flex-col min-h-screen bg-surface text-on-surface select-none relative overflow-hidden">
-      {/* Subtle Ambient Glow Orbs */}
-      <div className="absolute -top-10 -left-12 w-64 h-64 bg-primary/10 rounded-full blur-3xl pointer-events-none" />
-      <div className="absolute top-48 -right-12 w-56 h-56 bg-tertiary-fixed-dim/20 rounded-full blur-3xl pointer-events-none" />
-      <div className="absolute bottom-20 left-6 w-72 h-72 bg-secondary-container/15 rounded-full blur-3xl pointer-events-none" />
+  // Rotating facts timer
+  useEffect(() => {
+    const factInterval = setInterval(() => {
+      setFactIndex((prev) => (prev + 1) % ENGINE_FACTS.length);
+    }, 2800);
+    return () => clearInterval(factInterval);
+  }, []);
 
-      <main className="flex-1 w-full max-w-md mx-auto pt-10 pb-16 px-margin flex flex-col items-center justify-between">
-        {/* Header & Sparkle Badge */}
-        <div className="flex flex-col items-center text-center mt-2 mb-4 z-10">
-          <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-surface-container-low shadow-sm mb-2 border border-surface-container">
-            <span
-              className="material-symbols-outlined text-primary text-[18px] animate-pulse"
-              style={{ fontVariationSettings: "'FILL' 1" }}
-            >
-              auto_awesome
-            </span>
-            <span className="font-label text-xs text-primary uppercase tracking-wider font-bold">
-              RoamWise Intelligence
-            </span>
-            <span className="w-1.5 h-1.5 rounded-full bg-primary animate-ping" />
+  // Compute active stage
+  const currentStageIndex = GENERATION_STAGES.findIndex(
+    (s) => progress >= s.threshold && progress < s.completedThreshold
+  );
+  const activeStage = currentStageIndex !== -1 ? GENERATION_STAGES[currentStageIndex] : GENERATION_STAGES[GENERATION_STAGES.length - 1];
+  const stageNum = currentStageIndex !== -1 ? currentStageIndex + 1 : 7;
+
+  // Remaining time estimate
+  const estRemaining = progress < 40 ? '~4s' : progress < 75 ? '~2s' : progress < 99 ? '~1s' : 'Ready';
+
+  // SVG circle calculation
+  const circleRadius = 15.9155;
+  const strokeDash = `${progress}, 100`;
+
+  return (
+    <div className="bg-surface text-on-surface antialiased flex flex-col min-h-screen relative overflow-x-hidden selection:bg-secondary-container selection:text-primary">
+      {/* Subtle Background Icon Ambient Glow */}
+      <div className="pointer-events-none fixed inset-0 flex items-center justify-center opacity-[0.03] z-0">
+        <span className="material-symbols-outlined text-[360px] text-primary">explore</span>
+      </div>
+
+      <main className="flex-1 flex flex-col relative w-full bg-surface z-10 pt-safe pb-safe max-w-md mx-auto">
+        <div className="flex flex-col w-full px-margin pb-space-xl">
+          {/* Top Bar / App Brand Presence */}
+          <div className="flex items-center justify-between py-space-sm">
+            <div className="flex items-center space-x-2">
+              <div className="w-8 h-8 rounded-full bg-secondary-container flex items-center justify-center text-primary shadow-sm">
+                <span className="material-symbols-outlined text-[18px]">explore</span>
+              </div>
+              <span className="font-headline-sm text-base text-primary font-bold tracking-tight">
+                RoamWise
+              </span>
+            </div>
+            <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-surface-container text-on-surface-variant">
+              <span className="w-1.5 h-1.5 rounded-full bg-tertiary-fixed-dim animate-ping" />
+              <span className="font-label-sm text-[10px] uppercase tracking-wider font-semibold">
+                Adaptive Engine (Demo)
+              </span>
+            </div>
           </div>
 
-          <h1 className="font-heading text-2xl font-bold text-on-surface tracking-tight">
-            Crafting Your {destinationCity} Journey
-          </h1>
-          <p className="font-body text-xs text-on-surface-variant max-w-[280px] mt-1 leading-relaxed">
-            Tailoring daily flows, dynamic weather shields & authentic royal heritage stops.
-          </p>
-        </div>
-
-        {/* Centerpiece: Pulsing AI Orb & Glowing Weather Radar */}
-        <div className="relative w-full flex items-center justify-center my-4 z-10">
-          <div className="relative w-64 h-64 flex items-center justify-center">
-            {/* Outer Rotating Radar Compass SVG Ring */}
-            <svg
-              className="absolute inset-0 w-full h-full animate-[spin_22s_linear_infinite]"
-              fill="none"
-              viewBox="0 0 256 256"
-            >
-              <circle
-                cx="128"
-                cy="128"
-                r="118"
-                stroke="#006765"
-                strokeDasharray="6 8"
-                strokeOpacity="0.18"
-                strokeWidth="1.5"
-              />
-              <circle
-                cx="128"
-                cy="128"
-                r="102"
-                stroke="#ffb95f"
-                strokeDasharray="2 12"
-                strokeOpacity="0.25"
-                strokeWidth="1.5"
-              />
-              {/* Radar ticks */}
-              <line stroke="#006765" strokeLinecap="round" strokeWidth="2" x1="128" x2="128" y1="6" y2="16" />
-              <line stroke="#006765" strokeLinecap="round" strokeWidth="2" x1="128" x2="128" y1="240" y2="250" />
-              <line stroke="#006765" strokeLinecap="round" strokeWidth="2" x1="6" x2="16" y1="128" y2="128" />
-              <line stroke="#006765" strokeLinecap="round" strokeWidth="2" x1="240" x2="250" y1="128" y2="128" />
-              {/* Radar satellite dots */}
-              <circle cx="210" cy="80" fill="#40c2fd" r="3.5" />
-              <circle cx="48" cy="170" fill="#ffb95f" r="2.5" />
-            </svg>
-
-            {/* Counter-rotating Concentric Particle Ring with soft sweep beam */}
-            <svg
-              className="absolute w-48 h-48 animate-[spin_14s_linear_infinite_reverse]"
-              fill="none"
-              viewBox="0 0 200 200"
-            >
-              <circle
-                cx="100"
-                cy="100"
-                r="92"
-                stroke="#008280"
-                strokeDasharray="14 18 4 18"
-                strokeOpacity="0.25"
-                strokeWidth="2"
-              />
-              <circle
-                cx="100"
-                cy="100"
-                r="76"
-                stroke="#a36700"
-                strokeOpacity="0.2"
-                strokeWidth="1"
-              />
-              <path
-                d="M100 100 L170 60 A92 92 0 0 0 100 8 Z"
-                fill="url(#radarGradient)"
-                opacity="0.45"
-              />
-              <defs>
-                <linearGradient id="radarGradient" x1="100" y1="100" x2="170" y2="60">
-                  <stop stopColor="#65d8d4" stopOpacity="0.6" />
-                  <stop offset="100%" stopColor="#006765" stopOpacity="0" />
-                </linearGradient>
-              </defs>
-            </svg>
-
-            {/* Compass needle crosshair */}
-            <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-              <div className="w-40 h-[1px] bg-gradient-to-r from-transparent via-primary/30 to-transparent" />
-              <div className="absolute h-40 w-[1px] bg-gradient-to-b from-transparent via-primary/30 to-transparent" />
+          {/* Hero Status Section */}
+          <div className="flex flex-col items-center text-center mt-space-md mb-space-lg">
+            <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-surface-container-high text-on-primary-container mb-space-sm shadow-sm">
+              <span className="material-symbols-outlined text-[15px] text-tertiary-fixed-dim" style={{ fontVariationSettings: "'FILL' 1" }}>
+                auto_awesome
+              </span>
+              <span className="font-label-md text-xs font-semibold text-primary">
+                Deterministic Synthesis (Demo Engine)
+              </span>
             </div>
 
-            {/* Core Breathing Sphere */}
-            <div className="relative w-32 h-32 rounded-full p-2 bg-gradient-to-tr from-primary via-primary-container to-secondary-container shadow-[0_0_36px_rgba(0,103,101,0.35)] flex items-center justify-center animate-pulse">
-              <div className="w-full h-full rounded-full bg-surface-container-lowest/20 backdrop-blur-md flex flex-col items-center justify-center text-on-primary relative overflow-hidden">
-                <div className="absolute inset-0 bg-gradient-to-b from-transparent via-white/10 to-transparent animate-[spin_8s_linear_infinite]" />
-                <span className="material-symbols-outlined text-[36px] drop-shadow-md text-on-primary">
-                  wb_twilight
+            <h1 className="font-display-lg text-2xl sm:text-3xl text-primary font-bold tracking-tight max-w-[320px] mb-2">
+              Crafting Your Adaptive Journey
+            </h1>
+            <p className="font-body-md text-xs text-on-surface-variant max-w-[290px] mb-space-md">
+              RoamWise is preparing your personalised journey.
+            </p>
+
+            {/* Route Overview Pill */}
+            <div className="w-full flex items-center justify-center px-4 py-2.5 rounded-xl bg-surface-container text-primary shadow-sm border border-surface-container-high">
+              <span className="material-symbols-outlined text-[18px] text-secondary mr-2">route</span>
+              <span className="font-label-md text-xs font-semibold truncate text-primary">
+                {destinationDisplay} • {daysDisplay} • {paceDisplay} Pace
+              </span>
+            </div>
+          </div>
+
+          {/* Ambient Progress Radial & Telemetry */}
+          <div className="relative w-full rounded-2xl bg-surface-container-lowest p-5 shadow-sm mb-space-lg overflow-hidden border border-surface-container">
+            <div className="flex items-center justify-between mb-3">
+              <div className="flex items-center gap-3">
+                <div className="relative flex items-center justify-center w-11 h-11 shrink-0">
+                  <svg className="w-11 h-11 transform -rotate-90" viewBox="0 0 36 36">
+                    <path
+                      className="text-surface-container"
+                      d={`M18 2.0845 a ${circleRadius} ${circleRadius} 0 0 1 0 31.831 a ${circleRadius} ${circleRadius} 0 0 1 0 -31.831`}
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth="3"
+                    />
+                    <path
+                      className="text-tertiary-fixed-dim stroke-current transition-all duration-700 ease-out"
+                      d={`M18 2.0845 a ${circleRadius} ${circleRadius} 0 0 1 0 31.831 a ${circleRadius} ${circleRadius} 0 0 1 0 -31.831`}
+                      fill="none"
+                      strokeDasharray={strokeDash}
+                      strokeLinecap="round"
+                      strokeWidth="3.5"
+                    />
+                  </svg>
+                  <span className="absolute font-label-md text-xs text-primary font-bold">
+                    {progress}%
+                  </span>
+                </div>
+                <div>
+                  <span className="font-label-lg text-sm text-primary font-semibold block">
+                    {activeStage.label}
+                  </span>
+                  <span className="font-body-sm text-xs text-secondary">
+                    Step {stageNum} of 7 underway
+                  </span>
+                </div>
+              </div>
+              <div className="flex flex-col items-end">
+                <span className="font-label-sm text-[10px] text-secondary uppercase tracking-wider font-semibold">
+                  Est. Remaining
                 </span>
-                <span className="font-label text-[11px] font-bold tracking-widest text-on-primary mt-1 opacity-95 uppercase">
-                  {destinationCity.toUpperCase()} AI
+                <span className="font-headline-sm text-sm text-primary font-bold">
+                  {estRemaining}
                 </span>
               </div>
             </div>
 
-            {/* Floating Micro Badges */}
-            <div className="absolute top-2 left-2 bg-surface-container-lowest/90 backdrop-blur-md px-2.5 py-1 rounded-full shadow-md flex items-center gap-1.5 text-on-surface transform -rotate-6 border border-surface-container">
-              <span className="material-symbols-outlined text-tertiary text-[14px]">sunny</span>
-              <span className="font-label text-[10px] font-semibold">28°C Clear</span>
-            </div>
-            <div className="absolute bottom-2 right-2 bg-surface-container-lowest/90 backdrop-blur-md px-2.5 py-1 rounded-full shadow-md flex items-center gap-1.5 text-on-surface transform rotate-3 border border-surface-container">
-              <span className="material-symbols-outlined text-secondary text-[14px]">shield</span>
-              <span className="font-label text-[10px] font-semibold">Adaptive V3</span>
-            </div>
-          </div>
-        </div>
-
-        {/* Progress Bar & Status */}
-        <div className="w-full bg-surface-container-lowest rounded-2xl p-space-md shadow-md border border-surface-container/60 mb-space-md z-10">
-          <div className="flex items-center justify-between mb-2">
-            <div className="flex items-center gap-2">
-              <span className="font-heading text-lg font-bold text-primary">
-                {progress}%
-              </span>
-              <span className="font-heading text-xs font-semibold text-on-surface">
-                {progress === 100 ? 'Itinerary Finalized!' : 'Synthesizing Itinerary'}
-              </span>
-            </div>
-            <div className="flex items-center gap-1 text-on-surface-variant font-label text-xs">
-              <span className="material-symbols-outlined text-[15px] animate-spin">timelapse</span>
-              <span>Takes ~3s</span>
-            </div>
-          </div>
-
-          <div className="w-full h-2.5 bg-surface-container rounded-full overflow-hidden relative">
-            <div
-              className="h-full bg-gradient-to-r from-primary via-primary-container to-secondary-container rounded-full transition-all duration-700 ease-out"
-              style={{ width: `${progress}%` }}
-            >
-              <div className="w-full h-full bg-white/20 animate-pulse" />
-            </div>
-          </div>
-        </div>
-
-        {/* Checklist Checkpoint Stack */}
-        <div className="w-full bg-surface-container-lowest rounded-2xl p-space-md shadow-md border border-surface-container/60 z-10 flex flex-col gap-2.5">
-          <div className="flex items-center justify-between pb-1">
-            <span className="font-label text-[10px] uppercase tracking-wider text-on-surface-variant font-bold">
-              Real-Time Plan Engine
-            </span>
-            <span className="font-label text-[10px] text-primary bg-surface-container-low px-2 py-0.5 rounded-full font-semibold">
-              5 Checkpoints
-            </span>
-          </div>
-
-          {/* Checkpoint 1 */}
-          <div className="flex items-center gap-2.5">
-            <div className="w-6 h-6 rounded-full bg-surface-container-low flex items-center justify-center shrink-0">
-              <span className="material-symbols-outlined text-primary text-[16px]" style={{ fontVariationSettings: "'FILL' 1" }}>
-                check_circle
-              </span>
-            </div>
-            <div className="flex flex-col min-w-0 flex-1">
-              <span className="font-heading text-xs font-semibold text-on-surface truncate">
-                Surveyed 42 royal forts, palaces & bazaars
-              </span>
-              <span className="font-body text-[11px] text-on-surface-variant">
-                Amer, Pink City & Nahargarh hill ridge
-              </span>
-            </div>
-          </div>
-
-          {/* Checkpoint 2 */}
-          <div className="flex items-center gap-2.5">
-            <div className="w-6 h-6 rounded-full bg-surface-container-low flex items-center justify-center shrink-0">
-              <span
-                className="material-symbols-outlined text-primary text-[16px]"
-                style={{ fontVariationSettings: "'FILL' 1" }}
+            {/* Micro Linear Layered Bar */}
+            <div className="w-full bg-surface-container h-1.5 rounded-full overflow-hidden mb-3">
+              <div
+                className="h-full bg-primary-container rounded-full relative transition-all duration-500 ease-out"
+                style={{ width: `${progress}%` }}
               >
-                check_circle
+                <div className="absolute inset-0 bg-gradient-to-r from-transparent via-tertiary-fixed-dim/40 to-transparent w-full animate-pulse" />
+              </div>
+            </div>
+
+            <p className="font-body-sm text-xs text-on-surface-variant flex items-center gap-1.5">
+              <span className="material-symbols-outlined text-[15px] text-tertiary-fixed-dim">query_stats</span>
+              <span>Synthesising 142 data points across real-time weather & live transit...</span>
+            </p>
+          </div>
+
+          {/* Sequential Stage Checklist */}
+          <div className="w-full flex flex-col space-y-2 mb-space-lg">
+            <div className="flex items-center justify-between px-1 mb-1">
+              <span className="font-label-sm text-xs text-secondary uppercase tracking-wider font-bold">
+                Engine Execution Log
+              </span>
+              <span className="font-label-sm text-xs text-tertiary-fixed-dim font-semibold">
+                Real-Time Sync
               </span>
             </div>
-            <div className="flex flex-col min-w-0 flex-1">
-              <span className="font-heading text-xs font-semibold text-on-surface truncate">
-                Matching {state.config.travelerType} & {state.config.pace} pace profile
-              </span>
-              <span className="font-body text-[11px] text-on-surface-variant">
-                Interests: {state.config.interests.join(', ')}
-              </span>
+
+            {GENERATION_STAGES.map((stage) => {
+              const isCompleted = progress >= stage.completedThreshold;
+              const isActive = progress >= stage.threshold && !isCompleted;
+
+              if (isCompleted) {
+                return (
+                  <div
+                    key={stage.id}
+                    className="flex items-center justify-between p-3 rounded-xl bg-surface-container-lowest shadow-sm transition-all border border-surface-container/60"
+                  >
+                    <div className="flex items-center gap-3">
+                      <div className="w-6 h-6 rounded-full bg-secondary-container flex items-center justify-center text-primary">
+                        <span className="material-symbols-outlined text-[15px] font-bold">check</span>
+                      </div>
+                      <span className="font-body-md text-xs font-semibold text-primary">
+                        {stage.label}
+                      </span>
+                    </div>
+                    <span className="font-label-sm text-[11px] text-secondary font-medium">
+                      {stage.sublabel}
+                    </span>
+                  </div>
+                );
+              }
+
+              if (isActive) {
+                return (
+                  <div
+                    key={stage.id}
+                    className="flex items-center justify-between p-3 rounded-xl bg-surface-container-low shadow-sm relative overflow-hidden border border-primary/20"
+                  >
+                    <div className="flex items-center gap-3">
+                      <div className="w-6 h-6 rounded-full bg-tertiary-fixed flex items-center justify-center text-tertiary-container animate-spin">
+                        <span className="material-symbols-outlined text-[15px]">sync</span>
+                      </div>
+                      <span className="font-body-md text-xs font-bold text-primary">
+                        {stage.label}
+                      </span>
+                    </div>
+                    <div className="flex items-center gap-1.5 px-2 py-0.5 rounded-full bg-surface-container-lowest text-tertiary-container shadow-sm">
+                      <span className="w-1.5 h-1.5 rounded-full bg-tertiary-fixed-dim animate-pulse" />
+                      <span className="font-label-sm text-[10px] font-bold">Active Sync</span>
+                    </div>
+                  </div>
+                );
+              }
+
+              // Pending
+              return (
+                <div
+                  key={stage.id}
+                  className="flex items-center justify-between p-3 rounded-xl bg-surface-container/40 opacity-70"
+                >
+                  <div className="flex items-center gap-3">
+                    <div className="w-6 h-6 rounded-full bg-surface-container-high flex items-center justify-center text-outline">
+                      <span className="material-symbols-outlined text-[14px]">hourglass_empty</span>
+                    </div>
+                    <span className="font-body-md text-xs text-secondary">{stage.label}</span>
+                  </div>
+                  <span className="font-label-sm text-[10px] text-secondary/70">Queued</span>
+                </div>
+              );
+            })}
+          </div>
+
+          {/* Live Adaptive Context Card */}
+          <div className="relative w-full rounded-2xl bg-surface-container p-4 shadow-sm mb-space-md overflow-hidden border border-surface-container-high">
+            <div className="flex items-start gap-3">
+              <div className="p-2 rounded-xl bg-surface-container-lowest text-tertiary-container shadow-sm mt-0.5">
+                <span className="material-symbols-outlined text-[20px]" style={{ fontVariationSettings: "'FILL' 1" }}>
+                  lightbulb
+                </span>
+              </div>
+              <div className="flex-1">
+                <div className="flex items-center justify-between mb-1">
+                  <span className="font-label-sm text-[10px] uppercase tracking-wider text-tertiary font-bold">
+                    Live Engine Fact
+                  </span>
+                  <span className="font-label-sm text-[10px] text-secondary font-medium">
+                    October Microclimate
+                  </span>
+                </div>
+                <p className="font-body-md text-xs text-on-surface leading-snug mb-2 transition-opacity duration-300">
+                  {ENGINE_FACTS[factIndex]}
+                </p>
+                <div className="flex items-center gap-1.5 text-on-surface-variant font-body-sm text-[11px] bg-surface-container-lowest/70 p-2 rounded-lg">
+                  <span className="material-symbols-outlined text-[15px] text-primary shrink-0">shield</span>
+                  <span>RoamWise automatically prepares smart Plan B contingencies for every outdoor stop.</span>
+                </div>
+              </div>
             </div>
           </div>
 
-          {/* Checkpoint 3 */}
-          <div className="flex items-center gap-2.5">
-            <div className="w-6 h-6 rounded-full bg-surface-container-low flex items-center justify-center shrink-0">
-              {currentStep >= 3 ? (
-                <span className="material-symbols-outlined text-primary text-[16px]" style={{ fontVariationSettings: "'FILL' 1" }}>
-                  check_circle
-                </span>
-              ) : (
-                <span className="material-symbols-outlined text-primary text-[16px] animate-spin">
-                  progress_activity
-                </span>
-              )}
-            </div>
-            <div className="flex flex-col min-w-0 flex-1">
-              <span className="font-heading text-xs font-semibold text-on-surface truncate">
-                Checking live Doppler weather & rain forecasts
-              </span>
-              <span className="font-body text-[11px] text-on-surface-variant">
-                Pre-generating Plan B for Day 2 afternoon thunderstorm
-              </span>
-            </div>
+          {/* Simulation Designation Footnote */}
+          <div className="p-3 rounded-xl bg-surface-container-low text-center text-on-surface-variant text-[11px] leading-relaxed mb-3 border border-surface-container">
+            <span className="font-semibold text-primary">MVP Transparency:</span> Deterministic itinerary synthesis tailored to your selected stops, dates, and budget (Simulated Gemini 1.5 Pro model for offline demo).
           </div>
 
-          {/* Checkpoint 4 */}
-          <div className={`flex items-center gap-2.5 ${currentStep >= 4 ? 'opacity-100' : 'opacity-50'}`}>
-            <div className="w-6 h-6 rounded-full bg-surface-container flex items-center justify-center shrink-0">
-              {currentStep >= 4 ? (
-                <span className="material-symbols-outlined text-primary text-[16px]" style={{ fontVariationSettings: "'FILL' 1" }}>
-                  check_circle
-                </span>
-              ) : (
-                <span className="material-symbols-outlined text-on-surface-variant text-[16px]">
-                  route
-                </span>
-              )}
-            </div>
-            <div className="flex flex-col min-w-0 flex-1">
-              <span className="font-heading text-xs font-semibold text-on-surface truncate">
-                Optimizing transit corridors & entry queues
-              </span>
-              <span className="font-body text-[11px] text-on-surface-variant">
-                Minimizing midday sun exposure
-              </span>
-            </div>
+          {/* Cancel / Secondary Action */}
+          <div className="w-full flex items-center justify-center pt-space-xs">
+            <button
+              type="button"
+              onClick={() => navigate('/plan')}
+              className="px-4 py-2 text-secondary hover:text-primary transition-colors font-label-md text-xs font-semibold inline-flex items-center gap-1.5 focus:outline-none"
+            >
+              <span className="material-symbols-outlined text-[16px]">close</span>
+              <span>Cancel Generation</span>
+            </button>
           </div>
         </div>
-
-        {/* Manual Skip/Proceed Button */}
-        <button
-          type="button"
-          onClick={() => navigate('/trip')}
-          className="mt-4 text-primary font-label text-xs font-semibold flex items-center gap-1 hover:underline active:scale-95"
-        >
-          <span>Skip to overview</span>
-          <span className="material-symbols-outlined text-[16px]">arrow_forward</span>
-        </button>
       </main>
     </div>
   );

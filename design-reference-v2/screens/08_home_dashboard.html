@@ -1,0 +1,314 @@
+<!DOCTYPE html>
+
+<html class="h-full" lang="en"><head><meta charset="utf-8"/><meta content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" name="viewport"/><meta content="mobile_tab" name="shell-type"/><link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" rel="stylesheet"/><link href="https://fonts.googleapis.com" rel="preconnect"/><link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/><link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&amp;family=Manrope:wght@600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/><script src="https://cdn.tailwindcss.com"></script><script id="tailwind-config">tailwind.config = { darkMode: "class", theme: { extend: { colors: { "surface-tint": "#3f665a", "outline-variant": "#c0c8c4", "surface-bright": "#edfdf5", "surface-container-low": "#e7f7ef", "on-primary-fixed": "#002019", "surface": "#edfdf5", "on-error-container": "#93000a", "background": "#edfdf5", "tertiary-fixed": "#ffdcbb", "surface-container": "#e1f2ea", "on-surface-variant": "#414845", "primary-fixed": "#c1ecdd", "on-error": "#ffffff", "secondary-container": "#d6e7db", "on-primary": "#ffffff", "on-tertiary": "#ffffff", "on-tertiary-fixed-variant": "#683d00", "on-secondary-fixed-variant": "#3b4a41", "on-secondary": "#ffffff", "primary-fixed-dim": "#a6cfc1", "secondary": "#526259", "on-primary-fixed-variant": "#274e43", "surface-container-highest": "#d6e6df", "primary-container": "#173f35", "on-tertiary-fixed": "#2c1700", "inverse-primary": "#a6cfc1", "tertiary-fixed-dim": "#fdb96e", "surface-container-high": "#dcece4", "secondary-fixed": "#d6e7db", "secondary-fixed-dim": "#bacbbf", "surface-dim": "#ceded6", "on-primary-container": "#82aa9d", "on-background": "#101e1a", "on-tertiary-container": "#d4954e", "error-container": "#ffdad6", "surface-container-lowest": "#ffffff", "error": "#ba1a1a", "primary": "#002920", "tertiary": "#361d00", "surface-variant": "#d6e6df", "on-secondary-fixed": "#101e17", "on-secondary-container": "#58685f", "inverse-on-surface": "#e4f4ed", "inverse-surface": "#25332e", "tertiary-container": "#543000", "on-surface": "#101e1a", "outline": "#717975" }, borderRadius: { "DEFAULT": "0.25rem", "lg": "0.5rem", "xl": "0.75rem", "full": "9999px" }, spacing: { "space-xs": "0.25rem", "gutter-desktop": "2rem", "space-lg": "1.5rem", "space-xl": "2rem", "gutter-tablet": "1.5rem", "margin": "1rem", "margin-desktop": "3rem", "space-sm": "0.5rem", "space-md": "1rem", "gutter": "1rem", "margin-tablet": "2rem" }, fontFamily: { "headline-sm": ["Manrope"], "display-lg": ["Manrope"], "body-md": ["Inter"], "label-md": ["Inter"], "label-lg": ["Inter"], "headline-lg": ["Manrope"], "body-lg": ["Inter"], "body-sm": ["Inter"], "label-sm": ["Inter"], "headline-md": ["Manrope"], "display-lg-mobile": ["Manrope"] }, fontSize: { "headline-sm": ["18px", { "lineHeight": "24px", "letterSpacing": "0em", "fontWeight": "600" }], "display-lg": ["40px", { "lineHeight": "48px", "letterSpacing": "-0.02em", "fontWeight": "700" }], "body-md": ["14px", { "lineHeight": "20px", "letterSpacing": "0em", "fontWeight": "400" }], "label-md": ["12px", { "lineHeight": "16px", "letterSpacing": "0.02em", "fontWeight": "500" }], "label-lg": ["14px", { "lineHeight": "18px", "letterSpacing": "0.02em", "fontWeight": "600" }], "headline-lg": ["28px", { "lineHeight": "36px", "letterSpacing": "-0.015em", "fontWeight": "600" }], "body-lg": ["16px", { "lineHeight": "24px", "letterSpacing": "-0.005em", "fontWeight": "400" }], "body-sm": ["12px", { "lineHeight": "16px", "letterSpacing": "0.01em", "fontWeight": "400" }], "label-sm": ["10px", { "lineHeight": "12px", "letterSpacing": "0.04em", "fontWeight": "600" }], "headline-md": ["22px", { "lineHeight": "28px", "letterSpacing": "-0.01em", "fontWeight": "600" }], "display-lg-mobile": ["32px", { "lineHeight": "40px", "letterSpacing": "-0.02em", "fontWeight": "700" }] } } } };</script><style>@layer base { html, body { width: 100%; margin: 0; padding: 0; } body { overscroll-behavior-y: none; } .pb-safe { padding-bottom: env(safe-area-inset-bottom, 0px); } .pt-safe { padding-top: env(safe-area-inset-top, 0px); } main > :first-child { margin-top: 0 !important; } main > :last-child { margin-bottom: 0 !important; } } ::-webkit-scrollbar { display: none; }</style><style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head><body class="bg-surface font-body-md text-body-md text-on-surface min-h-full flex flex-col antialiased selection:bg-secondary-container selection:text-primary"><header class="fixed top-0 w-full z-50 pt-safe bg-surface/80 backdrop-blur-xl shadow-[0_1px_8px_rgba(0,0,0,0.04)]"><div class="h-16 px-gutter flex items-center justify-between"><div class="flex items-center gap-space-sm"><div class="w-10 h-10 rounded-xl bg-primary-container flex items-center justify-center text-on-primary shadow-sm"><span class="material-symbols-outlined text-[24px]">explore</span></div><div class="flex flex-col"><span class="font-headline-sm text-headline-sm text-primary tracking-tight">RoamWise</span><span class="font-label-sm text-label-sm text-on-surface-variant -mt-1 tracking-wider uppercase">Home</span></div></div><div class="flex items-center gap-space-sm"><button aria-label="Notifications" class="w-11 h-11 rounded-full flex items-center justify-center text-on-surface-variant hover:text-primary transition-colors"><span class="material-symbols-outlined text-[22px]">notifications</span></button><div class="w-8 h-8 rounded-full bg-primary flex items-center justify-center"><span class="material-symbols-outlined text-on-primary text-[18px]">person</span></div></div></div></header><main class="flex-1 flex flex-col relative w-full pt-16 pb-20 bg-surface"><div class="flex flex-col w-full">
+<div class="px-margin pt-space-md pb-space-sm flex flex-col gap-1">
+<div class="flex items-center justify-between">
+<div class="flex items-center gap-space-xs">
+<span class="font-headline-md text-headline-md text-primary tracking-tight">Namaste, Ananya</span>
+<span class="text-xl">👋</span>
+</div>
+<span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-secondary-container text-on-secondary-container font-label-sm text-label-sm">
+<span class="w-1.5 h-1.5 rounded-full bg-primary-container animate-pulse"></span>
+        Explorer Tier
+      </span>
+</div>
+<p class="font-body-sm text-body-sm text-on-surface-variant">Ready for your next mindful escape?</p>
+</div>
+<div class="px-margin mb-space-lg">
+<div class="relative w-full rounded-2xl overflow-hidden shadow-md bg-primary-container text-on-primary">
+<div class="bg-cover bg-center w-full h-[290px] relative" data-alt="Misty tea gardens of Munnar Kerala at sunrise with rolling emerald green hills, soft morning fog flowing through valley, ambient ethereal golden sunbeams, serene natural luxury travel photography with warm earth tones" style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuCThbQgkvZT_FaNciPjJFK_lRWprkDWAma9tVYLnBC4cWlXhZGLfegMxfL5pUGdHG3nNDvRNbchVyrTtDKYffHOoRZSIT1Z8zf9le2Yh0_CBCabdMwb3FSd9dYg3LwQB5pVQSczR3bBAETPIolH-6i50sSmKIN-_5re4PBNSPlyqOk1l17yDfqgQaquYsMon9rdI0gp39vsRTZyCMEyNkeoeXw91k2SOtEUYaVPAw')">
+<div class="absolute inset-0 bg-gradient-to-t from-primary via-primary/60 to-transparent"></div>
+<div class="absolute inset-0 p-space-lg flex flex-col justify-end">
+<div class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-surface/20 backdrop-blur-md text-on-primary self-start mb-space-sm shadow-sm">
+<span class="material-symbols-outlined text-[14px] text-tertiary-fixed-dim">arrow_back_ios_new</span>
+<span class="font-label-sm text-label-sm">Tailored for Your Rhythm</span>
+</div>
+<h1 class="font-headline-lg text-headline-lg font-bold text-on-primary tracking-tight leading-tight mb-space-xs">
+            Where would you like to go next?
+          </h1>
+<p class="font-body-sm text-body-sm text-on-primary/85 mb-space-md line-clamp-2">
+            Adaptive journeys crafted around your pace and real-time conditions.
+          </p>
+<button class="w-full flex items-center justify-center gap-2 py-3.5 px-6 rounded-xl bg-surface-container-lowest text-primary font-label-lg text-label-lg shadow-sm active:scale-[0.98] transition-transform" id="planJourneyBtn">
+<span class="material-symbols-outlined text-[20px] text-primary">explore</span>
+<span>Plan My Journey</span>
+<span class="material-symbols-outlined text-[18px] text-primary ml-auto">arrow_forward</span>
+</button>
+</div>
+</div>
+</div>
+</div>
+<div class="px-margin mb-space-xl">
+<div class="relative flex items-center bg-surface-container-lowest rounded-xl shadow-sm px-space-md py-3 text-on-surface">
+<span class="material-symbols-outlined text-[22px] text-primary mr-space-sm">search</span>
+<input class="w-full bg-transparent text-on-surface placeholder:text-outline font-body-sm text-body-sm focus:outline-none" id="naturalSearchInput" placeholder="e.g., 5-day Spiti road trip, Coorg retreat..." type="text"/>
+<button class="p-1 rounded-lg bg-surface-container-high text-primary hover:bg-secondary-container transition-colors">
+<span class="material-symbols-outlined text-[18px]">mic</span>
+</button>
+</div>
+</div>
+<div class="px-margin mb-space-xl">
+<div class="flex items-center justify-between mb-space-md">
+<div class="flex items-center gap-space-xs">
+<span class="material-symbols-outlined text-[20px] text-primary">flight_takeoff</span>
+<h2 class="font-headline-sm text-headline-sm text-primary">Upcoming Trip</h2>
+</div>
+<span class="font-label-sm text-label-sm text-tertiary-container font-semibold uppercase tracking-wider">Confirmed</span>
+</div>
+<div class="w-full bg-surface-container-lowest rounded-2xl p-space-md shadow-sm relative overflow-hidden flex flex-col gap-space-md">
+<div class="flex items-start justify-between gap-space-sm">
+<div class="flex flex-col">
+<div class="flex items-center gap-2 mb-1">
+<span class="px-2.5 py-0.5 rounded-full bg-secondary-container text-on-secondary-container font-label-sm text-label-sm">
+              In 4 days
+            </span>
+<span class="px-2.5 py-0.5 rounded-full bg-surface-container text-on-surface-variant font-label-sm text-label-sm flex items-center gap-1">
+<span class="w-1.5 h-1.5 rounded-full bg-surface-tint"></span>
+              Weather Synced · Normal
+            </span>
+</div>
+<h3 class="font-headline-sm text-headline-sm text-on-surface font-semibold tracking-tight">Golden Triangle &amp; Royal Rajasthan</h3>
+<p class="font-body-sm text-body-sm text-on-surface-variant mt-0.5">Jaipur → Delhi → Agra • 6 Days</p>
+</div>
+</div>
+<div class="flex items-center justify-between bg-surface-container-low rounded-xl p-space-sm">
+<div class="flex items-center gap-3">
+<div class="w-10 h-10 rounded-lg bg-secondary-container flex items-center justify-center text-primary">
+<span class="material-symbols-outlined text-[22px]">calendar_month</span>
+</div>
+<div class="flex flex-col">
+<span class="font-label-md text-label-md text-on-surface font-medium">Oct 18 - 24, 2024</span>
+<span class="font-label-sm text-label-sm text-on-surface-variant">3 Curated Stays • 8 Activities</span>
+</div>
+</div>
+<a class="inline-flex items-center gap-1 px-3 py-2 rounded-lg bg-primary-container text-on-primary font-label-sm text-label-sm shadow-sm active:scale-95 transition-transform" href="#">
+<span>View Itinerary</span>
+<span class="material-symbols-outlined text-[16px]">chevron_right</span>
+</a>
+</div>
+</div>
+</div>
+<div class="mb-space-xl">
+<div class="px-margin flex items-center justify-between mb-space-md">
+<div class="flex items-center gap-space-xs">
+<span class="material-symbols-outlined text-[20px] text-primary">history</span>
+<h2 class="font-headline-sm text-headline-sm text-primary">Recently Viewed</h2>
+</div>
+<a class="font-label-md text-label-md text-on-surface-variant hover:text-primary transition-colors" href="#">See all</a>
+</div>
+<div class="flex gap-space-md overflow-x-auto px-margin pb-2 snap-x snap-mandatory">
+<div class="min-w-[240px] max-w-[240px] snap-start bg-surface-container-lowest rounded-2xl overflow-hidden shadow-sm flex flex-col">
+<div class="relative h-36 w-full">
+<img class="w-full h-full object-cover" data-alt="Majestic mountain landscape of Solang Valley near Manali Himachal Pradesh, pine forested slopes with snow-dusted peaks in background, gentle sunlight, outdoor Himalayan cafe terrace in foreground, tranquil mood" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAwukTsu349ALHHlvA9uB-bLhe3oyH6DokqCrASehQVBxAXEzZCwav2A7o4EYI6iJTcNs5Df6hNt70qkhMbIGRDmtSv7g6JD3B69aVbbrgy-0H6zgQkePf3z-YSBOlrtn9B-j2G2tjfbuUKB1gqatlLWCCBv42qQoZ3EppqGg1QlbUna5fgFFHlOJQAOY6K0A_1Q85wMK6CaqoEZQWluYqcJ9reNfv6PDnpsiZ-JA"/>
+<span class="absolute top-2.5 left-2.5 px-2.5 py-1 rounded-full bg-surface/90 backdrop-blur-md text-primary font-label-sm text-label-sm font-medium shadow-sm">
+            Adventure &amp; Cafes
+          </span>
+</div>
+<div class="p-space-sm flex flex-col gap-1">
+<h3 class="font-label-lg text-label-lg text-on-surface font-semibold truncate">Manali &amp; Solang Valley</h3>
+<p class="font-body-sm text-body-sm text-on-surface-variant">Himachal Pradesh</p>
+<div class="mt-2 flex items-center justify-between text-on-surface-variant font-label-sm text-label-sm">
+<span class="flex items-center gap-1"><span class="material-symbols-outlined text-[15px] text-tertiary-container">schedule</span> 5 Days</span>
+<span class="flex items-center gap-1 text-primary font-medium"><span class="material-symbols-outlined text-[15px]">thermostat</span> 14°C Crisp</span>
+</div>
+</div>
+</div>
+<div class="min-w-[240px] max-w-[240px] snap-start bg-surface-container-lowest rounded-2xl overflow-hidden shadow-sm flex flex-col">
+<div class="relative h-36 w-full">
+<img class="w-full h-full object-cover" data-alt="Lush green rolling tea plantation hills of Munnar Kerala with gentle mist floating over valleys and morning golden sun, quiet organic farm sanctuary scenery" src="https://lh3.googleusercontent.com/aida-public/AB6AXuACX5r8BBtBF-X9ou-F5m9piXltkPqcffeL83QeERG_MlRbNl_hTetfYcIffKB9jDT9PDuXW_mn_log6mELffSJHu6HbJCdomkZ9C9KSJ_Ltc-WqW3MOdmJVmKo_oDaHmeMeoj-2NnBENRj7ysNCWfXdpeVcaZxcXWHi4qOPJ7ak9i1wR4ofW_zvJMghoH9_t1SV57849cYdficuSqIeheiO4EM9rKYtle5FOkNWQ"/>
+<span class="absolute top-2.5 left-2.5 px-2.5 py-1 rounded-full bg-surface/90 backdrop-blur-md text-primary font-label-sm text-label-sm font-medium shadow-sm">
+            Relaxed &amp; Nature
+          </span>
+</div>
+<div class="p-space-sm flex flex-col gap-1">
+<h3 class="font-label-lg text-label-lg text-on-surface font-semibold truncate">Munnar Tea Sanctuaries</h3>
+<p class="font-body-sm text-body-sm text-on-surface-variant">Kerala</p>
+<div class="mt-2 flex items-center justify-between text-on-surface-variant font-label-sm text-label-sm">
+<span class="flex items-center gap-1"><span class="material-symbols-outlined text-[15px] text-tertiary-container">schedule</span> 4 Days</span>
+<span class="flex items-center gap-1 text-primary font-medium"><span class="material-symbols-outlined text-[15px]">filter_drama</span> 20°C Mild</span>
+</div>
+</div>
+</div>
+<div class="min-w-[240px] max-w-[240px] snap-start bg-surface-container-lowest rounded-2xl overflow-hidden shadow-sm flex flex-col">
+<div class="relative h-36 w-full">
+<img class="w-full h-full object-cover" data-alt="Peaceful crescent beach cliffs of Gokarna Karnataka overlooking Arabian sea at dusk, soft pastel orange sunset, rocky shoreline with distant coastal temple tower silhouette" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAWR62k-ENLMO12IY-Z3rAmww7ygZTRQtnkAYIYGQtnRtui2F_aC8BfQxWjoo9Wvjwb5WohWf-_aFvVHuNun5JcWP8w2eQup-wvokvpv_tkdFtuxdGHZRFQKD6MfY-3jJ8RaoDHx4g_yQvS29agGQHLxDGuFRlakioSBEEHEAx3VikgTl6edDbX47KbYumsxyRJ0YlcmqpL8RUqv1lnhTMQMan7huszQ53pFyz2mA"/>
+<span class="absolute top-2.5 left-2.5 px-2.5 py-1 rounded-full bg-surface/90 backdrop-blur-md text-primary font-label-sm text-label-sm font-medium shadow-sm">
+            Coastal &amp; Spiritual
+          </span>
+</div>
+<div class="p-space-sm flex flex-col gap-1">
+<h3 class="font-label-lg text-label-lg text-on-surface font-semibold truncate">Gokarna &amp; Murudeshwar</h3>
+<p class="font-body-sm text-body-sm text-on-surface-variant">Karnataka</p>
+<div class="mt-2 flex items-center justify-between text-on-surface-variant font-label-sm text-label-sm">
+<span class="flex items-center gap-1"><span class="material-symbols-outlined text-[15px] text-tertiary-container">schedule</span> 4 Days</span>
+<span class="flex items-center gap-1 text-primary font-medium"><span class="material-symbols-outlined text-[15px]">wb_sunny</span> 27°C Sunny</span>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class="px-margin mb-space-xl">
+<div class="flex items-center justify-between mb-space-md">
+<div class="flex items-center gap-space-xs">
+<span class="material-symbols-outlined text-[20px] text-primary">interests</span>
+<h2 class="font-headline-sm text-headline-sm text-primary">Explore by Interest</h2>
+</div>
+</div>
+<div class="flex flex-wrap gap-2" id="interestChipsContainer">
+<button class="interest-chip px-3.5 py-2 rounded-xl bg-surface-container-lowest text-on-surface font-label-md text-label-md flex items-center gap-1.5 shadow-sm active:scale-95 transition-all">
+<span>🧗</span>
+<span>Adventure</span>
+</button>
+<button class="interest-chip px-3.5 py-2 rounded-xl bg-primary-container text-on-primary font-label-md text-label-md flex items-center gap-1.5 shadow-sm active:scale-95 transition-all">
+<span>🌿</span>
+<span>Nature</span>
+</button>
+<button class="interest-chip px-3.5 py-2 rounded-xl bg-surface-container-lowest text-on-surface font-label-md text-label-md flex items-center gap-1.5 shadow-sm active:scale-95 transition-all">
+<span>☕</span>
+<span>Food &amp; Cafes</span>
+</button>
+<button class="interest-chip px-3.5 py-2 rounded-xl bg-surface-container-lowest text-on-surface font-label-md text-label-md flex items-center gap-1.5 shadow-sm active:scale-95 transition-all">
+<span>🏛️</span>
+<span>History &amp; Forts</span>
+</button>
+<button class="interest-chip px-3.5 py-2 rounded-xl bg-surface-container-lowest text-on-surface font-label-md text-label-md flex items-center gap-1.5 shadow-sm active:scale-95 transition-all">
+<span>🪔</span>
+<span>Spiritual</span>
+</button>
+<button class="interest-chip px-3.5 py-2 rounded-xl bg-surface-container-lowest text-on-surface font-label-md text-label-md flex items-center gap-1.5 shadow-sm active:scale-95 transition-all">
+<span>🧘</span>
+<span>Relaxation &amp; Wellness</span>
+</button>
+<button class="interest-chip px-3.5 py-2 rounded-xl bg-surface-container-lowest text-on-surface font-label-md text-label-md flex items-center gap-1.5 shadow-sm active:scale-95 transition-all">
+<span>🛍️</span>
+<span>Shopping &amp; Bazaars</span>
+</button>
+</div>
+</div>
+<div class="px-margin mb-space-xl">
+<div class="flex items-center justify-between mb-space-md">
+<div class="flex items-center gap-space-xs">
+<span class="material-symbols-outlined text-[20px] text-primary">local_fire_department</span>
+<h2 class="font-headline-sm text-headline-sm text-primary">Popular Destinations</h2>
+</div>
+<span class="font-label-sm text-label-sm text-on-surface-variant">Top Season</span>
+</div>
+<div class="flex flex-col gap-space-md">
+<div class="bg-surface-container-lowest rounded-2xl p-space-sm shadow-sm flex gap-space-sm items-center">
+<div class="w-24 h-24 rounded-xl overflow-hidden flex-shrink-0 relative">
+<img class="w-full h-full object-cover" data-alt="Lake Pichola in Udaipur Rajasthan with the white City Palace glowing under afternoon sunlight, calm blue lake waters with traditional wooden boats, regal calm mood" src="https://lh3.googleusercontent.com/aida-public/AB6AXuA6iSwS5eYWnflub6SEla1DsL1CnKx1sPr3_KdXwUAFhKt-UZbPJZF5-MtWeDBo0DcIw0Z0Y84a9lxRDEgXipzAzQc9iW2rw1mRELnyuV8G8gUfjnuWzISMvlUwraGiOPwozzp5jcaIVkzzYYdk3q8V-ftPXlCi_8HgBP95zm4EYcpOGR8EsJDmckcxyq6MkEGlsPevDIny4bp_DO9KwRIzs8sOGq1DVvA_FFrPew"/>
+<div class="absolute bottom-1 right-1 px-1.5 py-0.5 rounded bg-surface/90 text-primary font-label-sm text-label-sm font-semibold flex items-center gap-0.5">
+<span class="material-symbols-outlined text-[12px] text-tertiary-fixed-dim" style="font-variation-settings: 'FILL' 1;">star</span>
+            4.9
+          </div>
+</div>
+<div class="flex flex-col flex-grow min-w-0 pr-1">
+<h3 class="font-headline-sm text-headline-sm text-on-surface font-semibold truncate">Udaipur</h3>
+<p class="font-body-sm text-body-sm text-on-surface-variant truncate">City of Lakes, Rajasthan</p>
+<div class="mt-2 flex flex-wrap items-center gap-y-1 gap-x-3 font-label-sm text-label-sm text-on-surface-variant">
+<span class="flex items-center gap-1 text-primary font-medium">
+<span class="material-symbols-outlined text-[14px]">calendar_today</span> 4 Days
+            </span>
+<span class="flex items-center gap-1 text-secondary">
+<span class="material-symbols-outlined text-[14px]">wb_sunny</span> Warm &amp; Pleasant
+            </span>
+</div>
+</div>
+<button class="w-9 h-9 rounded-full bg-surface-container flex items-center justify-center text-primary flex-shrink-0 active:scale-90 transition-transform">
+<span class="material-symbols-outlined text-[20px]">chevron_right</span>
+</button>
+</div>
+<div class="bg-surface-container-lowest rounded-2xl p-space-sm shadow-sm flex gap-space-sm items-center">
+<div class="w-24 h-24 rounded-xl overflow-hidden flex-shrink-0 relative">
+<img class="w-full h-full object-cover" data-alt="High altitude Key Monastery perched on barren rocky cliff in Spiti Valley Himachal Pradesh under clear azure sky, winding Spiti riverbed, dramatic cold desert mountain panorama" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAIPApFYZkULaDBJ5O1pkvYHd1sJR7140aJ42-NSYzdxFaL3tzwG-Eel7gxQIbo3zsczw3_UD9Z2uHYew5c9vp1176yM2MZL3aWaIqtlO_v1kOjpDY8lPsXOb1z2kbF8VzMFScQAK4eJiHMOCT81Ykeso1Ds-F6y83PDdCawoU0ELBu1ZITcdYoGl4Vz5e5S3EINMMTfQtIzteK6DVT7O1ygY5qFLvqA0nvHDwdQA"/>
+<div class="absolute bottom-1 right-1 px-1.5 py-0.5 rounded bg-surface/90 text-primary font-label-sm text-label-sm font-semibold flex items-center gap-0.5">
+<span class="material-symbols-outlined text-[12px] text-tertiary-fixed-dim" style="font-variation-settings: 'FILL' 1;">star</span>
+            4.8
+          </div>
+</div>
+<div class="flex flex-col flex-grow min-w-0 pr-1">
+<h3 class="font-headline-sm text-headline-sm text-on-surface font-semibold truncate">Spiti Valley</h3>
+<p class="font-body-sm text-body-sm text-on-surface-variant truncate">Rugged Monasteries, Himachal</p>
+<div class="mt-2 flex flex-wrap items-center gap-y-1 gap-x-3 font-label-sm text-label-sm text-on-surface-variant">
+<span class="flex items-center gap-1 text-primary font-medium">
+<span class="material-symbols-outlined text-[14px]">calendar_today</span> 7 Days
+            </span>
+<span class="flex items-center gap-1 text-secondary">
+<span class="material-symbols-outlined text-[14px]">air</span> Clear Skies
+            </span>
+</div>
+</div>
+<button class="w-9 h-9 rounded-full bg-surface-container flex items-center justify-center text-primary flex-shrink-0 active:scale-90 transition-transform">
+<span class="material-symbols-outlined text-[20px]">chevron_right</span>
+</button>
+</div>
+<div class="bg-surface-container-lowest rounded-2xl p-space-sm shadow-sm flex gap-space-sm items-center">
+<div class="w-24 h-24 rounded-xl overflow-hidden flex-shrink-0 relative">
+<img class="w-full h-full object-cover" data-alt="Evening Ganga Aarti ceremony at Dashashwamedh Ghat in Varanasi, flickering oil lamps and glowing brass thalis illuminating ancient river steps and river Ganges at twilight, peaceful spiritual gathering" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDQTI_hUinfo2A-RvdExYnKhDtx-7wCnTI5Wa2wLlZtQk68eUfHh0gp7bLJddkANZ4sCVmWodvx_CdDEftwGZNIeg3-bzU19jg59pYKzlXbDPqdYtjG1PqAPWuk8II5aLRY75UXGJplrtHOJJZdM2QGBSw1AJjU4RQKdXckkaDQtXmDnvt3vmC1cgnlTcKmutEBH7djIRFQcRBCTgx5H36T48Mhkzwa3H93Qkwy7A"/>
+<div class="absolute bottom-1 right-1 px-1.5 py-0.5 rounded bg-surface/90 text-primary font-label-sm text-label-sm font-semibold flex items-center gap-0.5">
+<span class="material-symbols-outlined text-[12px] text-tertiary-fixed-dim" style="font-variation-settings: 'FILL' 1;">star</span>
+            4.9
+          </div>
+</div>
+<div class="flex flex-col flex-grow min-w-0 pr-1">
+<h3 class="font-headline-sm text-headline-sm text-on-surface font-semibold truncate">Varanasi Ghats</h3>
+<p class="font-body-sm text-body-sm text-on-surface-variant truncate">Cultural Immersion, Uttar Pradesh</p>
+<div class="mt-2 flex flex-wrap items-center gap-y-1 gap-x-3 font-label-sm text-label-sm text-on-surface-variant">
+<span class="flex items-center gap-1 text-primary font-medium">
+<span class="material-symbols-outlined text-[14px]">calendar_today</span> 3 Days
+            </span>
+<span class="flex items-center gap-1 text-secondary">
+<span class="material-symbols-outlined text-[14px]">nightlight</span> Mild Evening
+            </span>
+</div>
+</div>
+<button class="w-9 h-9 rounded-full bg-surface-container flex items-center justify-center text-primary flex-shrink-0 active:scale-90 transition-transform">
+<span class="material-symbols-outlined text-[20px]">chevron_right</span>
+</button>
+</div>
+</div>
+</div>
+<div class="px-margin pb-space-lg">
+<div class="bg-surface-container rounded-2xl p-space-md flex items-center gap-space-md">
+<div class="w-12 h-12 rounded-xl bg-primary-container text-on-primary flex items-center justify-center flex-shrink-0">
+<span class="material-symbols-outlined text-[24px]">auto_awesome</span>
+</div>
+<div class="flex flex-col flex-grow">
+<span class="font-label-lg text-label-lg font-semibold text-primary">Need a tailored itinerary?</span>
+<span class="font-body-sm text-body-sm text-on-surface-variant">Ask our AI concierge to adjust routes for festivals, weather, or crowd levels.</span>
+</div>
+</div>
+</div>
+</div>
+<script>
+  document.addEventListener('DOMContentLoaded', () => {
+    const chips = document.querySelectorAll('.interest-chip');
+    chips.forEach(chip => {
+      chip.addEventListener('click', () => {
+        chips.forEach(c => {
+          c.classList.remove('bg-primary-container', 'text-on-primary');
+          c.classList.add('bg-surface-container-lowest', 'text-on-surface');
+        });
+        chip.classList.remove('bg-surface-container-lowest', 'text-on-surface');
+        chip.classList.add('bg-primary-container', 'text-on-primary');
+      });
+    });
+
+    const planBtn = document.getElementById('planJourneyBtn');
+    if (planBtn) {
+      planBtn.addEventListener('click', () => {
+        const input = document.getElementById('naturalSearchInput');
+        if (input) {
+          input.focus();
+          input.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        }
+      });
+    }
+  });
+</script></main><nav class="fixed bottom-0 w-full z-50 pb-safe bg-surface/85 backdrop-blur-xl shadow-[0_-4px_20px_rgba(23,63,53,0.04)]" data-active-classes="text-primary-container font-semibold"><div class="h-16 px-space-xs flex items-center justify-around"><a aria-current="page" class="flex flex-col items-center justify-center min-w-[56px] min-h-[44px] gap-0.5 transition-all duration-150 text-primary-container font-semibold" data-path="home" href="#"><span class="material-symbols-outlined text-[22px]">cottage</span><span class="font-label-sm text-label-sm">Home</span></a><a class="flex flex-col items-center justify-center min-w-[56px] min-h-[44px] gap-0.5 text-on-surface-variant hover:text-primary transition-all duration-150" data-path="my-trips" href="#"><span class="material-symbols-outlined text-[22px]">luggage</span><span class="font-label-sm text-label-sm">My Trips</span></a><a class="flex flex-col items-center justify-center min-w-[56px] min-h-[44px] gap-0.5 text-on-surface-variant hover:text-primary transition-all duration-150" data-path="explore" href="#"><span class="material-symbols-outlined text-[22px]">travel_explore</span><span class="font-label-sm text-label-sm">Explore</span></a><a class="flex flex-col items-center justify-center min-w-[56px] min-h-[44px] gap-0.5 text-on-surface-variant hover:text-primary transition-all duration-150" data-path="ai-assistant" href="#"><span class="material-symbols-outlined text-[22px]">auto_awesome</span><span class="font-label-sm text-label-sm">Assistant</span></a><a class="flex flex-col items-center justify-center min-w-[56px] min-h-[44px] gap-0.5 text-on-surface-variant hover:text-primary transition-all duration-150" data-path="profile" href="#"><span class="material-symbols-outlined text-[22px]">account_circle</span><span class="font-label-sm text-label-sm">Profile</span></a></div></nav></body></html>

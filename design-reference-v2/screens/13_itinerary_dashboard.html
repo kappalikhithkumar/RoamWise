@@ -1,0 +1,382 @@
+<!DOCTYPE html><html class="h-full" lang="en"><head><meta charset="utf-8"><meta content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" name="viewport"><meta content="mobile_tab" name="shell-type"><link href="https://fonts.googleapis.com" rel="preconnect"><link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"><link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&amp;family=Manrope:wght@600;700&amp;display=swap" rel="stylesheet"><link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,400,0,0" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"><script src="https://cdn.tailwindcss.com"></script><script id="tailwind-config">tailwind.config = { darkMode: "class", theme: { extend: { "colors": { "tertiary": "#361d00", "surface-container-highest": "#d6e6df", "tertiary-container": "#543000", "on-background": "#101e1a", "secondary-container": "#d6e7db", "surface-container-low": "#e7f7ef", "on-error-container": "#93000a", "surface": "#edfdf5", "surface-container-high": "#dcece4", "surface-container": "#e1f2ea", "surface-dim": "#ceded6", "secondary-fixed-dim": "#bacbbf", "on-tertiary-fixed": "#2c1700", "on-secondary-container": "#58685f", "primary-fixed-dim": "#a6cfc1", "on-surface": "#101e1a", "inverse-on-surface": "#e4f4ed", "error-container": "#ffdad6", "on-tertiary-fixed-variant": "#683d00", "on-secondary": "#ffffff", "primary": "#002920", "on-error": "#ffffff", "secondary": "#526259", "error": "#ba1a1a", "on-primary-fixed-variant": "#274e43", "outline": "#717975", "on-primary-container": "#82aa9d", "on-secondary-fixed": "#101e17", "surface-tint": "#3f665a", "inverse-primary": "#a6cfc1", "on-primary": "#ffffff", "surface-bright": "#edfdf5", "surface-container-lowest": "#ffffff", "primary-fixed": "#c1ecdd", "inverse-surface": "#25332e", "on-secondary-fixed-variant": "#3b4a41", "tertiary-fixed": "#ffdcbb", "on-tertiary-container": "#d4954e", "secondary-fixed": "#d6e7db", "tertiary-fixed-dim": "#fdb96e", "on-primary-fixed": "#002019", "background": "#edfdf5", "primary-container": "#173f35", "outline-variant": "#c0c8c4", "on-tertiary": "#ffffff", "on-surface-variant": "#414845", "surface-variant": "#d6e6df" }, "borderRadius": { "DEFAULT": "0.25rem", "lg": "0.5rem", "xl": "0.75rem", "full": "9999px" }, "spacing": { "gutter-tablet": "1.5rem", "gutter": "1rem", "margin": "1rem", "margin-tablet": "2rem", "margin-desktop": "3rem", "space-xl": "2rem", "space-sm": "0.5rem", "space-lg": "1.5rem", "space-md": "1rem", "gutter-desktop": "2rem", "space-xs": "0.25rem" }, "fontFamily": { "headline-lg": ["Manrope"], "label-md": ["Inter"], "headline-md": ["Manrope"], "label-sm": ["Inter"], "body-sm": ["Inter"], "label-lg": ["Inter"], "display-lg": ["Manrope"], "body-lg": ["Inter"], "body-md": ["Inter"], "headline-sm": ["Manrope"], "display-lg-mobile": ["Manrope"] }, "fontSize": { "headline-lg": ["28px", { "lineHeight": "36px", "letterSpacing": "-0.015em", "fontWeight": "600" }], "label-md": ["12px", { "lineHeight": "16px", "letterSpacing": "0.02em", "fontWeight": "500" }], "headline-md": ["22px", { "lineHeight": "28px", "letterSpacing": "-0.01em", "fontWeight": "600" }], "label-sm": ["10px", { "lineHeight": "12px", "letterSpacing": "0.04em", "fontWeight": "600" }], "body-sm": ["12px", { "lineHeight": "16px", "letterSpacing": "0.01em", "fontWeight": "400" }], "label-lg": ["14px", { "lineHeight": "18px", "letterSpacing": "0.02em", "fontWeight": "600" }], "display-lg": ["40px", { "lineHeight": "48px", "letterSpacing": "-0.02em", "fontWeight": "700" }], "body-lg": ["16px", { "lineHeight": "24px", "letterSpacing": "-0.005em", "fontWeight": "400" }], "body-md": ["14px", { "lineHeight": "20px", "letterSpacing": "0em", "fontWeight": "400" }], "headline-sm": ["18px", { "lineHeight": "24px", "letterSpacing": "0em", "fontWeight": "600" }], "display-lg-mobile": ["32px", { "lineHeight": "40px", "letterSpacing": "-0.02em", "fontWeight": "700" }] } } } }</script><style>@layer base{html,body{width:100vw;margin:0;padding:0;min-height:100%;}body{overscroll-behavior:none;}.pb-safe{padding-bottom:env(safe-area-inset-bottom,0px);}.pt-safe{padding-top:env(safe-area-inset-top,0px);}main>:first-child{margin-top:0!important;}main>:last-child{margin-bottom:0!important;}}::-webkit-scrollbar{display:none;}</style></head><body class="bg-surface text-on-surface antialiased flex flex-col min-h-screen"><header class="fixed top-0 w-full z-50 pt-safe bg-surface/80 backdrop-blur-xl shadow-[0_1px_8px_rgba(0,0,0,0.04)]"><div class="h-16 px-gutter flex items-center justify-between gap-space-sm"><div class="flex items-center gap-space-xs min-w-0"><button aria-label="Go back" class="w-11 h-11 flex items-center justify-center rounded-full text-on-surface hover:bg-surface-container-high transition-colors" onclick="history.back()"><span class="material-symbols-outlined text-[22px]">arrow_back</span></button><h1 class="font-headline-sm text-headline-sm text-on-surface truncate">My Trips</h1></div><div class="flex items-center gap-space-xs flex-shrink-0"><button aria-label="Share trip" class="w-11 h-11 flex items-center justify-center rounded-full text-on-surface hover:bg-surface-container-high transition-colors"><span class="material-symbols-outlined text-[20px]">share</span></button><button aria-label="Bookmark itinerary" class="w-11 h-11 flex items-center justify-center rounded-full text-on-surface hover:bg-surface-container-high transition-colors"><span class="material-symbols-outlined text-[20px]">bookmark_border</span></button><div class="w-8 h-8 rounded-full bg-primary flex items-center justify-center ml-space-xs"><span class="material-symbols-outlined text-on-primary text-[18px]">person</span></div></div></div></header><main class="flex-1 flex flex-col relative w-full pt-16 pb-20 bg-surface"><div class="flex flex-col w-full px-margin pb-10 space-y-space-lg">
+<!-- Trip Summary Header Card -->
+<section class="bg-surface-container-lowest rounded-xl p-space-md shadow-sm relative overflow-hidden">
+<div class="flex flex-col gap-space-sm relative z-10">
+<!-- Circuit Badge & Route -->
+<div class="flex items-center justify-between gap-space-xs">
+<span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-secondary-container text-on-secondary-container font-label-sm text-label-sm">
+<span class="material-symbols-outlined text-[14px]">route</span>
+          Curated Circuit
+        </span>
+<span class="flex items-center gap-1 font-label-md text-label-md text-primary-container bg-primary-fixed px-2.5 py-0.5 rounded-full">
+<span class="material-symbols-outlined text-[14px] text-tertiary-container">wb_sunny</span>
+          96% Weather Score
+        </span>
+</div>
+<div>
+<h2 class="font-headline-md text-headline-md text-on-surface tracking-tight">Golden Triangle Circuit</h2>
+<p class="font-label-lg text-label-lg text-secondary flex items-center gap-1.5 mt-0.5">
+<span class="">Jaipur</span>
+<span class="material-symbols-outlined text-[16px] text-outline">east</span>
+<span class="">Delhi</span>
+<span class="material-symbols-outlined text-[16px] text-outline">east</span>
+<span class="">Agra</span>
+</p>
+</div>
+<!-- Dates & Duration Overview -->
+<div class="grid grid-cols-2 gap-space-xs pt-space-xs">
+<div class="bg-surface-container-low rounded-lg p-2.5 flex items-center gap-2">
+<span class="material-symbols-outlined text-primary-container text-[20px]">calendar_today</span>
+<div class="min-w-0">
+<span class="block font-label-sm text-label-sm text-on-surface-variant">Dates</span>
+<span class="block font-label-md text-label-md text-on-surface truncate">18 Oct – 24 Oct 2025</span>
+</div>
+</div>
+<div class="bg-surface-container-low rounded-lg p-2.5 flex items-center gap-2">
+<span class="material-symbols-outlined text-primary-container text-[20px]">hotel</span>
+<div class="min-w-0">
+<span class="block font-label-sm text-label-sm text-on-surface-variant">Pacing</span>
+<span class="block font-label-md text-label-md text-on-surface truncate">7 Days • 3 Boutique Stays</span>
+</div>
+</div>
+</div>
+<!-- Budget & Atmospheric Conditions -->
+<div class="bg-surface-container rounded-lg p-3 flex flex-col gap-2">
+<div class="flex items-center justify-between">
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-tertiary-container text-[18px]">payments</span>
+<span class="font-label-md text-label-md text-on-surface">Moderate Tier Budget</span>
+</div>
+<span class="font-headline-sm text-headline-sm text-primary">₹42,500</span>
+</div>
+<div class="flex items-center justify-between text-on-surface-variant font-body-sm text-body-sm pt-1">
+<span class="inline-flex items-center gap-1">
+<span class="w-1.5 h-1.5 rounded-full bg-primary-container"></span>
+            Stay + Cab + Entry Passes
+          </span>
+<span class="inline-flex items-center gap-1 text-on-secondary-container font-label-sm text-label-sm">
+<span class="material-symbols-outlined text-[14px]">air</span>
+            24°C – 29°C Mild Autumn
+          </span>
+</div>
+</div>
+<!-- Highlights Carousel -->
+<div class="flex items-center gap-1.5 overflow-x-auto pt-1 no-scrollbar -mx-1 px-1">
+<span class="flex-shrink-0 inline-flex items-center gap-1 px-3 py-1 rounded-full bg-surface-container-high text-on-surface-variant font-label-sm text-label-sm">
+<span class="material-symbols-outlined text-[13px] text-tertiary-container">fort</span>
+          Heritage Havelis
+        </span>
+<span class="flex-shrink-0 inline-flex items-center gap-1 px-3 py-1 rounded-full bg-surface-container-high text-on-surface-variant font-label-sm text-label-sm">
+<span class="material-symbols-outlined text-[13px] text-tertiary-container">wb_twilight</span>
+          Sunrise Taj Mahal
+        </span>
+<span class="flex-shrink-0 inline-flex items-center gap-1 px-3 py-1 rounded-full bg-surface-container-high text-on-surface-variant font-label-sm text-label-sm">
+<span class="material-symbols-outlined text-[13px] text-tertiary-container">restaurant</span>
+          Old Delhi Food Walk
+        </span>
+<span class="flex-shrink-0 inline-flex items-center gap-1 px-3 py-1 rounded-full bg-surface-container-high text-on-surface-variant font-label-sm text-label-sm">
+<span class="material-symbols-outlined text-[13px] text-tertiary-container">shopping_bag</span>
+          Johari Bazaars
+        </span>
+</div>
+</div>
+</section>
+<!-- Multi-City Allocation Strip -->
+<section class="space-y-space-xs">
+<div class="flex items-center justify-between px-1">
+<span class="font-label-sm text-label-sm uppercase tracking-wider text-secondary">Route Allocation</span>
+<span class="font-label-sm text-label-sm text-primary font-medium">3 Destinations</span>
+</div>
+<div class="grid grid-cols-3 gap-2">
+<div class="bg-surface-container-lowest p-2.5 rounded-lg flex flex-col justify-between shadow-sm">
+<span class="font-label-sm text-label-sm text-primary font-semibold">Days 1–2</span>
+<span class="font-label-md text-label-md text-on-surface font-semibold truncate">Jaipur</span>
+<span class="font-body-sm text-[11px] text-on-surface-variant truncate">Pink City Focus</span>
+</div>
+<div class="bg-secondary-container/60 p-2.5 rounded-lg flex flex-col justify-between shadow-sm">
+<span class="font-label-sm text-label-sm text-on-secondary-container font-semibold">Days 3–5</span>
+<span class="font-label-md text-label-md text-on-surface font-semibold truncate">Delhi</span>
+<span class="font-body-sm text-[11px] text-on-secondary-container truncate">Imperial &amp; Modern</span>
+</div>
+<div class="bg-surface-container-lowest p-2.5 rounded-lg flex flex-col justify-between shadow-sm">
+<span class="font-label-sm text-label-sm text-primary font-semibold">Days 6–7</span>
+<span class="font-label-md text-label-md text-on-surface font-semibold truncate">Agra</span>
+<span class="font-body-sm text-[11px] text-on-surface-variant truncate">Mughal Epoch</span>
+</div>
+</div>
+<!-- Intercity Transit Notice -->
+<div class="bg-tertiary-fixed text-on-tertiary-fixed p-3 rounded-lg flex items-center gap-2.5">
+<div class="w-8 h-8 rounded-full bg-tertiary-container flex items-center justify-center flex-shrink-0">
+<span class="material-symbols-outlined text-white text-[18px]">train</span>
+</div>
+<div class="min-w-0">
+<span class="block font-label-md text-label-md font-semibold text-on-tertiary-fixed">Upcoming Intercity Transit</span>
+<span class="block font-body-sm text-body-sm text-on-tertiary-fixed-variant truncate">Day 3 • Jaipur ➔ Delhi via Vande Bharat (3h 45m)</span>
+</div>
+</div>
+</section>
+<!-- Quick Actions Bar -->
+<section class="grid grid-cols-4 gap-2"><button class="bg-surface-container-lowest hover:bg-surface-container active:scale-95 p-2.5 rounded-xl shadow-sm flex flex-col items-center justify-center gap-1 transition-all text-center" onclick="const t = document.getElementById('itinerary-toast'); if(t){ t.textContent='Opening route map view for Golden Triangle...'; t.classList.remove('hidden'); setTimeout(()=&gt;t.classList.add('hidden'), 2500); }"><span class="material-symbols-outlined text-primary text-[22px]">map</span><span class="font-label-sm text-label-sm text-on-surface">View Map</span></button><button class="bg-surface-container-lowest hover:bg-surface-container active:scale-95 p-2.5 rounded-xl shadow-sm flex flex-col items-center justify-center gap-1 transition-all text-center relative" onclick="const t = document.getElementById('itinerary-toast'); if(t){ t.textContent='Radar: All 7 days on schedule. Air quality moderate.'; t.classList.remove('hidden'); setTimeout(()=&gt;t.classList.add('hidden'), 2500); }"><span class="absolute top-2 right-4 w-2 h-2 rounded-full bg-error ring-2 ring-surface-container-lowest"></span><span class="material-symbols-outlined text-primary text-[22px]">radar</span><span class="font-label-sm text-label-sm text-on-surface">Radar Info</span></button><button class="bg-surface-container-lowest hover:bg-surface-container active:scale-95 p-2.5 rounded-xl shadow-sm flex flex-col items-center justify-center gap-1 transition-all text-center" onclick="const t = document.getElementById('itinerary-toast'); if(t){ t.textContent='Trip edit mode active: Reorder activities or swap stops.'; t.classList.remove('hidden'); setTimeout(()=&gt;t.classList.add('hidden'), 2500); }"><span class="material-symbols-outlined text-primary text-[22px]">auto_fix_high</span><span class="font-label-sm text-label-sm text-on-surface">Modify Plan</span></button><button class="bg-primary-container text-on-primary hover:bg-primary active:scale-95 p-2.5 rounded-xl shadow-sm flex flex-col items-center justify-center gap-1 transition-all text-center" onclick="const t = document.getElementById('itinerary-toast'); if(t){ t.textContent='RoamAI Assistant activated: Asking for itinerary suggestions...'; t.classList.remove('hidden'); setTimeout(()=&gt;t.classList.add('hidden'), 2500); }"><span class="material-symbols-outlined text-[22px] text-tertiary-fixed">auto_awesome</span><span class="font-label-sm text-label-sm text-white">Ask RoamAI</span></button></section>
+<!-- DAILY ITINERARY SECTION -->
+<div id="itinerary-toast" class="hidden bg-primary text-white text-center font-label-sm text-label-sm py-2 px-3 rounded-lg shadow-sm transition-all duration-300"></div><section class="space-y-space-md pt-2">
+<div class="flex items-center justify-between">
+<div>
+<h3 class="font-headline-sm text-headline-sm text-on-surface">Daily Schedule</h3>
+<p class="font-body-sm text-body-sm text-on-surface-variant">Curated pacing with optimal light windows</p>
+</div>
+<span class="px-2 py-1 rounded bg-secondary-container text-on-secondary-container font-label-sm text-label-sm font-semibold">
+        7 Days Active
+      </span>
+</div>
+<!-- Timeline Root Container -->
+<div class="space-y-6">
+<!-- DAY 1 -->
+<article class="bg-surface-container-lowest rounded-xl p-space-md shadow-sm space-y-space-md"><div class="flex items-start justify-between pb-space-xs"><div><div class="flex items-center gap-2"><span class="w-6 h-6 rounded-full bg-primary-container text-on-primary flex items-center justify-center font-label-sm text-label-sm font-bold">1</span><h4 class="font-headline-sm text-headline-sm text-on-surface">Jaipur: Royal Heritage</h4></div><p class="font-body-sm text-body-sm text-on-surface-variant mt-0.5">Sat, 18 Oct 2025 • Rajput Architecture &amp; Culinary Beginnings</p></div><span class="bg-secondary-container text-on-secondary-container font-label-sm text-label-sm px-2 py-0.5 rounded-full whitespace-nowrap">98% Optimal</span></div><div class="flex items-center gap-2 bg-surface-container-low p-2 rounded-lg text-on-surface-variant font-label-sm text-label-sm"><span class="flex items-center gap-1"><span class="material-symbols-outlined text-[16px] text-primary">toll</span> ₹3,400 est./person</span><span class="text-outline">|</span><span class="flex items-center gap-1"><span class="material-symbols-outlined text-[16px] text-primary">directions_car</span> 1h 40m transit</span></div><div class="relative pl-6 space-y-5"><div class="absolute left-2 top-2 bottom-2 w-0.5 bg-secondary-container"></div><div class="relative group"><div class="absolute -left-6 top-1 w-3.5 h-3.5 rounded-full bg-surface-container-lowest ring-4 ring-primary-container"></div><div class="space-y-2"><div class="flex items-center justify-between text-on-surface-variant font-label-sm text-label-sm"><span class="font-semibold text-primary">09:00 AM • 2.5 hrs</span><span class="text-secondary font-medium">Ideal morning light</span></div><h5 class="font-label-lg text-label-lg text-on-surface">Amber Fort &amp; Elephant Ramparts Tour</h5><div class="h-36 rounded-lg overflow-hidden relative shadow-sm"><img class="w-full h-full object-cover" data-alt="Majestic Amber Fort in Jaipur perched high upon a rocky hill with sandstone ramparts reflecting warm morning sunlight, serene desert landscape in Rajasthan, elegant travel photography with soft tones" src="https://lh3.googleusercontent.com/aida-public/AB6AXuD2QM8cRsTtVRVCkU_kIFGsiqNDWDAblVEkrbZb1mAMoBYHLnMNCQ2_kA6PSQLlKnQjQ7le6WdQs_pnzDDCBwJKGhiotivyG52iWzIeRdCYPTmFRAs28YHu-A-P_-wkwvxlwV5pnTztadlbZ92MZKrJSjYP4-1EKACX5SlBOzxMvAFEStS7X6WWa4HWxlCYXITYGa5VtdTCqQVcP-7KTXUhf3BsWCwz1-YIyzdVBg"><span class="absolute bottom-2 left-2 bg-primary/80 backdrop-blur-sm text-white px-2 py-0.5 rounded text-label-sm font-label-sm">Audio Guide Incl.</span></div><p class="font-body-sm text-body-sm text-on-surface-variant">Stroll the royal courtyards of Maota Lake before peak afternoon tourist buses arrive.</p><div class="flex items-center gap-2 pt-1"><button class="flex items-center gap-1 px-3 py-1.5 rounded-lg bg-surface-container hover:bg-surface-container-high active:scale-95 font-label-sm text-label-sm text-on-surface transition-colors" onclick="const t = document.getElementById('itinerary-toast'); if(t){ t.textContent='Navigating to Amber Fort via Amer Road (22 mins)...'; t.classList.remove('hidden'); setTimeout(()=&gt;t.classList.add('hidden'), 2500); }"><span class="material-symbols-outlined text-[16px] text-primary">navigation</span> Navigation</button><button class="flex items-center gap-1 px-3 py-1.5 rounded-lg bg-surface-container hover:bg-surface-container-high active:scale-95 font-label-sm text-label-sm text-on-surface transition-colors" onclick="const isDone = this.getAttribute('data-visited') === 'true'; if (isDone) { this.setAttribute('data-visited', 'false'); this.className = 'flex items-center gap-1 px-3 py-1.5 rounded-lg bg-surface-container hover:bg-surface-container-high active:scale-95 font-label-sm text-label-sm text-on-surface transition-colors'; this.innerHTML = '&lt;span class=\'material-symbols-outlined text-[16px]\'&gt;check_circle&lt;/span&gt; Mark Visited'; } else { this.setAttribute('data-visited', 'true'); this.className = 'flex items-center gap-1 px-3 py-1.5 rounded-lg bg-primary-container text-white active:scale-95 font-label-sm text-label-sm transition-colors'; this.innerHTML = '&lt;span class=\'material-symbols-outlined text-[16px]\'&gt;check_circle&lt;/span&gt; Visited ✓'; }"><span class="material-symbols-outlined text-[16px]">check_circle</span> Mark Visited</button></div></div></div><div class="relative group"><div class="absolute -left-6 top-1 w-3.5 h-3.5 rounded-full bg-surface-container-lowest ring-4 ring-primary-container"></div><div class="space-y-2"><div class="flex items-center justify-between text-on-surface-variant font-label-sm text-label-sm"><span class="font-semibold text-primary">01:30 PM • 1.5 hrs</span><span class="text-secondary font-medium">High Suitability</span></div><h5 class="font-label-lg text-label-lg text-on-surface">Hawa Mahal Facade &amp; Lassiwala</h5><div class="h-32 rounded-lg overflow-hidden relative shadow-sm"><img class="w-full h-full object-cover" data-alt="Intricate honeycomb lattice windows of Hawa Mahal Palace of Winds in Jaipur, pink terracotta sandstone against a pristine blue autumn sky, artisan food and travel lifestyle aesthetic" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBBjX8q2bkwJoKJ2KepybHwEYcJzs9FNSbBF-MrpeJ6dCepzh_XYlv8B2_rx6h7Rt3z9gRbRHdl84wDQJWBL7VeTSMWe9RzZF5p43Z39UTllAuQuwZE9Ygz6InQKg5DRrehldanZRMSSdtpP07vze6lLVPBFE4MySLYwkwXQkIFoD5HChbzUKNj2oGVoHigKpeeyw0YN6Q8yBiwgil84HmAFIj32cf8Sn6IsB6yVw"></div><p class="font-body-sm text-body-sm text-on-surface-variant">Admire the 953 honeycombed jharokhas followed by chilled clay-pot lassi on MI Road.</p><div class="flex items-center gap-2 pt-1"><button class="flex items-center gap-1 px-3 py-1.5 rounded-lg bg-surface-container hover:bg-surface-container-high active:scale-95 font-label-sm text-label-sm text-on-surface transition-colors" onclick="const t = document.getElementById('itinerary-toast'); if(t){ t.textContent='Navigating to Hawa Mahal Bazaar...'; t.classList.remove('hidden'); setTimeout(()=&gt;t.classList.add('hidden'), 2500); }"><span class="material-symbols-outlined text-[16px] text-primary">navigation</span> Navigation</button><button class="flex items-center gap-1 px-3 py-1.5 rounded-lg bg-surface-container hover:bg-surface-container-high active:scale-95 font-label-sm text-label-sm text-on-surface transition-colors" onclick="const isDone = this.getAttribute('data-visited') === 'true'; if (isDone) { this.setAttribute('data-visited', 'false'); this.className = 'flex items-center gap-1 px-3 py-1.5 rounded-lg bg-surface-container hover:bg-surface-container-high active:scale-95 font-label-sm text-label-sm text-on-surface transition-colors'; this.innerHTML = '&lt;span class=\'material-symbols-outlined text-[16px]\'&gt;check_circle&lt;/span&gt; Mark Visited'; } else { this.setAttribute('data-visited', 'true'); this.className = 'flex items-center gap-1 px-3 py-1.5 rounded-lg bg-primary-container text-white active:scale-95 font-label-sm text-label-sm transition-colors'; this.innerHTML = '&lt;span class=\'material-symbols-outlined text-[16px]\'&gt;check_circle&lt;/span&gt; Visited ✓'; }"><span class="material-symbols-outlined text-[16px]">check_circle</span> Mark Visited</button></div></div></div><div class="relative group"><div class="absolute -left-6 top-1 w-3.5 h-3.5 rounded-full bg-surface-container-lowest ring-4 ring-tertiary-container"></div><div class="space-y-2"><div class="flex items-center justify-between text-on-surface-variant font-label-sm text-label-sm"><span class="font-semibold text-primary">05:30 PM • 3 hrs</span><span class="text-tertiary font-medium">Sunset Vantage</span></div><h5 class="font-label-lg text-label-lg text-on-surface">Nahargarh Fort Sunset &amp; Dinner at Padao</h5><div class="h-32 rounded-lg overflow-hidden relative shadow-sm"><img class="w-full h-full object-cover" data-alt="Panoramic sunset vista over the Pink City of Jaipur seen from the ramparts of Nahargarh Fort, warm golden hour orange glow reflecting off historic stone masonry" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBQdFdtuV24wuwGMFYKUA1ujJRj_Ge0v3fvCWom2fDE9fA6TYsOt6BfmYzPiBW3u2r31aPWSaQ7olyRyUfsDaoj9VC26E0izdjNNTM3WK_CJWo1Vcxl6dbb-s48c5y6hh7wHZWIX6wtRPWVbU-lvlInVwcPhVKbLr9Us2iJfNXfbto6QaQL1VLgmBMMxSYX1MVsmLWGFCFoCfc1wc7_5WESvxt7kviCl-pzmwwSrg"></div><div class="flex items-center gap-2 pt-1"><button class="flex items-center gap-1 px-3 py-1.5 rounded-lg bg-surface-container hover:bg-surface-container-high active:scale-95 font-label-sm text-label-sm text-on-surface transition-colors" onclick="const t = document.getElementById('itinerary-toast'); if(t){ t.textContent='Navigating to Nahargarh Fort Sunset Viewpoint...'; t.classList.remove('hidden'); setTimeout(()=&gt;t.classList.add('hidden'), 2500); }"><span class="material-symbols-outlined text-[16px] text-primary">navigation</span> Navigation</button><button class="flex items-center gap-1 px-3 py-1.5 rounded-lg bg-surface-container hover:bg-surface-container-high active:scale-95 font-label-sm text-label-sm text-on-surface transition-colors" onclick="const isDone = this.getAttribute('data-visited') === 'true'; if (isDone) { this.setAttribute('data-visited', 'false'); this.className = 'flex items-center gap-1 px-3 py-1.5 rounded-lg bg-surface-container hover:bg-surface-container-high active:scale-95 font-label-sm text-label-sm text-on-surface transition-colors'; this.innerHTML = '&lt;span class=\'material-symbols-outlined text-[16px]\'&gt;check_circle&lt;/span&gt; Mark Visited'; } else { this.setAttribute('data-visited', 'true'); this.className = 'flex items-center gap-1 px-3 py-1.5 rounded-lg bg-primary-container text-white active:scale-95 font-label-sm text-label-sm transition-colors'; this.innerHTML = '&lt;span class=\'material-symbols-outlined text-[16px]\'&gt;check_circle&lt;/span&gt; Visited ✓'; }"><span class="material-symbols-outlined text-[16px]">check_circle</span> Mark Visited</button></div></div></div></div></article>
+<!-- DAY 2 -->
+<article class="bg-surface-container-lowest rounded-xl p-space-md shadow-sm space-y-space-md">
+<!-- Day Banner Header -->
+<div class="flex items-start justify-between pb-space-xs">
+<div>
+<div class="flex items-center gap-2">
+<span class="w-6 h-6 rounded-full bg-primary-container text-on-primary flex items-center justify-center font-label-sm text-label-sm font-bold">2</span>
+<h4 class="font-headline-sm text-headline-sm text-on-surface">Jaipur: Arts &amp; Astronomy</h4>
+</div>
+<p class="font-body-sm text-body-sm text-on-surface-variant mt-0.5">Sun, 19 Oct 2025 • Astronomical Wonders &amp; Johari Craft Immersion</p>
+</div>
+<span class="bg-secondary-container text-on-secondary-container font-label-sm text-label-sm px-2 py-0.5 rounded-full whitespace-nowrap">
+            95% Optimal
+          </span>
+</div>
+<div class="flex items-center gap-2 bg-surface-container-low p-2 rounded-lg text-on-surface-variant font-label-sm text-label-sm">
+<span class="flex items-center gap-1">
+<span class="material-symbols-outlined text-[16px] text-primary">toll</span>
+            ₹2,800 est./person
+          </span>
+<span class="text-outline">|</span>
+<span class="flex items-center gap-1">
+<span class="material-symbols-outlined text-[16px] text-primary">directions_car</span>
+            1h 15m transit
+          </span>
+</div>
+<!-- Timeline Items -->
+<div class="relative pl-6 space-y-5">
+<div class="absolute left-2 top-2 bottom-2 w-0.5 bg-secondary-container"></div>
+<!-- Morning -->
+<div class="relative group space-y-1.5">
+<div class="absolute -left-6 top-1 w-3.5 h-3.5 rounded-full bg-surface-container-lowest ring-4 ring-primary-container"></div>
+<span class="font-label-sm text-label-sm text-primary font-semibold block">09:30 AM • 2 hrs</span>
+<h5 class="font-label-lg text-label-lg text-on-surface">Jantar Mantar Solar Observatory &amp; City Palace</h5>
+<p class="font-body-sm text-body-sm text-on-surface-variant">UNESCO World Heritage astronomical instruments and Rajput textile archive collection.</p>
+<div class="flex items-center gap-2 pt-1">
+<button class="px-3 py-1.5 rounded-lg bg-surface-container font-label-sm text-label-sm text-on-surface flex items-center gap-1">
+<span class="material-symbols-outlined text-[16px]">navigation</span> Nav
+              </button>
+<button class="px-3 py-1.5 rounded-lg bg-surface-container font-label-sm text-label-sm text-on-surface flex items-center gap-1" onclick="this.classList.toggle('bg-primary-container'); this.classList.toggle('text-white');">
+<span class="material-symbols-outlined text-[16px]">check_circle</span> Visited
+              </button>
+</div>
+</div>
+<!-- Afternoon -->
+<div class="relative group space-y-1.5">
+<div class="absolute -left-6 top-1 w-3.5 h-3.5 rounded-full bg-surface-container-lowest ring-4 ring-primary-container"></div>
+<span class="font-label-sm text-label-sm text-primary font-semibold block">01:00 PM • 2.5 hrs</span>
+<h5 class="font-label-lg text-label-lg text-on-surface">Block Printing Workshop at Sanganer &amp; Thali Lunch</h5>
+<p class="font-body-sm text-body-sm text-on-surface-variant">Hands-on natural dye woodblock printing followed by authentic Rajasthani Dal Baati Churma.</p>
+<div class="flex items-center gap-2 pt-1">
+<button class="px-3 py-1.5 rounded-lg bg-surface-container font-label-sm text-label-sm text-on-surface flex items-center gap-1">
+<span class="material-symbols-outlined text-[16px]">navigation</span> Nav
+              </button>
+<button class="px-3 py-1.5 rounded-lg bg-surface-container font-label-sm text-label-sm text-on-surface flex items-center gap-1" onclick="this.classList.toggle('bg-primary-container'); this.classList.toggle('text-white');">
+<span class="material-symbols-outlined text-[16px]">check_circle</span> Visited
+              </button>
+</div>
+</div>
+<!-- Evening -->
+<div class="relative group space-y-1.5">
+<div class="absolute -left-6 top-1 w-3.5 h-3.5 rounded-full bg-surface-container-lowest ring-4 ring-primary-container"></div>
+<span class="font-label-sm text-label-sm text-primary font-semibold block">05:00 PM • 2 hrs</span>
+<h5 class="font-label-lg text-label-lg text-on-surface">Johari Bazaar Spices &amp; Gemstone Exploration</h5>
+<p class="font-body-sm text-body-sm text-on-surface-variant">Guided alley walk through old silversmith quarters and heritage lac bangle makers.</p>
+<div class="flex items-center gap-2 pt-1">
+<button class="px-3 py-1.5 rounded-lg bg-surface-container font-label-sm text-label-sm text-on-surface flex items-center gap-1">
+<span class="material-symbols-outlined text-[16px]">navigation</span> Nav
+              </button>
+<button class="px-3 py-1.5 rounded-lg bg-surface-container font-label-sm text-label-sm text-on-surface flex items-center gap-1" onclick="this.classList.toggle('bg-primary-container'); this.classList.toggle('text-white');">
+<span class="material-symbols-outlined text-[16px]">check_circle</span> Visited
+              </button>
+</div>
+</div>
+</div>
+</article>
+<!-- DAY 3 (Intercity Transition) -->
+<article class="bg-surface-container-lowest rounded-xl p-space-md shadow-sm space-y-space-md">
+<!-- Intercity Highlight Header -->
+<div class="bg-primary-container text-on-primary p-3 rounded-lg flex items-center justify-between">
+<div class="flex items-center gap-2 min-w-0">
+<span class="material-symbols-outlined text-tertiary-fixed text-[20px]">train</span>
+<span class="font-label-md text-label-md font-semibold truncate">Transit Day • Vande Bharat Express</span>
+</div>
+<span class="font-label-sm text-label-sm bg-white/10 px-2 py-0.5 rounded text-white flex-shrink-0">08:00 AM - 11:45 AM</span>
+</div>
+<div class="flex items-start justify-between pb-space-xs">
+<div>
+<div class="flex items-center gap-2">
+<span class="w-6 h-6 rounded-full bg-tertiary-container text-white flex items-center justify-center font-label-sm text-label-sm font-bold">3</span>
+<h4 class="font-headline-sm text-headline-sm text-on-surface">Jaipur ➔ New Delhi</h4>
+</div>
+<p class="font-body-sm text-body-sm text-on-surface-variant mt-0.5">Mon, 20 Oct 2025 • Smooth Rail Transit &amp; Lutyens Sunset</p>
+</div>
+<span class="bg-secondary-container text-on-secondary-container font-label-sm text-label-sm px-2 py-0.5 rounded-full whitespace-nowrap">
+            92% Pacing
+          </span>
+</div>
+<!-- Timeline Items -->
+<div class="relative pl-6 space-y-5">
+<div class="absolute left-2 top-2 bottom-2 w-0.5 bg-secondary-container"></div>
+<!-- Morning Transit -->
+<div class="relative group space-y-1.5">
+<div class="absolute -left-6 top-1 w-3.5 h-3.5 rounded-full bg-surface-container-lowest ring-4 ring-tertiary-container"></div>
+<span class="font-label-sm text-label-sm text-primary font-semibold block">08:00 AM • 3.75 hrs</span>
+<h5 class="font-label-lg text-label-lg text-on-surface">Executive Express Check-in &amp; Aravalli Rail Transit</h5>
+<p class="font-body-sm text-body-sm text-on-surface-variant">Scenic express train with breakfast onboard, crossing the Rajasthani borderlands into New Delhi Railway Station.</p>
+<div class="flex items-center gap-2 pt-1">
+<button class="px-3 py-1.5 rounded-lg bg-surface-container font-label-sm text-label-sm text-on-surface flex items-center gap-1">
+<span class="material-symbols-outlined text-[16px]">confirmation_number</span> PNR Status
+              </button>
+<button class="px-3 py-1.5 rounded-lg bg-surface-container font-label-sm text-label-sm text-on-surface flex items-center gap-1" onclick="this.classList.toggle('bg-primary-container'); this.classList.toggle('text-white');">
+<span class="material-symbols-outlined text-[16px]">check_circle</span> Completed
+              </button>
+</div>
+</div>
+<!-- Afternoon -->
+<div class="relative group space-y-1.5">
+<div class="absolute -left-6 top-1 w-3.5 h-3.5 rounded-full bg-surface-container-lowest ring-4 ring-primary-container"></div>
+<span class="font-label-sm text-label-sm text-primary font-semibold block">01:00 PM • 2 hrs</span>
+<h5 class="font-label-lg text-label-lg text-on-surface">Hotel Check-in at Connaught Place &amp; High Tea</h5>
+<p class="font-body-sm text-body-sm text-on-surface-variant">Check-in at boutique heritage property, followed by Kashmiri Kahwa and refreshments.</p>
+<div class="flex items-center gap-2 pt-1">
+<button class="px-3 py-1.5 rounded-lg bg-surface-container font-label-sm text-label-sm text-on-surface flex items-center gap-1">
+<span class="material-symbols-outlined text-[16px]">navigation</span> Nav
+              </button>
+<button class="px-3 py-1.5 rounded-lg bg-surface-container font-label-sm text-label-sm text-on-surface flex items-center gap-1" onclick="this.classList.toggle('bg-primary-container'); this.classList.toggle('text-white');">
+<span class="material-symbols-outlined text-[16px]">check_circle</span> Visited
+              </button>
+</div>
+</div>
+<!-- Evening -->
+<div class="relative group space-y-1.5">
+<div class="absolute -left-6 top-1 w-3.5 h-3.5 rounded-full bg-surface-container-lowest ring-4 ring-primary-container"></div>
+<span class="font-label-sm text-label-sm text-primary font-semibold block">05:30 PM • 3 hrs</span>
+<h5 class="font-label-lg text-label-lg text-on-surface">India Gate Evening Stroll &amp; Dilli Haat Dinner</h5>
+<p class="font-body-sm text-body-sm text-on-surface-variant">Illuminated Kartavya Path memorial gardens and pan-Indian culinary stalls in INA.</p>
+<div class="flex items-center gap-2 pt-1">
+<button class="px-3 py-1.5 rounded-lg bg-surface-container font-label-sm text-label-sm text-on-surface flex items-center gap-1">
+<span class="material-symbols-outlined text-[16px]">navigation</span> Nav
+              </button>
+<button class="px-3 py-1.5 rounded-lg bg-surface-container font-label-sm text-label-sm text-on-surface flex items-center gap-1" onclick="this.classList.toggle('bg-primary-container'); this.classList.toggle('text-white');">
+<span class="material-symbols-outlined text-[16px]">check_circle</span> Visited
+              </button>
+</div>
+</div>
+</div>
+</article>
+<!-- PROGRESSIVE DISCLOSURE EXPANDER BUTTON (CRITICAL RULE) -->
+<div class="pt-2" id="expand-trigger-container"><button class="w-full bg-surface-container-high hover:bg-surface-container-highest rounded-xl p-4 flex flex-col items-center justify-center text-center transition-all shadow-sm active:scale-[0.99]" id="toggle-days-btn" onclick="const container = document.getElementById('remaining-days-container'); const label = document.getElementById('expand-label'); const icon = document.getElementById('toggle-icon'); if (container.classList.contains('hidden')) { container.classList.remove('hidden'); label.textContent = 'Collapse Days (4–7)'; icon.textContent = 'expand_less'; } else { container.classList.add('hidden'); label.textContent = 'Explore Remaining Days (Days 4–7)'; icon.textContent = 'expand_more'; }"><div class="flex items-center justify-center gap-1.5 text-primary font-label-lg text-label-lg"><span class="main-label font-bold" id="expand-label">Explore Remaining Days (Days 4–7)</span><span class="material-symbols-outlined text-[20px]" id="toggle-icon">expand_more</span></div><span class="font-body-sm text-body-sm text-on-surface-variant mt-0.5">Reveals Delhi Heritage Walks &amp; Agra Sunrise Taj Mahal</span></button></div>
+<!-- PROGRESSIVE CONTAINER (DAYS 4 TO 7) -->
+<div class="hidden space-y-6 pt-2" id="remaining-days-container">
+<!-- DAY 4 -->
+<article class="bg-surface-container-lowest rounded-xl p-space-md shadow-sm space-y-space-md"><div class="flex items-start justify-between pb-space-xs"><div><div class="flex items-center gap-2"><span class="w-6 h-6 rounded-full bg-primary-container text-on-primary flex items-center justify-center font-label-sm text-label-sm font-bold">1</span><h4 class="font-headline-sm text-headline-sm text-on-surface">Jaipur: Royal Heritage</h4></div><p class="font-body-sm text-body-sm text-on-surface-variant mt-0.5">Sat, 18 Oct 2025 • Rajput Architecture &amp; Culinary Beginnings</p></div><span class="bg-secondary-container text-on-secondary-container font-label-sm text-label-sm px-2 py-0.5 rounded-full whitespace-nowrap">98% Optimal</span></div><div class="flex items-center gap-2 bg-surface-container-low p-2 rounded-lg text-on-surface-variant font-label-sm text-label-sm"><span class="flex items-center gap-1"><span class="material-symbols-outlined text-[16px] text-primary">toll</span> ₹3,400 est./person</span><span class="text-outline">|</span><span class="flex items-center gap-1"><span class="material-symbols-outlined text-[16px] text-primary">directions_car</span> 1h 40m transit</span></div><div class="relative pl-6 space-y-5"><div class="absolute left-2 top-2 bottom-2 w-0.5 bg-secondary-container"></div><div class="relative group"><div class="absolute -left-6 top-1 w-3.5 h-3.5 rounded-full bg-surface-container-lowest ring-4 ring-primary-container"></div><div class="space-y-2"><div class="flex items-center justify-between text-on-surface-variant font-label-sm text-label-sm"><span class="font-semibold text-primary">09:00 AM • 2.5 hrs</span><span class="text-secondary font-medium">Ideal morning light</span></div><h5 class="font-label-lg text-label-lg text-on-surface">Amber Fort &amp; Elephant Ramparts Tour</h5><div class="h-36 rounded-lg overflow-hidden relative shadow-sm"><img class="w-full h-full object-cover" data-alt="Majestic Amber Fort in Jaipur perched high upon a rocky hill with sandstone ramparts reflecting warm morning sunlight, serene desert landscape in Rajasthan, elegant travel photography with soft tones" src="https://lh3.googleusercontent.com/aida-public/AB6AXuD2QM8cRsTtVRVCkU_kIFGsiqNDWDAblVEkrbZb1mAMoBYHLnMNCQ2_kA6PSQLlKnQjQ7le6WdQs_pnzDDCBwJKGhiotivyG52iWzIeRdCYPTmFRAs28YHu-A-P_-wkwvxlwV5pnTztadlbZ92MZKrJSjYP4-1EKACX5SlBOzxMvAFEStS7X6WWa4HWxlCYXITYGa5VtdTCqQVcP-7KTXUhf3BsWCwz1-YIyzdVBg"><span class="absolute bottom-2 left-2 bg-primary/80 backdrop-blur-sm text-white px-2 py-0.5 rounded text-label-sm font-label-sm">Audio Guide Incl.</span></div><p class="font-body-sm text-body-sm text-on-surface-variant">Stroll the royal courtyards of Maota Lake before peak afternoon tourist buses arrive.</p><div class="flex items-center gap-2 pt-1"><button class="flex items-center gap-1 px-3 py-1.5 rounded-lg bg-surface-container hover:bg-surface-container-high active:scale-95 font-label-sm text-label-sm text-on-surface transition-colors" onclick="const t = document.getElementById('itinerary-toast'); if(t){ t.textContent='Navigating to Amber Fort via Amer Road (22 mins)...'; t.classList.remove('hidden'); setTimeout(()=&gt;t.classList.add('hidden'), 2500); }"><span class="material-symbols-outlined text-[16px] text-primary">navigation</span> Navigation</button><button class="flex items-center gap-1 px-3 py-1.5 rounded-lg bg-surface-container hover:bg-surface-container-high active:scale-95 font-label-sm text-label-sm text-on-surface transition-colors" onclick="const isDone = this.getAttribute('data-visited') === 'true'; if (isDone) { this.setAttribute('data-visited', 'false'); this.className = 'flex items-center gap-1 px-3 py-1.5 rounded-lg bg-surface-container hover:bg-surface-container-high active:scale-95 font-label-sm text-label-sm text-on-surface transition-colors'; this.innerHTML = '&lt;span class=\'material-symbols-outlined text-[16px]\'&gt;check_circle&lt;/span&gt; Mark Visited'; } else { this.setAttribute('data-visited', 'true'); this.className = 'flex items-center gap-1 px-3 py-1.5 rounded-lg bg-primary-container text-white active:scale-95 font-label-sm text-label-sm transition-colors'; this.innerHTML = '&lt;span class=\'material-symbols-outlined text-[16px]\'&gt;check_circle&lt;/span&gt; Visited ✓'; }"><span class="material-symbols-outlined text-[16px]">check_circle</span> Mark Visited</button></div></div></div><div class="relative group"><div class="absolute -left-6 top-1 w-3.5 h-3.5 rounded-full bg-surface-container-lowest ring-4 ring-primary-container"></div><div class="space-y-2"><div class="flex items-center justify-between text-on-surface-variant font-label-sm text-label-sm"><span class="font-semibold text-primary">01:30 PM • 1.5 hrs</span><span class="text-secondary font-medium">High Suitability</span></div><h5 class="font-label-lg text-label-lg text-on-surface">Hawa Mahal Facade &amp; Lassiwala</h5><div class="h-32 rounded-lg overflow-hidden relative shadow-sm"><img class="w-full h-full object-cover" data-alt="Intricate honeycomb lattice windows of Hawa Mahal Palace of Winds in Jaipur, pink terracotta sandstone against a pristine blue autumn sky, artisan food and travel lifestyle aesthetic" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBBjX8q2bkwJoKJ2KepybHwEYcJzs9FNSbBF-MrpeJ6dCepzh_XYlv8B2_rx6h7Rt3z9gRbRHdl84wDQJWBL7VeTSMWe9RzZF5p43Z39UTllAuQuwZE9Ygz6InQKg5DRrehldanZRMSSdtpP07vze6lLVPBFE4MySLYwkwXQkIFoD5HChbzUKNj2oGVoHigKpeeyw0YN6Q8yBiwgil84HmAFIj32cf8Sn6IsB6yVw"></div><p class="font-body-sm text-body-sm text-on-surface-variant">Admire the 953 honeycombed jharokhas followed by chilled clay-pot lassi on MI Road.</p><div class="flex items-center gap-2 pt-1"><button class="flex items-center gap-1 px-3 py-1.5 rounded-lg bg-surface-container hover:bg-surface-container-high active:scale-95 font-label-sm text-label-sm text-on-surface transition-colors" onclick="const t = document.getElementById('itinerary-toast'); if(t){ t.textContent='Navigating to Hawa Mahal Bazaar...'; t.classList.remove('hidden'); setTimeout(()=&gt;t.classList.add('hidden'), 2500); }"><span class="material-symbols-outlined text-[16px] text-primary">navigation</span> Navigation</button><button class="flex items-center gap-1 px-3 py-1.5 rounded-lg bg-surface-container hover:bg-surface-container-high active:scale-95 font-label-sm text-label-sm text-on-surface transition-colors" onclick="const isDone = this.getAttribute('data-visited') === 'true'; if (isDone) { this.setAttribute('data-visited', 'false'); this.className = 'flex items-center gap-1 px-3 py-1.5 rounded-lg bg-surface-container hover:bg-surface-container-high active:scale-95 font-label-sm text-label-sm text-on-surface transition-colors'; this.innerHTML = '&lt;span class=\'material-symbols-outlined text-[16px]\'&gt;check_circle&lt;/span&gt; Mark Visited'; } else { this.setAttribute('data-visited', 'true'); this.className = 'flex items-center gap-1 px-3 py-1.5 rounded-lg bg-primary-container text-white active:scale-95 font-label-sm text-label-sm transition-colors'; this.innerHTML = '&lt;span class=\'material-symbols-outlined text-[16px]\'&gt;check_circle&lt;/span&gt; Visited ✓'; }"><span class="material-symbols-outlined text-[16px]">check_circle</span> Mark Visited</button></div></div></div><div class="relative group"><div class="absolute -left-6 top-1 w-3.5 h-3.5 rounded-full bg-surface-container-lowest ring-4 ring-tertiary-container"></div><div class="space-y-2"><div class="flex items-center justify-between text-on-surface-variant font-label-sm text-label-sm"><span class="font-semibold text-primary">05:30 PM • 3 hrs</span><span class="text-tertiary font-medium">Sunset Vantage</span></div><h5 class="font-label-lg text-label-lg text-on-surface">Nahargarh Fort Sunset &amp; Dinner at Padao</h5><div class="h-32 rounded-lg overflow-hidden relative shadow-sm"><img class="w-full h-full object-cover" data-alt="Panoramic sunset vista over the Pink City of Jaipur seen from the ramparts of Nahargarh Fort, warm golden hour orange glow reflecting off historic stone masonry" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBQdFdtuV24wuwGMFYKUA1ujJRj_Ge0v3fvCWom2fDE9fA6TYsOt6BfmYzPiBW3u2r31aPWSaQ7olyRyUfsDaoj9VC26E0izdjNNTM3WK_CJWo1Vcxl6dbb-s48c5y6hh7wHZWIX6wtRPWVbU-lvlInVwcPhVKbLr9Us2iJfNXfbto6QaQL1VLgmBMMxSYX1MVsmLWGFCFoCfc1wc7_5WESvxt7kviCl-pzmwwSrg"></div><div class="flex items-center gap-2 pt-1"><button class="flex items-center gap-1 px-3 py-1.5 rounded-lg bg-surface-container hover:bg-surface-container-high active:scale-95 font-label-sm text-label-sm text-on-surface transition-colors" onclick="const t = document.getElementById('itinerary-toast'); if(t){ t.textContent='Navigating to Nahargarh Fort Sunset Viewpoint...'; t.classList.remove('hidden'); setTimeout(()=&gt;t.classList.add('hidden'), 2500); }"><span class="material-symbols-outlined text-[16px] text-primary">navigation</span> Navigation</button><button class="flex items-center gap-1 px-3 py-1.5 rounded-lg bg-surface-container hover:bg-surface-container-high active:scale-95 font-label-sm text-label-sm text-on-surface transition-colors" onclick="const isDone = this.getAttribute('data-visited') === 'true'; if (isDone) { this.setAttribute('data-visited', 'false'); this.className = 'flex items-center gap-1 px-3 py-1.5 rounded-lg bg-surface-container hover:bg-surface-container-high active:scale-95 font-label-sm text-label-sm text-on-surface transition-colors'; this.innerHTML = '&lt;span class=\'material-symbols-outlined text-[16px]\'&gt;check_circle&lt;/span&gt; Mark Visited'; } else { this.setAttribute('data-visited', 'true'); this.className = 'flex items-center gap-1 px-3 py-1.5 rounded-lg bg-primary-container text-white active:scale-95 font-label-sm text-label-sm transition-colors'; this.innerHTML = '&lt;span class=\'material-symbols-outlined text-[16px]\'&gt;check_circle&lt;/span&gt; Visited ✓'; }"><span class="material-symbols-outlined text-[16px]">check_circle</span> Mark Visited</button></div></div></div></div></article>
+<!-- DAY 5 -->
+<article class="bg-surface-container-lowest rounded-xl p-space-md shadow-sm space-y-space-md">
+<div class="flex items-start justify-between pb-space-xs">
+<div>
+<div class="flex items-center gap-2">
+<span class="w-6 h-6 rounded-full bg-primary-container text-on-primary flex items-center justify-center font-label-sm text-label-sm font-bold">5</span>
+<h4 class="font-headline-sm text-headline-sm text-on-surface">Delhi: Mughal Architecture</h4>
+</div>
+<p class="font-body-sm text-body-sm text-on-surface-variant mt-0.5">Wed, 22 Oct 2025 • Humayun’s Tomb Garden &amp; Qutub Minar</p>
+</div>
+<span class="bg-secondary-container text-on-secondary-container font-label-sm text-label-sm px-2 py-0.5 rounded-full">
+              97% Optimal
+            </span>
+</div>
+<div class="relative pl-6 space-y-4">
+<div class="absolute left-2 top-2 bottom-2 w-0.5 bg-secondary-container"></div>
+<div class="space-y-1">
+<span class="font-label-sm text-label-sm text-primary font-semibold block">09:30 AM • 2.5 hrs</span>
+<h5 class="font-label-lg text-label-lg text-on-surface">Humayun's Tomb Charbagh Walk</h5>
+<p class="font-body-sm text-body-sm text-on-surface-variant">Early architectural predecessor to the Taj Mahal with restored Persian waterways.</p>
+</div>
+<div class="space-y-1">
+<span class="font-label-sm text-label-sm text-primary font-semibold block">03:30 PM • 2.5 hrs</span>
+<h5 class="font-label-lg text-label-lg text-on-surface">Qutub Minar Complex &amp; Mehrauli Archaeological Park</h5>
+<p class="font-body-sm text-body-sm text-on-surface-variant">Towering 73-meter victory minaret and ancient rust-resistant Iron Pillar.</p>
+</div>
+</div>
+</article>
+<!-- DAY 6 (Delhi to Agra) -->
+<article class="bg-surface-container-lowest rounded-xl p-space-md shadow-sm space-y-space-md">
+<div class="flex items-start justify-between pb-space-xs">
+<div>
+<div class="flex items-center gap-2">
+<span class="w-6 h-6 rounded-full bg-primary-container text-on-primary flex items-center justify-center font-label-sm text-label-sm font-bold">6</span>
+<h4 class="font-headline-sm text-headline-sm text-on-surface">Delhi ➔ Agra: Yamuna Express</h4>
+</div>
+<p class="font-body-sm text-body-sm text-on-surface-variant mt-0.5">Thu, 23 Oct 2025 • Taj Sunset Vantage from Mehtab Bagh</p>
+</div>
+<span class="bg-secondary-container text-on-secondary-container font-label-sm text-label-sm px-2 py-0.5 rounded-full">
+              91% Optimal
+            </span>
+</div>
+<div class="relative pl-6 space-y-4">
+<div class="absolute left-2 top-2 bottom-2 w-0.5 bg-secondary-container"></div>
+<div class="space-y-1">
+<span class="font-label-sm text-label-sm text-primary font-semibold block">09:00 AM • 3 hrs</span>
+<h5 class="font-label-lg text-label-lg text-on-surface">Private Car Transfer via Yamuna Expressway</h5>
+<p class="font-body-sm text-body-sm text-on-surface-variant">Smooth highway drive directly to Agra with check-in overlooking Mughal gardens.</p>
+</div>
+<div class="space-y-1">
+<span class="font-label-sm text-label-sm text-primary font-semibold block">04:45 PM • 2 hrs</span>
+<h5 class="font-label-lg text-label-lg text-on-surface">Mehtab Bagh Moonlight Garden Sunset</h5>
+<p class="font-body-sm text-body-sm text-on-surface-variant">Silhouette view of the Taj Mahal across the Yamuna River as twilight descends.</p>
+</div>
+</div>
+</article>
+<!-- DAY 7 (Grand Finale) -->
+<article class="bg-surface-container-lowest rounded-xl p-space-md shadow-sm space-y-space-md">
+<div class="flex items-start justify-between pb-space-xs">
+<div>
+<div class="flex items-center gap-2">
+<span class="w-6 h-6 rounded-full bg-primary-container text-on-primary flex items-center justify-center font-label-sm text-label-sm font-bold">7</span>
+<h4 class="font-headline-sm text-headline-sm text-on-surface">Agra: Grand Finale</h4>
+</div>
+<p class="font-body-sm text-body-sm text-on-surface-variant mt-0.5">Fri, 24 Oct 2025 • Dawn at Taj Mahal &amp; Agra Fort</p>
+</div>
+<span class="bg-primary-fixed text-on-primary-fixed font-label-sm text-label-sm px-2 py-0.5 rounded-full font-bold">
+              100% Climax
+            </span>
+</div>
+<div class="h-40 rounded-lg overflow-hidden relative shadow-sm">
+<img class="w-full h-full object-cover" data-alt="Breathtaking morning sunrise view of the Taj Mahal in Agra with pink and golden sunlight illuminating the iconic ivory-white marble mausoleum and pristine reflecting pools" src="https://lh3.googleusercontent.com/aida-public/AB6AXuB7FmHB9pHlzvWpGsY24fYcurbH2ldszU6Km6mWxCInN5XUZzyw7ffLdaFq7epNg6WMKPpKZt_WdwLQU4Vx29vH3xvZ2eNSnPaKzLRsc_ip6LOfvOtlggMpoW2mm6DLlG0fb6w4mdCvqGCvWiUyJI3Hh1Dxbx_vhX4jTSBVDQvdjgev8doBMLYI-MsY2oVruESEoHdqYNTMiE0KOveR7PB0ACsQ-hFgnvz7O8TVHA">
+</div>
+<div class="relative pl-6 space-y-4">
+<div class="absolute left-2 top-2 bottom-2 w-0.5 bg-secondary-container"></div>
+<div class="space-y-1">
+<span class="font-label-sm text-label-sm text-primary font-semibold block">05:45 AM • 3 hrs</span>
+<h5 class="font-label-lg text-label-lg text-on-surface">Sunrise at the Taj Mahal VIP Gate</h5>
+<p class="font-body-sm text-body-sm text-on-surface-variant">Witness morning mist lift over the white marble dome during peaceful opening hours.</p>
+</div>
+<div class="space-y-1">
+<span class="font-label-sm text-label-sm text-primary font-semibold block">11:00 AM • 2.5 hrs</span>
+<h5 class="font-label-lg text-label-lg text-on-surface">Agra Fort &amp; Return Departure Transfer</h5>
+<p class="font-body-sm text-body-sm text-on-surface-variant">Explore Emperor Shah Jahan's palace quarters before final transit to Delhi International Airport.</p>
+</div>
+</div>
+</article>
+</div>
+</div>
+</section>
+</div></main><nav class="fixed bottom-0 w-full z-50 pb-safe bg-surface/85 backdrop-blur-xl shadow-[0_-1px_12px_rgba(0,0,0,0.04)]" data-active-classes="text-primary font-semibold"><div class="flex justify-around items-center h-20 px-space-xs"><a class="flex flex-col items-center justify-center gap-space-xs min-w-[56px] h-11 text-on-surface-variant hover:text-on-surface active:scale-95 transition-all" data-path="home" href="#"><span class="material-symbols-outlined text-[24px]">explore</span><span class="font-label-sm text-label-sm">Home</span></a><a aria-current="page" class="flex flex-col items-center justify-center gap-space-xs min-w-[56px] h-11 transition-all active:scale-95 text-primary font-semibold" data-path="my-trips" href="#"><span class="material-symbols-outlined text-[24px]">map</span><span class="font-label-sm text-label-sm">My Trips</span></a><a class="flex flex-col items-center justify-center gap-space-xs min-w-[56px] h-11 text-on-surface-variant hover:text-on-surface active:scale-95 transition-all" data-path="plan-b" href="#"><span class="material-symbols-outlined text-[24px]">alt_route</span><span class="font-label-sm text-label-sm">Plan B</span></a><a class="flex flex-col items-center justify-center gap-space-xs min-w-[56px] h-11 text-on-surface-variant hover:text-on-surface active:scale-95 transition-all" data-path="ai-concierge" href="#"><span class="material-symbols-outlined text-[24px]">auto_awesome</span><span class="font-label-sm text-label-sm">AI Concierge</span></a><a class="flex flex-col items-center justify-center gap-space-xs min-w-[56px] h-11 text-on-surface-variant hover:text-on-surface active:scale-95 transition-all" data-path="profile" href="#"><span class="material-symbols-outlined text-[24px]">account_circle</span><span class="font-label-sm text-label-sm">Profile</span></a></div></nav>
+
+</body></html>

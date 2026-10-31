@@ -1,0 +1,620 @@
+<!DOCTYPE html><html class="h-full" lang="en"><head><meta charset="utf-8"><meta content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" name="viewport"><meta content="mobile_stack" name="shell-type"><link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" rel="stylesheet"><link href="https://fonts.googleapis.com" rel="preconnect"><link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"><link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&amp;family=Manrope:wght@600;700&amp;display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"><script src="https://cdn.tailwindcss.com"></script><script id="tailwind-config">tailwind.config = { darkMode: "class", theme: { extend: { colors: { "surface-tint": "#3f665a", "outline-variant": "#c0c8c4", "surface-bright": "#edfdf5", "surface-container-low": "#e7f7ef", "on-primary-fixed": "#002019", "surface": "#edfdf5", "on-error-container": "#93000a", "background": "#edfdf5", "tertiary-fixed": "#ffdcbb", "surface-container": "#e1f2ea", "on-surface-variant": "#414845", "primary-fixed": "#c1ecdd", "on-error": "#ffffff", "secondary-container": "#d6e7db", "on-primary": "#ffffff", "on-tertiary": "#ffffff", "on-tertiary-fixed-variant": "#683d00", "on-secondary-fixed-variant": "#3b4a41", "on-secondary": "#ffffff", "primary-fixed-dim": "#a6cfc1", "secondary": "#526259", "on-primary-fixed-variant": "#274e43", "surface-container-highest": "#d6e6df", "primary-container": "#173f35", "on-tertiary-fixed": "#2c1700", "inverse-primary": "#a6cfc1", "tertiary-fixed-dim": "#fdb96e", "surface-container-high": "#dcece4", "secondary-fixed": "#d6e7db", "secondary-fixed-dim": "#bacbbf", "surface-dim": "#ceded6", "on-primary-container": "#82aa9d", "on-background": "#101e1a", "on-tertiary-container": "#d4954e", "error-container": "#ffdad6", "surface-container-lowest": "#ffffff", "error": "#ba1a1a", "primary": "#002920", "tertiary": "#361d00", "surface-variant": "#d6e6df", "on-secondary-fixed": "#101e17", "on-secondary-container": "#58685f", "inverse-on-surface": "#e4f4ed", "inverse-surface": "#25332e", "tertiary-container": "#543000", "on-surface": "#101e1a", "outline": "#717975" }, borderRadius: { "DEFAULT": "0.25rem", "lg": "0.5rem", "xl": "0.75rem", "full": "9999px" }, spacing: { "space-xs": "0.25rem", "gutter-desktop": "2rem", "space-lg": "1.5rem", "space-xl": "2rem", "gutter-tablet": "1.5rem", "margin": "1rem", "margin-desktop": "3rem", "space-sm": "0.5rem", "space-md": "1rem", "gutter": "1rem", "margin-tablet": "2rem" }, fontFamily: { "headline-sm": ["Manrope"], "display-lg": ["Manrope"], "body-md": ["Inter"], "label-md": ["Inter"], "label-lg": ["Inter"], "headline-lg": ["Manrope"], "body-lg": ["Inter"], "body-sm": ["Inter"], "label-sm": ["Inter"], "headline-md": ["Manrope"], "display-lg-mobile": ["Manrope"] }, fontSize: { "headline-sm": ["18px", { "lineHeight": "24px", "letterSpacing": "0em", "fontWeight": "600" }], "display-lg": ["40px", { "lineHeight": "48px", "letterSpacing": "-0.02em", "fontWeight": "700" }], "body-md": ["14px", { "lineHeight": "20px", "letterSpacing": "0em", "fontWeight": "400" }], "label-md": ["12px", { "lineHeight": "16px", "letterSpacing": "0.02em", "fontWeight": "500" }], "label-lg": ["14px", { "lineHeight": "18px", "letterSpacing": "0.02em", "fontWeight": "600" }], "headline-lg": ["28px", { "lineHeight": "36px", "letterSpacing": "-0.015em", "fontWeight": "600" }], "body-lg": ["16px", { "lineHeight": "24px", "letterSpacing": "-0.005em", "fontWeight": "400" }], "body-sm": ["12px", { "lineHeight": "16px", "letterSpacing": "0.01em", "fontWeight": "400" }], "label-sm": ["10px", { "lineHeight": "12px", "letterSpacing": "0.04em", "fontWeight": "600" }], "headline-md": ["22px", { "lineHeight": "28px", "letterSpacing": "-0.01em", "fontWeight": "600" }], "display-lg-mobile": ["32px", { "lineHeight": "40px", "letterSpacing": "-0.02em", "fontWeight": "700" }] } } } };</script><style>@layer base { html, body { width: 100%; margin: 0; padding: 0; } body { overscroll-behavior-y: none; } .pb-safe { padding-bottom: env(safe-area-inset-bottom, 0px); } .pt-safe { padding-top: env(safe-area-inset-top, 0px); } main > :first-child { margin-top: 0 !important; } main > :last-child { margin-bottom: 0 !important; } } ::-webkit-scrollbar { display: none; }</style></head><body class="bg-surface font-body-md text-body-md text-on-surface min-h-full flex flex-col antialiased selection:bg-secondary-container selection:text-primary"><header class="fixed top-0 w-full z-50 pt-safe bg-surface/80 backdrop-blur-xl shadow-[0_1px_8px_rgba(0,0,0,0.04)]"><div class="h-16 px-gutter flex items-center justify-between"><div class="flex items-center gap-space-sm"><button aria-label="Navigate Back" class="w-11 h-11 -ml-space-sm rounded-full flex items-center justify-center text-on-surface hover:text-primary transition-colors" onclick="if (window.history.length &gt; 1) { history.back(); } else { window.location.href = '#home'; }"><span class="material-symbols-outlined text-[24px]">arrow_back</span></button><h1 class="font-headline-sm text-headline-sm text-primary tracking-tight">Trip Configuration</h1></div><div class="flex items-center gap-space-sm"><button aria-label="More Options" class="w-11 h-11 rounded-full flex items-center justify-center text-on-surface-variant hover:text-primary transition-colors"><span class="material-symbols-outlined text-[22px]">more_vert</span></button><div class="w-8 h-8 rounded-full bg-primary flex items-center justify-center"><span class="material-symbols-outlined text-on-primary text-[18px]">person</span></div></div></div></header><main class="flex-1 flex flex-col relative w-full pt-16 pb-safe bg-surface"><div class="flex flex-col w-full">
+<!-- Visual Header Narrative Strip -->
+<div class="px-margin pt-space-md pb-space-sm flex flex-col gap-space-xs">
+<div class="flex items-center justify-between">
+<div class="flex items-center gap-space-xs">
+<span class="inline-flex items-center px-2 py-0.5 rounded-full bg-secondary-container text-on-secondary-container font-label-sm text-label-sm uppercase tracking-wider">
+          Step 1 of 3
+        </span>
+<span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-tertiary-fixed text-on-tertiary-fixed font-label-sm text-label-sm">
+<span class="material-symbols-outlined text-[12px]" style="font-variation-settings: 'FILL' 1;">auto_awesome</span>
+          AI Circuit Ready
+        </span>
+</div>
+<span class="font-label-md text-label-md text-on-surface-variant">Customise Route</span>
+</div>
+<p class="font-body-md text-body-md text-on-surface-variant">Configure stops, cadence, and pace for your bespoke Indian circuit.</p>
+</div>
+<!-- Main Scrollable Configuration Stack -->
+<div class="flex flex-col gap-space-lg px-margin pb-28">
+<!-- Section 1: Country & Destination Multi-Stop Engine -->
+<section class="bg-surface-container-lowest rounded-xl p-space-md shadow-sm flex flex-col gap-space-md">
+<!-- Country Segmented Switch -->
+<div class="flex flex-col gap-space-xs">
+<label class="font-label-md text-label-md text-on-surface-variant uppercase tracking-wider">Region Scope</label>
+<div class="grid grid-cols-2 p-1 bg-surface-container rounded-lg gap-1">
+<button class="flex items-center justify-center gap-1.5 py-2 px-3 rounded-lg bg-primary text-on-primary font-label-lg text-label-lg shadow-sm transition-all" type="button">
+<span class="">Domestic (India)</span>
+<span class="text-sm">🇮🇳</span>
+</button>
+<button class="flex items-center justify-center gap-1.5 py-2 px-3 rounded-lg text-on-surface-variant hover:text-primary font-label-lg text-label-lg transition-colors" type="button">
+<span class="">International</span>
+<span class="text-sm">✈️</span>
+</button>
+</div>
+</div>
+<!-- Feature Highlight Header -->
+<div class="pt-space-xs flex flex-col gap-1">
+<div class="flex items-center justify-between">
+<h2 class="font-headline-sm text-headline-sm text-primary flex items-center gap-1.5">
+<span class="">Route &amp; Destinations</span>
+</h2>
+<span class="inline-flex items-center px-2 py-0.5 rounded-full bg-secondary-container text-on-secondary-fixed-variant font-label-sm text-label-sm font-semibold">
+            Multi-Stop Circuit Enabled
+          </span>
+</div>
+<p class="font-body-sm text-body-sm text-on-surface-variant">
+          Add multiple destinations to one journey. RoamWise can reorder and optimize your circuit transit paths dynamically.
+        </p>
+</div>
+<!-- Ordered Multi-Stop Interactive List -->
+<div class="flex flex-col gap-2.5" id="stops-container">
+<!-- Stop 1 -->
+<div class="stop-card group flex items-center justify-between p-3 rounded-xl bg-surface-container-low transition-all" data-order="1">
+<div class="flex items-center gap-3 min-w-0">
+<button aria-label="Reorder stop" class="cursor-grab active:cursor-grabbing text-outline hover:text-primary flex items-center justify-center" type="button">
+<span class="material-symbols-outlined text-[20px]">drag_indicator</span>
+</button>
+<div class="w-6 h-6 rounded-full bg-primary text-on-primary flex items-center justify-center font-label-sm text-label-sm font-semibold shrink-0">
+              1
+            </div>
+<div class="flex flex-col min-w-0">
+<span class="font-label-lg text-label-lg text-on-surface truncate">Jaipur, Rajasthan</span>
+<span class="font-body-sm text-body-sm text-on-surface-variant">Stop 1 • Gateway City</span>
+</div>
+</div>
+<button aria-label="Remove Jaipur" class="w-8 h-8 rounded-full flex items-center justify-center text-outline hover:text-error hover:bg-error-container/30 transition-colors" type="button">
+<span class="material-symbols-outlined text-[18px]">close</span>
+</button>
+</div>
+<!-- Stop 2 -->
+<div class="stop-card group flex items-center justify-between p-3 rounded-xl bg-surface-container-low transition-all" data-order="2">
+<div class="flex items-center gap-3 min-w-0">
+<button aria-label="Reorder stop" class="cursor-grab active:cursor-grabbing text-outline hover:text-primary flex items-center justify-center" type="button">
+<span class="material-symbols-outlined text-[20px]">drag_indicator</span>
+</button>
+<div class="w-6 h-6 rounded-full bg-primary text-on-primary flex items-center justify-center font-label-sm text-label-sm font-semibold shrink-0">
+              2
+            </div>
+<div class="flex flex-col min-w-0">
+<span class="font-label-lg text-label-lg text-on-surface truncate">Delhi, NCR</span>
+<span class="font-body-sm text-body-sm text-on-surface-variant">Stop 2 • Capital Circuit</span>
+</div>
+</div>
+<button aria-label="Remove Delhi" class="w-8 h-8 rounded-full flex items-center justify-center text-outline hover:text-error hover:bg-error-container/30 transition-colors" type="button">
+<span class="material-symbols-outlined text-[18px]">close</span>
+</button>
+</div>
+<!-- Stop 3 -->
+<div class="stop-card group flex items-center justify-between p-3 rounded-xl bg-surface-container-low transition-all" data-order="3">
+<div class="flex items-center gap-3 min-w-0">
+<button aria-label="Reorder stop" class="cursor-grab active:cursor-grabbing text-outline hover:text-primary flex items-center justify-center" type="button">
+<span class="material-symbols-outlined text-[20px]">drag_indicator</span>
+</button>
+<div class="w-6 h-6 rounded-full bg-primary text-on-primary flex items-center justify-center font-label-sm text-label-sm font-semibold shrink-0">
+              3
+            </div>
+<div class="flex flex-col min-w-0">
+<span class="font-label-lg text-label-lg text-on-surface truncate">Agra, Uttar Pradesh</span>
+<span class="font-body-sm text-body-sm text-on-surface-variant">Stop 3 • Heritage Wonder</span>
+</div>
+</div>
+<button aria-label="Remove Agra" class="w-8 h-8 rounded-full flex items-center justify-center text-outline hover:text-error hover:bg-error-container/30 transition-colors" type="button">
+<span class="material-symbols-outlined text-[18px]">close</span>
+</button>
+</div>
+</div>
+<!-- Add Destination Inline Block -->
+<div class="flex flex-col gap-2 pt-1">
+<div class="relative flex items-center">
+<span class="material-symbols-outlined absolute left-3 text-outline text-[20px]">search</span>
+<input class="w-full bg-surface-container rounded-lg py-2.5 pl-10 pr-3 font-body-md text-body-md text-on-surface placeholder:text-on-surface-variant/60 focus:outline-none focus:bg-surface-container-lowest focus:ring-1 focus:ring-primary transition-all" placeholder="Search &amp; add destination (e.g. Udaipur, Pushkar)..." type="text" id="search-destination-input">
+</div>
+<button id="add-destination-btn" class="w-full py-2.5 px-3 rounded-lg bg-surface-container text-on-primary-fixed-variant hover:bg-surface-container-high active:scale-[0.99] font-label-lg text-label-lg flex items-center justify-center gap-1.5 transition-all" type="button"><span class="material-symbols-outlined text-[18px]">add_location_alt</span><span class="">+ Add Another Destination</span></button>
+</div>
+<!-- Route Optimization Trigger Button -->
+<button class="w-full py-3 px-4 rounded-lg bg-surface-container-high text-primary hover:bg-secondary-container font-label-lg text-label-lg flex items-center justify-center gap-2 transition-all shadow-sm" id="optimize-btn" type="button">
+<span class="material-symbols-outlined text-[20px] text-on-tertiary-container" style="font-variation-settings: 'FILL' 1;">auto_fix_high</span>
+<span class="font-semibold">Optimise My Route</span>
+<span class="text-xs px-2 py-0.5 rounded-full bg-tertiary-fixed text-on-tertiary-fixed">Save ~3.5h</span>
+</button>
+<!-- Prominent AI Route Suggestion Card -->
+<div class="rounded-xl p-3.5 bg-surface-container-low flex flex-col gap-3 relative overflow-hidden" id="ai-suggestion-box">
+<div class="flex items-start gap-2.5">
+<div class="w-7 h-7 rounded-lg bg-tertiary-fixed flex items-center justify-center shrink-0 mt-0.5">
+<span class="material-symbols-outlined text-[16px] text-tertiary" style="font-variation-settings: 'FILL' 1;">bolt</span>
+</div>
+<div class="flex flex-col gap-1 min-w-0">
+<div class="flex items-center gap-2">
+<span class="font-label-lg text-label-lg text-primary font-semibold">AI Route Optimisation Suggestion</span>
+<span class="px-1.5 py-0.2 rounded text-[10px] bg-secondary-container text-on-secondary-container font-medium">Smart Loop</span>
+</div>
+<p class="font-body-sm text-body-sm text-on-surface-variant">
+              Changing order to <strong class="text-primary font-semibold">Delhi ➔ Agra ➔ Jaipur</strong> saves <span class="text-tertiary font-medium">142 km</span> and <span class="text-tertiary font-medium">3.5 hrs</span> transit time.
+            </p>
+</div>
+</div>
+<!-- Suggestion Mini Map Micro-Preview -->
+<div class="flex items-center justify-between px-3 py-2 rounded-lg bg-surface-container-lowest/80 text-on-surface font-label-sm text-label-sm">
+<div class="flex items-center gap-1.5">
+<span class="w-2 h-2 rounded-full bg-primary"></span>
+<span class="">Delhi</span>
+<span class="material-symbols-outlined text-[14px] text-outline">arrow_forward</span>
+<span class="w-2 h-2 rounded-full bg-surface-tint"></span>
+<span class="">Agra</span>
+<span class="material-symbols-outlined text-[14px] text-outline">arrow_forward</span>
+<span class="w-2 h-2 rounded-full bg-on-tertiary-container"></span>
+<span class="">Jaipur</span>
+</div>
+<span class="text-on-surface-variant font-medium">Yamuna &amp; NH48</span>
+</div>
+<div class="grid grid-cols-2 gap-2 pt-0.5">
+<button class="py-2 px-3 rounded-lg bg-primary text-on-primary font-label-md text-label-md font-semibold text-center hover:bg-primary-container transition-all shadow-sm" id="apply-order-btn" type="button">
+            Apply Suggested Order
+          </button>
+<button class="py-2 px-3 rounded-lg bg-surface-container text-on-surface font-label-md text-label-md font-medium text-center hover:bg-surface-container-high transition-all" id="keep-order-btn" type="button">
+            Keep My Order
+          </button>
+</div>
+</div>
+<!-- International Trip Disclaimer footnote -->
+<div class="flex items-center gap-1.5 px-1 text-on-surface-variant font-label-sm text-label-sm">
+<span class="material-symbols-outlined text-[14px] text-outline">info</span>
+<span class="">Note: International trips currently support curated single-destination immersions.</span>
+</div>
+</section>
+<!-- Section 2: Travel Dates & Live Duration Summary -->
+<section class="bg-surface-container-lowest rounded-xl p-space-md shadow-sm flex flex-col gap-space-md">
+<div class="flex items-center justify-between">
+<h2 class="font-headline-sm text-headline-sm text-primary">Travel Dates</h2>
+<span class="font-label-sm text-label-sm text-on-surface-variant">IST (UTC+05:30)</span>
+</div>
+<div class="grid grid-cols-2 gap-2.5">
+<!-- Departure Card -->
+<button class="flex flex-col text-left p-3 rounded-xl bg-surface-container-low hover:bg-surface-container transition-colors" type="button">
+<div class="flex items-center justify-between text-outline-variant mb-1">
+<span class="font-label-sm text-label-sm text-on-surface-variant uppercase font-semibold">Departure</span>
+<span class="material-symbols-outlined text-[18px] text-primary">calendar_today</span>
+</div>
+<span class="font-label-lg text-label-lg text-primary font-bold">18 Oct 2025</span>
+<span class="font-body-sm text-body-sm text-on-surface-variant">Saturday • Morning</span>
+</button>
+<!-- Return Card -->
+<button class="flex flex-col text-left p-3 rounded-xl bg-surface-container-low hover:bg-surface-container transition-colors" type="button">
+<div class="flex items-center justify-between text-outline-variant mb-1">
+<span class="font-label-sm text-label-sm text-on-surface-variant uppercase font-semibold">Return</span>
+<span class="material-symbols-outlined text-[18px] text-primary">event_available</span>
+</div>
+<span class="font-label-lg text-label-lg text-primary font-bold">24 Oct 2025</span>
+<span class="font-body-sm text-body-sm text-on-surface-variant">Friday • Evening</span>
+</button>
+</div>
+<!-- Live Trip Duration Summary Banner -->
+<div class="p-3.5 rounded-xl bg-surface-container flex items-center gap-3">
+<div class="w-9 h-9 rounded-full bg-secondary-container text-on-secondary-container flex items-center justify-center shrink-0">
+<span class="material-symbols-outlined text-[20px]">wb_sunny</span>
+</div>
+<div class="flex flex-col min-w-0">
+<span class="font-label-lg text-label-lg text-primary font-semibold">Total Duration: 7 Days, 6 Nights</span>
+<p class="font-body-sm text-body-sm text-on-surface-variant truncate">
+            3 Destinations • Auto-Adapts to Live Weather &amp; Golden Hour
+          </p>
+</div>
+</div>
+</section>
+<!-- Visual Narrative Break: Destination Atmosphere Preview -->
+<div class="grid grid-cols-3 gap-2">
+<div class="relative rounded-xl overflow-hidden aspect-[4/5] bg-surface-container">
+<img class="w-full h-full object-cover" data-alt="Warm golden sunrise over Hawa Mahal in Jaipur Rajasthan, showing intricate sandstone architecture, serene quiet morning light with soft rose and terracotta tones and clear blue sky" src="https://lh3.googleusercontent.com/aida-public/AB6AXuArMgcgiplsRcsyi_NcVFxJ7cHsQuolWpxlIHeae74DmNHHsdxzRAACHXgIbAn_6M4_qWsRODadNiOKIiv59bcmof0Q7KcttfAKemYZX-nd0y-HRg4nAf-haTsLbSQDfG2pkXMBUlVeF_0edCJi__2TYKnRoNcBmeiLVSINWI6dxtiFJjAfsPN-QzOlci6LFD8qvfnklgiJPYgJFX_Sc-3RYy_PN8FTAMQGGbZ7Uw">
+<div class="absolute inset-0 bg-gradient-to-t from-primary/80 via-transparent to-transparent"></div>
+<div class="absolute bottom-2 left-2 right-2 text-on-primary">
+<span class="font-label-sm text-label-sm block truncate">Jaipur</span>
+<span class="text-[10px] opacity-80">2 Days</span>
+</div>
+</div>
+<div class="relative rounded-xl overflow-hidden aspect-[4/5] bg-surface-container">
+<img class="w-full h-full object-cover" data-alt="Dramatic view of India Gate Delhi bathed in morning mist and warm golden hour light with lush green lawns and mindful travelers walking peacefully" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAY9NX4TnfVOvlolS2wIaqA19m907C2librnk2zyHeQQaOTLRd9qHX5FUYrnN_AbW28Ib3s-GwzQvKmF_muRUrIZKUnNnZdSTUD0L3u4SfHIxQbP8Z3Uh9srRqvGV13FS-kNErCj_esssQPW9KmcYHSCcs1m4GS12EhYcHw_9N9P4NHW4HlVZwTxMQKXImVInK2Bbs-1PpxjJsRmQi2qBomM-1ZyfBWCdu6RjofhA">
+<div class="absolute inset-0 bg-gradient-to-t from-primary/80 via-transparent to-transparent"></div>
+<div class="absolute bottom-2 left-2 right-2 text-on-primary">
+<span class="font-label-sm text-label-sm block truncate">Delhi</span>
+<span class="text-[10px] opacity-80">2 Days</span>
+</div>
+</div>
+<div class="relative rounded-xl overflow-hidden aspect-[4/5] bg-surface-container">
+<img class="w-full h-full object-cover" data-alt="Reflecting pool in front of the Taj Mahal in Agra Uttar Pradesh at calm dusk, gentle lavender and amber sky with clean white marble grandeur and soft shadows" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCUuif26P-mu2-4UjPpW8F0ykvkef_bq5DXww22Y58UIuQdRwrdXQtKOV1-dWfeeUwUsbfhWIvNNNQ7KPlKqf98lmqKJyTpPnCcGZikOXpHCmSkLohmgnuA-FeiRckOHK0xyTNyJeUlQ8aOMBsg3D9IUPu_24ZRQ5MoO36ojuPpVmnUE4t5v13EZb8BGYkeCVn00gV_gXT66_hSoaUcTGqSZOX5UhY8P2g425QjOA">
+<div class="absolute inset-0 bg-gradient-to-t from-primary/80 via-transparent to-transparent"></div>
+<div class="absolute bottom-2 left-2 right-2 text-on-primary">
+<span class="font-label-sm text-label-sm block truncate">Agra</span>
+<span class="text-[10px] opacity-80">3 Days</span>
+</div>
+</div>
+</div>
+<!-- Section 3: Budget Tier Segmented Picker -->
+<section class="bg-surface-container-lowest rounded-xl p-space-md shadow-sm flex flex-col gap-space-md">
+<div class="flex items-center justify-between">
+<h2 class="font-headline-sm text-headline-sm text-primary">Budget Tier</h2>
+<span class="font-label-sm text-label-sm text-on-surface-variant">Includes Stay &amp; Intercity</span>
+</div>
+<div class="grid grid-cols-1 gap-2.5">
+<!-- Budget Friendly -->
+<button class="budget-option flex items-center justify-between p-3.5 rounded-xl bg-surface-container-low text-left hover:bg-surface-container transition-all" type="button">
+<div class="flex flex-col">
+<span class="font-label-lg text-label-lg text-on-surface font-semibold">Budget-friendly</span>
+<span class="font-body-sm text-body-sm text-on-surface-variant">Hostels, experiential dorms &amp; scenic Vande Bharat / Express trains</span>
+</div>
+<div class="radio-indicator w-5 h-5 rounded-full bg-surface-container-highest shrink-0 ml-3"></div>
+</button>
+<!-- Moderate (Selected) -->
+<button class="budget-option is-selected flex items-center justify-between p-3.5 rounded-xl bg-primary text-on-primary text-left shadow-sm transition-all" type="button">
+<div class="flex flex-col">
+<div class="flex items-center gap-1.5">
+<span class="font-label-lg text-label-lg text-on-primary font-semibold">Moderate</span>
+<span class="px-1.5 py-0.2 rounded text-[10px] bg-secondary text-on-secondary font-medium">Recommended</span>
+</div>
+<span class="font-body-sm text-body-sm text-primary-fixed">Comfort boutique stays, curated homestays &amp; private AC cabs</span>
+</div>
+<div class="w-6 h-6 rounded-full bg-primary-fixed text-on-primary-fixed flex items-center justify-center shrink-0 ml-3">
+<span class="material-symbols-outlined text-[16px] font-bold">check</span>
+</div>
+</button>
+<!-- Premium -->
+<button class="budget-option flex items-center justify-between p-3.5 rounded-xl bg-surface-container-low text-left hover:bg-surface-container transition-all" type="button">
+<div class="flex flex-col">
+<span class="font-label-lg text-label-lg text-on-surface font-semibold">Premium</span>
+<span class="font-body-sm text-body-sm text-on-surface-variant">Heritage Havalis, palace suites &amp; private chauffeur escort</span>
+</div>
+<div class="radio-indicator w-5 h-5 rounded-full bg-surface-container-highest shrink-0 ml-3"></div>
+</button>
+</div>
+</section>
+<!-- Section 4: Travel Interests (Multi-select Chips) -->
+<section class="bg-surface-container-lowest rounded-xl p-space-md shadow-sm flex flex-col gap-space-sm">
+<div class="flex items-center justify-between">
+<h2 class="font-headline-sm text-headline-sm text-primary">Travel Interests</h2>
+<span class="font-label-sm text-label-sm text-on-surface-variant">Select 3 or more</span>
+</div>
+<p class="font-body-sm text-body-sm text-on-surface-variant">We tailor your daily narrative around your personal curiosity points.</p>
+<div class="flex flex-wrap gap-2 pt-1">
+<!-- Adventure -->
+<button id="add-destination-btn" class="w-full py-2.5 px-3 rounded-lg bg-surface-container text-on-primary-fixed-variant hover:bg-surface-container-high active:scale-[0.99] font-label-lg text-label-lg flex items-center justify-center gap-1.5 transition-all" type="button"><span class="material-symbols-outlined text-[18px]">add_location_alt</span><span class="">+ Add Another Destination</span></button>
+<!-- Nature (Selected) -->
+<button id="add-destination-btn" class="w-full py-2.5 px-3 rounded-lg bg-surface-container text-on-primary-fixed-variant hover:bg-surface-container-high active:scale-[0.99] font-label-lg text-label-lg flex items-center justify-center gap-1.5 transition-all" type="button"><span class="material-symbols-outlined text-[18px]">add_location_alt</span><span class="">+ Add Another Destination</span></button>
+<!-- Food (Selected) -->
+<button id="add-destination-btn" class="w-full py-2.5 px-3 rounded-lg bg-surface-container text-on-primary-fixed-variant hover:bg-surface-container-high active:scale-[0.99] font-label-lg text-label-lg flex items-center justify-center gap-1.5 transition-all" type="button"><span class="material-symbols-outlined text-[18px]">add_location_alt</span><span class="">+ Add Another Destination</span></button>
+<!-- History (Selected) -->
+<button id="add-destination-btn" class="w-full py-2.5 px-3 rounded-lg bg-surface-container text-on-primary-fixed-variant hover:bg-surface-container-high active:scale-[0.99] font-label-lg text-label-lg flex items-center justify-center gap-1.5 transition-all" type="button"><span class="material-symbols-outlined text-[18px]">add_location_alt</span><span class="">+ Add Another Destination</span></button>
+<!-- Culture (Selected) -->
+<button id="add-destination-btn" class="w-full py-2.5 px-3 rounded-lg bg-surface-container text-on-primary-fixed-variant hover:bg-surface-container-high active:scale-[0.99] font-label-lg text-label-lg flex items-center justify-center gap-1.5 transition-all" type="button"><span class="material-symbols-outlined text-[18px]">add_location_alt</span><span class="">+ Add Another Destination</span></button>
+<!-- Spiritual -->
+<button id="add-destination-btn" class="w-full py-2.5 px-3 rounded-lg bg-surface-container text-on-primary-fixed-variant hover:bg-surface-container-high active:scale-[0.99] font-label-lg text-label-lg flex items-center justify-center gap-1.5 transition-all" type="button"><span class="material-symbols-outlined text-[18px]">add_location_alt</span><span class="">+ Add Another Destination</span></button>
+<!-- Shopping -->
+<button id="add-destination-btn" class="w-full py-2.5 px-3 rounded-lg bg-surface-container text-on-primary-fixed-variant hover:bg-surface-container-high active:scale-[0.99] font-label-lg text-label-lg flex items-center justify-center gap-1.5 transition-all" type="button"><span class="material-symbols-outlined text-[18px]">add_location_alt</span><span class="">+ Add Another Destination</span></button>
+<!-- Relaxation -->
+<button id="add-destination-btn" class="w-full py-2.5 px-3 rounded-lg bg-surface-container text-on-primary-fixed-variant hover:bg-surface-container-high active:scale-[0.99] font-label-lg text-label-lg flex items-center justify-center gap-1.5 transition-all" type="button"><span class="material-symbols-outlined text-[18px]">add_location_alt</span><span class="">+ Add Another Destination</span></button>
+</div>
+</section>
+<!-- Section 5: Traveller Type & Travel Pace -->
+<section class="bg-surface-container-lowest rounded-xl p-space-md shadow-sm flex flex-col gap-space-lg">
+<!-- Traveller Type (Single Select Pills) -->
+<div class="flex flex-col gap-space-xs">
+<h2 class="font-headline-sm text-headline-sm text-primary">Traveller Type</h2>
+<div class="grid grid-cols-5 gap-1.5 pt-1">
+<button id="add-destination-btn" class="w-full py-2.5 px-3 rounded-lg bg-surface-container text-on-primary-fixed-variant hover:bg-surface-container-high active:scale-[0.99] font-label-lg text-label-lg flex items-center justify-center gap-1.5 transition-all" type="button"><span class="material-symbols-outlined text-[18px]">add_location_alt</span><span class="">+ Add Another Destination</span></button>
+<button id="add-destination-btn" class="w-full py-2.5 px-3 rounded-lg bg-surface-container text-on-primary-fixed-variant hover:bg-surface-container-high active:scale-[0.99] font-label-lg text-label-lg flex items-center justify-center gap-1.5 transition-all" type="button"><span class="material-symbols-outlined text-[18px]">add_location_alt</span><span class="">+ Add Another Destination</span></button>
+<button id="add-destination-btn" class="w-full py-2.5 px-3 rounded-lg bg-surface-container text-on-primary-fixed-variant hover:bg-surface-container-high active:scale-[0.99] font-label-lg text-label-lg flex items-center justify-center gap-1.5 transition-all" type="button"><span class="material-symbols-outlined text-[18px]">add_location_alt</span><span class="">+ Add Another Destination</span></button>
+<button id="add-destination-btn" class="w-full py-2.5 px-3 rounded-lg bg-surface-container text-on-primary-fixed-variant hover:bg-surface-container-high active:scale-[0.99] font-label-lg text-label-lg flex items-center justify-center gap-1.5 transition-all" type="button"><span class="material-symbols-outlined text-[18px]">add_location_alt</span><span class="">+ Add Another Destination</span></button>
+<button id="add-destination-btn" class="w-full py-2.5 px-3 rounded-lg bg-surface-container text-on-primary-fixed-variant hover:bg-surface-container-high active:scale-[0.99] font-label-lg text-label-lg flex items-center justify-center gap-1.5 transition-all" type="button"><span class="material-symbols-outlined text-[18px]">add_location_alt</span><span class="">+ Add Another Destination</span></button>
+</div>
+</div>
+<!-- Travel Pace (3 Tier Options) -->
+<div class="flex flex-col gap-space-xs">
+<div class="flex items-center justify-between">
+<h2 class="font-headline-sm text-headline-sm text-primary">Travel Pace</h2>
+<span class="font-label-sm text-label-sm text-on-surface-variant">Daily Activity Cadence</span>
+</div>
+<div class="grid grid-cols-1 gap-2 pt-1">
+<!-- Relaxed -->
+<button id="add-destination-btn" class="w-full py-2.5 px-3 rounded-lg bg-surface-container text-on-primary-fixed-variant hover:bg-surface-container-high active:scale-[0.99] font-label-lg text-label-lg flex items-center justify-center gap-1.5 transition-all" type="button"><span class="material-symbols-outlined text-[18px]">add_location_alt</span><span class="">+ Add Another Destination</span></button>
+<!-- Balanced (Selected) -->
+<button id="add-destination-btn" class="w-full py-2.5 px-3 rounded-lg bg-surface-container text-on-primary-fixed-variant hover:bg-surface-container-high active:scale-[0.99] font-label-lg text-label-lg flex items-center justify-center gap-1.5 transition-all" type="button"><span class="material-symbols-outlined text-[18px]">add_location_alt</span><span class="">+ Add Another Destination</span></button>
+<!-- Packed -->
+<button id="add-destination-btn" class="w-full py-2.5 px-3 rounded-lg bg-surface-container text-on-primary-fixed-variant hover:bg-surface-container-high active:scale-[0.99] font-label-lg text-label-lg flex items-center justify-center gap-1.5 transition-all" type="button"><span class="material-symbols-outlined text-[18px]">add_location_alt</span><span class="">+ Add Another Destination</span></button>
+</div>
+</div>
+</section>
+<!-- Delight Accent Banner: Ambient Weather Integration -->
+<div class="p-3.5 rounded-xl bg-surface-container-low flex items-center justify-between">
+<div class="flex items-center gap-2.5">
+<span class="material-symbols-outlined text-tertiary text-[20px]">cloudy_snowing</span>
+<div class="flex flex-col">
+<span class="font-label-md text-label-md text-primary font-semibold">Adaptive Monsoons &amp; Heat Engine</span>
+<span class="font-body-sm text-body-sm text-on-surface-variant">October weather in Golden Triangle is optimal (~24°C avg).</span>
+</div>
+</div>
+<span class="text-tertiary font-label-sm text-label-sm font-semibold">Active</span>
+</div>
+</div>
+<!-- Sticky Bottom Action Bar -->
+<aside class="fixed bottom-0 left-0 right-0 z-40 bg-surface/90 backdrop-blur-xl shadow-[0_-4px_24px_rgba(0,0,0,0.06)] px-margin py-3 pb-safe flex flex-col gap-2">
+<!-- Live Configuration Pill Summary -->
+<div class="flex items-center justify-between px-1">
+<div class="flex items-center gap-1.5 text-on-surface-variant font-label-sm text-label-sm overflow-hidden truncate">
+<span class="w-1.5 h-1.5 rounded-full bg-primary shrink-0"></span>
+<span class="font-medium text-primary">3 Stops</span>
+<span class="">•</span>
+<span class="">7 Days</span>
+<span class="">•</span>
+<span class="">Moderate</span>
+<span class="">•</span>
+<span class="">Couple</span>
+</div>
+<span class="text-on-tertiary-container font-label-sm text-label-sm font-semibold flex items-center gap-0.5 shrink-0">
+<span class="material-symbols-outlined text-[13px]">verified</span>
+        Circuit Optimized
+      </span>
+</div>
+<!-- Main Generator Button -->
+<button class="w-full py-3.5 px-6 rounded-xl bg-primary text-on-primary font-headline-sm text-headline-sm font-semibold flex items-center justify-center gap-2 shadow-md active:scale-[0.99] transition-all" type="button" id="generate-itinerary-btn">
+<span class="">Generate Adaptive Itinerary</span>
+<span class="material-symbols-outlined text-[20px] text-tertiary-fixed" style="font-variation-settings: 'FILL' 1;">auto_awesome</span>
+</button>
+</aside>
+</div>
+<script>
+  // Dynamic Route Reordering Micro-interaction
+  const applyBtn = document.getElementById('apply-order-btn');
+  const keepBtn = document.getElementById('keep-order-btn');
+  const optimizeBtn = document.getElementById('optimize-btn');
+  const suggestionBox = document.getElementById('ai-suggestion-box');
+  const stopsContainer = document.getElementById('stops-container');
+
+  const originalOrder = [
+    { title: 'Jaipur, Rajasthan', desc: 'Stop 1 • Gateway City' },
+    { title: 'Delhi, NCR', desc: 'Stop 2 • Capital Circuit' },
+    { title: 'Agra, Uttar Pradesh', desc: 'Stop 3 • Heritage Wonder' }
+  ];
+
+  const suggestedOrder = [
+    { title: 'Delhi, NCR', desc: 'Stop 1 • Capital Circuit (Hub)' },
+    { title: 'Agra, Uttar Pradesh', desc: 'Stop 2 • Heritage Wonder (Expressway)' },
+    { title: 'Jaipur, Rajasthan', desc: 'Stop 3 • Gateway City (Return)' }
+  ];
+
+  function renderStops(stops, highlighted = false) {
+    if (!stopsContainer) return;
+    stopsContainer.innerHTML = stops.map((stop, index) => `
+      <div class="stop-card group flex items-center justify-between p-3 rounded-xl ${highlighted ? 'bg-secondary-container/60' : 'bg-surface-container-low'} transition-all" data-order="${index + 1}">
+        <div class="flex items-center gap-3 min-w-0">
+          <button type="button" class="cursor-grab active:cursor-grabbing text-outline hover:text-primary flex items-center justify-center" aria-label="Reorder stop">
+            <span class="material-symbols-outlined text-[20px]">drag_indicator</span>
+          </button>
+          <div class="w-6 h-6 rounded-full bg-primary text-on-primary flex items-center justify-center font-label-sm text-label-sm font-semibold shrink-0">
+            ${index + 1}
+          </div>
+          <div class="flex flex-col min-w-0">
+            <span class="font-label-lg text-label-lg text-on-surface truncate font-medium">${stop.title}</span>
+            <span class="font-body-sm text-body-sm text-on-surface-variant">${stop.desc}</span>
+          </div>
+        </div>
+        <button type="button" class="w-8 h-8 rounded-full flex items-center justify-center text-outline hover:text-error hover:bg-error-container/30 transition-colors" aria-label="Remove stop">
+          <span class="material-symbols-outlined text-[18px]">close</span>
+        </button>
+      </div>
+    `).join('');
+  }
+
+  if (applyBtn) {
+    applyBtn.addEventListener('click', () => {
+      renderStops(suggestedOrder, true);
+      suggestionBox.classList.add('opacity-40', 'pointer-events-none');
+      const note = document.createElement('div');
+      note.className = 'text-center font-label-sm text-label-sm text-primary py-1 font-semibold';
+      note.innerText = '✓ Suggested Order Applied: Delhi ➔ Agra ➔ Jaipur';
+      suggestionBox.parentNode.insertBefore(note, suggestionBox.nextSibling);
+    });
+  }
+
+  if (keepBtn) {
+    keepBtn.addEventListener('click', () => {
+      suggestionBox.style.display = 'none';
+    });
+  }
+
+  if (optimizeBtn) {
+    optimizeBtn.addEventListener('click', () => {
+      suggestionBox.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      suggestionBox.classList.add('ring-2', 'ring-primary');
+      setTimeout(() => suggestionBox.classList.remove('ring-2', 'ring-primary'), 1200);
+    });
+  }
+</script><script>
+  // Dynamic Interactive Handlers
+  (function() {
+    // 1. Add Destination Handler
+    const addDestBtn = document.getElementById('add-destination-btn');
+    const destInput = document.getElementById('search-destination-input');
+    const fallbackCities = [
+      { name: 'Udaipur, Rajasthan', desc: 'Lakes & Royal Palaces' },
+      { name: 'Varanasi, Uttar Pradesh', desc: 'Sacred Ghats & Evening Aarti' },
+      { name: 'Jodhpur, Rajasthan', desc: 'Blue City & Mehrangarh Fort' },
+      { name: 'Rishikesh, Uttarakhand', desc: 'Yoga Capital & Foothills' }
+    ];
+    let cityIdx = 0;
+
+    if (addDestBtn && stopsContainer) {
+      addDestBtn.addEventListener('click', () => {
+        const inputVal = destInput ? destInput.value.trim() : '';
+        let newTitle = inputVal;
+        let newDesc = 'Circuit Extension';
+        if (!newTitle) {
+          const chosen = fallbackCities[cityIdx % fallbackCities.length];
+          cityIdx++;
+          newTitle = chosen.name;
+          newDesc = chosen.desc;
+        } else if (destInput) {
+          destInput.value = '';
+        }
+
+        const currentCount = stopsContainer.querySelectorAll('.stop-card').length + 1;
+        const newCard = document.createElement('div');
+        newCard.className = 'stop-card group flex items-center justify-between p-3 rounded-xl bg-surface-container-low transition-all ring-1 ring-primary/20';
+        newCard.setAttribute('data-order', currentCount);
+        newCard.innerHTML = `
+          <div class="flex items-center gap-3 min-w-0">
+            <button type="button" class="cursor-grab active:cursor-grabbing text-outline hover:text-primary flex items-center justify-center" aria-label="Reorder stop">
+              <span class="material-symbols-outlined text-[20px]">drag_indicator</span>
+            </button>
+            <div class="w-6 h-6 rounded-full bg-primary text-on-primary flex items-center justify-center font-label-sm text-label-sm font-semibold shrink-0">
+              ${currentCount}
+            </div>
+            <div class="flex flex-col min-w-0">
+              <span class="font-label-lg text-label-lg text-on-surface truncate">${newTitle}</span>
+              <span class="font-body-sm text-body-sm text-on-surface-variant">Stop ${currentCount} • ${newDesc}</span>
+            </div>
+          </div>
+          <button type="button" class="remove-stop-btn w-8 h-8 rounded-full flex items-center justify-center text-outline hover:text-error hover:bg-error-container/30 transition-colors" aria-label="Remove stop">
+            <span class="material-symbols-outlined text-[18px]">close</span>
+          </button>
+        `;
+        stopsContainer.appendChild(newCard);
+
+        // Update bottom summary stop count
+        const summaryCountEl = document.querySelector('aside .text-primary.font-medium');
+        if (summaryCountEl) {
+          summaryCountEl.textContent = `${currentCount} Stops`;
+        }
+      });
+
+      // Event delegation for removal
+      stopsContainer.addEventListener('click', (e) => {
+        const removeBtn = e.target.closest('button[aria-label^="Remove"]') || e.target.closest('.remove-stop-btn');
+        if (removeBtn) {
+          const card = removeBtn.closest('.stop-card');
+          if (card && stopsContainer.children.length > 1) {
+            card.remove();
+            // Recalculate badges
+            const cards = stopsContainer.querySelectorAll('.stop-card');
+            cards.forEach((c, idx) => {
+              const numBadge = c.querySelector('.rounded-full.bg-primary');
+              if (numBadge) numBadge.textContent = idx + 1;
+            });
+            const summaryCountEl = document.querySelector('aside .text-primary.font-medium');
+            if (summaryCountEl) {
+              summaryCountEl.textContent = `${cards.length} Stops`;
+            }
+          }
+        }
+      });
+    }
+
+    // 2. Budget Tier Single Selection
+    const budgetButtons = document.querySelectorAll('.budget-option');
+    budgetButtons.forEach(btn => {
+      btn.addEventListener('click', () => {
+        budgetButtons.forEach(b => {
+          b.className = 'budget-option flex items-center justify-between p-3.5 rounded-xl bg-surface-container-low text-left hover:bg-surface-container transition-all';
+          const title = b.querySelector('.font-label-lg');
+          if (title) title.className = 'font-label-lg text-label-lg text-on-surface font-semibold';
+          const desc = b.querySelector('.font-body-sm');
+          if (desc) desc.className = 'font-body-sm text-body-sm text-on-surface-variant';
+          const rightInd = b.querySelector('.radio-indicator, .rounded-full.bg-primary-fixed');
+          if (rightInd) {
+            rightInd.className = 'radio-indicator w-5 h-5 rounded-full bg-surface-container-highest shrink-0 ml-3';
+            rightInd.innerHTML = '';
+          }
+        });
+        btn.className = 'budget-option is-selected flex items-center justify-between p-3.5 rounded-xl bg-primary text-on-primary text-left shadow-sm transition-all';
+        const activeTitle = btn.querySelector('.font-label-lg');
+        if (activeTitle) activeTitle.className = 'font-label-lg text-label-lg text-on-primary font-semibold';
+        const activeDesc = btn.querySelector('.font-body-sm');
+        if (activeDesc) activeDesc.className = 'font-body-sm text-body-sm text-primary-fixed';
+        const rightInd = btn.querySelector('.radio-indicator, .rounded-full');
+        if (rightInd) {
+          rightInd.className = 'w-6 h-6 rounded-full bg-primary-fixed text-on-primary-fixed flex items-center justify-center shrink-0 ml-3';
+          rightInd.innerHTML = '<span class="material-symbols-outlined text-[16px] font-bold">check</span>';
+        }
+      });
+    });
+
+    // 3. Traveller Type Selection
+    const travellerPills = document.querySelectorAll('.traveller-pill');
+    travellerPills.forEach(pill => {
+      pill.addEventListener('click', () => {
+        travellerPills.forEach(p => {
+          p.className = 'traveller-pill py-2.5 rounded-lg bg-surface-container text-on-surface font-label-md text-label-md text-center hover:bg-surface-container-high transition-colors';
+        });
+        pill.className = 'traveller-pill is-selected py-2.5 rounded-lg bg-primary text-on-primary font-label-md text-label-md font-semibold text-center shadow-sm transition-colors';
+      });
+    });
+
+    // 4. Travel Pace Selection
+    const paceCards = document.querySelectorAll('.pace-card');
+    paceCards.forEach(card => {
+      card.addEventListener('click', () => {
+        paceCards.forEach(c => {
+          c.className = 'pace-card flex items-start gap-3 p-3 rounded-xl bg-surface-container-low text-left hover:bg-surface-container transition-all';
+          const icon = c.querySelector('.material-symbols-outlined');
+          if (icon) icon.className = 'material-symbols-outlined text-[20px] text-on-surface-variant mt-0.5';
+          const title = c.querySelector('.font-label-lg');
+          if (title) title.className = 'font-label-lg text-label-lg text-on-surface font-semibold';
+        });
+        card.className = 'pace-card is-selected flex items-start gap-3 p-3 rounded-xl bg-secondary-container text-on-secondary-container text-left transition-all';
+        const icon = card.querySelector('.material-symbols-outlined');
+        if (icon) {
+          icon.className = 'material-symbols-outlined text-[20px] text-primary mt-0.5';
+        }
+        const title = card.querySelector('.font-label-lg');
+        if (title) title.className = 'font-label-lg text-label-lg text-primary font-semibold';
+      });
+    });
+
+    // 5. Travel Interest Chips Toggle
+    const interestChips = document.querySelectorAll('.interest-chip');
+    interestChips.forEach(chip => {
+      chip.addEventListener('click', () => {
+        const isSelected = chip.classList.contains('is-selected');
+        if (isSelected) {
+          chip.classList.remove('is-selected', 'bg-primary', 'text-on-primary', 'shadow-sm');
+          chip.classList.add('bg-surface-container', 'text-on-surface');
+          const chk = chip.querySelector('.material-symbols-outlined');
+          if (chk) chk.remove();
+        } else {
+          chip.classList.add('is-selected', 'bg-primary', 'text-on-primary', 'shadow-sm');
+          chip.classList.remove('bg-surface-container', 'text-on-surface');
+          if (!chip.querySelector('.material-symbols-outlined')) {
+            const chk = document.createElement('span');
+            chk.className = 'material-symbols-outlined text-[14px]';
+            chk.textContent = 'check';
+            chip.prepend(chk);
+          }
+        }
+      });
+    });
+
+    // 6. Generate Adaptive Itinerary Flow Animation
+    const genBtn = document.getElementById('generate-itinerary-btn');
+    if (genBtn) {
+      genBtn.addEventListener('click', () => {
+        const originalHTML = genBtn.innerHTML;
+        genBtn.disabled = true;
+        genBtn.innerHTML = `
+          <span class="material-symbols-outlined animate-spin text-[20px] text-tertiary-fixed">progress_activity</span>
+          <span>Synthesizing Optimal Circuit...</span>
+        `;
+        setTimeout(() => {
+          genBtn.innerHTML = `
+            <span>Itinerary Generated!</span>
+            <span class="material-symbols-outlined text-[20px] text-primary-fixed">check_circle</span>
+          `;
+          setTimeout(() => {
+            genBtn.innerHTML = originalHTML;
+            genBtn.disabled = false;
+          }, 2000);
+        }, 1200);
+      });
+    }
+  })();
+</script></main>
+
+</body></html>

@@ -2,13 +2,38 @@
 @tailwind components;
 @tailwind utilities;
 
+:root {
+  /* Serene Expedition Theme Tokens */
+  --color-primary: #173F35;
+  --color-secondary: #D8E9DD;
+  --color-accent: #E5A45B;
+  --color-background: #F7F5EF;
+  --color-surface: #FFFFFF;
+  --color-text: #25332E;
+  --color-muted: #414845;
+  --color-mint: #EDFDF5;
+  
+  --font-display: 'Manrope', sans-serif;
+  --font-body: 'Inter', sans-serif;
+}
+
 @layer base {
   html, body {
     width: 100vw;
     margin: 0;
     padding: 0;
-    background-color: #f8f9ff;
+    background-color: #F7F5EF;
+    color: #25332E;
+    font-family: 'Inter', sans-serif;
     overscroll-behavior: none;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+  
+  h1, h2, h3, h4, h5, h6 {
+    font-family: 'Manrope', sans-serif;
+    color: #173F35;
+    letter-spacing: -0.015em;
   }
   
   .pb-safe {
