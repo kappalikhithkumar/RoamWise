@@ -13,16 +13,32 @@ def generate_itinerary_endpoint():
     data = request.get_json() or {}
     raw_dest = data.get("destination")
     if not raw_dest or not str(raw_dest).strip():
-        return jsonify({"error": "Destination is required"}), 400
+        if data.get("destinations") and isinstance(data["destinations"], list) and data["destinations"]:
+            raw_dest = data["destinations"][0]
+        else:
+            return jsonify({"error": "Destination is required"}), 400
 
-    resolution = destination_resolver.resolve(str(raw_dest).strip())
+    lookup_dest = str(raw_dest).strip()
+    if "➔" in lookup_dest or "->" in lookup_dest:
+        lookup_dest = lookup_dest.split("➔")[0].split("->")[0].strip()
+
+    resolution = destination_resolver.resolve(lookup_dest)
+    if resolution.status in ("not_found", "not_india") and data.get("destinations") and isinstance(data["destinations"], list) and data["destinations"]:
+        first_stop = str(data["destinations"][0]).strip()
+        if "➔" in first_stop or "->" in first_stop:
+            first_stop = first_stop.split("➔")[0].split("->")[0].strip()
+        stop_res = destination_resolver.resolve(first_stop)
+        if stop_res.is_ok:
+            resolution = stop_res
+
     if resolution.status in ("not_found", "not_india"):
         return jsonify({"error": resolution.message}), 422
     elif resolution.status == "lookup_unavailable":
         return jsonify({"error": resolution.message}), 503
 
     resolved = resolution.destination
-    data["destination"] = resolved.name
+    if not data.get("destination"):
+        data["destination"] = resolved.name
     data["resolvedDestination"] = resolved.name
     data["state"] = resolved.state
     data["lat"] = resolved.lat
@@ -94,21 +110,33 @@ def create_trip():
     
     raw_dest = data.get("destination")
     if not raw_dest or not str(raw_dest).strip():
-        return jsonify({"error": "Destination is required"}), 400
-        
-    resolution = destination_resolver.resolve(str(raw_dest).strip())
+        if data.get("destinations") and isinstance(data["destinations"], list) and data["destinations"]:
+            raw_dest = data["destinations"][0]
+        else:
+            return jsonify({"error": "Destination is required"}), 400
+
+    lookup_dest = str(raw_dest).strip()
+    if "➔" in lookup_dest or "->" in lookup_dest:
+        lookup_dest = lookup_dest.split("➔")[0].split("->")[0].strip()
+
+    resolution = destination_resolver.resolve(lookup_dest)
+    if resolution.status in ("not_found", "not_india") and data.get("destinations") and isinstance(data["destinations"], list) and data["destinations"]:
+        first_stop = str(data["destinations"][0]).strip()
+        if "➔" in first_stop or "->" in first_stop:
+            first_stop = first_stop.split("➔")[0].split("->")[0].strip()
+        stop_res = destination_resolver.resolve(first_stop)
+        if stop_res.is_ok:
+            resolution = stop_res
+
     if resolution.status in ("not_found", "not_india"):
         return jsonify({"error": resolution.message}), 422
     elif resolution.status == "lookup_unavailable":
         return jsonify({"error": resolution.message}), 503
 
     resolved = resolution.destination
-    destination = resolved.name
+    destination = data.get("destination") or resolved.name
     destinations = [resolved.name] if not data.get("destinations") else data.get("destinations")
-    if isinstance(destinations, list) and destinations:
-        destinations[0] = resolved.name
 
-    data["destination"] = resolved.name
     data["resolvedDestination"] = resolved.name
     data["state"] = resolved.state
     data["lat"] = resolved.lat

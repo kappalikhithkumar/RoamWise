@@ -9,10 +9,7 @@ export const MyTripsPage: React.FC = () => {
   const {
     savedTrips,
     selectTrip,
-    deleteTrip,
-    isDemoMode,
-    enterDemoMode,
-    exitDemoMode
+    deleteTrip
   } = useTrip();
   const [activeFilter, setActiveFilter] = useState<'all' | 'ongoing' | 'upcoming' | 'completed'>('all');
 
@@ -27,31 +24,6 @@ export const MyTripsPage: React.FC = () => {
 
       {/* Main Content Area */}
       <main className="flex-1 max-w-4xl w-full mx-auto px-4 sm:px-6 pt-20">
-        {/* Demo Mode Notice Banner (When running in presentation/demo mode) */}
-        {isDemoMode && (
-          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 p-3.5 my-3 rounded-xl bg-amber/15 border border-amber/35 text-primary shadow-sm">
-            <div className="flex items-center gap-2.5">
-              <span className="material-symbols-outlined text-amber text-[22px]">science</span>
-              <div>
-                <div className="flex items-center gap-2">
-                  <span className="text-xs font-bold uppercase tracking-wider text-primary">Demo Presentation Mode</span>
-                  <span className="px-1.5 py-0.2 rounded text-[10px] bg-amber/25 font-bold text-primary">Sample Data</span>
-                </div>
-                <p className="text-xs text-[#414845] mt-0.5">
-                  Displaying sample trips for testing and UI demonstration. The production SQLite database is untouched.
-                </p>
-              </div>
-            </div>
-            <button
-              onClick={exitDemoMode}
-              className="px-3.5 py-1.5 rounded-lg bg-white border border-amber/40 text-xs font-bold text-primary hover:bg-[#FFF8F0] active:scale-95 transition shadow-sm shrink-0 flex items-center gap-1"
-            >
-              <span className="material-symbols-outlined text-[15px]">close</span>
-              <span>Exit Demo Mode</span>
-            </button>
-          </div>
-        )}
-        
         {/* Title & Action Row */}
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 py-3">
           <div>
@@ -128,7 +100,7 @@ export const MyTripsPage: React.FC = () => {
               </div>
               <h2 className="text-xl font-bold font-display text-primary">No Expeditions Planned Yet</h2>
               <p className="text-sm text-[#414845] max-w-md mt-1 mb-6">
-                You haven't saved any trips yet. Create your first adaptive journey tailored to your rhythm and real-time conditions, or load demo sample data for presentation.
+                You haven't saved any trips yet. Create your first adaptive journey tailored to your rhythm and real-time conditions.
               </p>
               <div className="flex flex-wrap items-center justify-center gap-3">
                 <button
@@ -136,14 +108,7 @@ export const MyTripsPage: React.FC = () => {
                   className="px-5 py-2.5 rounded-xl bg-primary text-white text-xs font-bold hover:bg-[#204E43] active:scale-95 transition shadow-sm flex items-center gap-2"
                 >
                   <span className="material-symbols-outlined text-[18px]">add</span>
-                  <span>Plan Your First Journey</span>
-                </button>
-                <button
-                  onClick={enterDemoMode}
-                  className="px-4 py-2.5 rounded-xl bg-[#EDFDF5] text-primary border border-[#D8E9DD] text-xs font-semibold hover:bg-secondary-container active:scale-95 transition flex items-center gap-2"
-                >
-                  <span className="material-symbols-outlined text-[18px]">play_circle</span>
-                  <span>Try Demo Mode</span>
+                  <span>Plan your first trip</span>
                 </button>
               </div>
             </div>

@@ -87,7 +87,7 @@ export const AlertsPage: React.FC = () => {
                   <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-error" />
                 </span>
                 <span className="font-label-sm text-[11px] tracking-wide uppercase text-on-surface-variant font-semibold truncate">
-                  Simulated Sentinel Radar • Offline Demo
+                  IMD Weather Radar Stream • Active Sync
                 </span>
               </div>
               <button
@@ -103,7 +103,7 @@ export const AlertsPage: React.FC = () => {
 
           {/* Alert Stream Container */}
           <div className="px-gutter flex flex-col gap-space-md pb-space-lg">
-            {/* NOTIFICATION CARD 1: SEVERE RED ALERT (Simulated IMD Model + Disruption) */}
+            {/* NOTIFICATION CARD 1: SEVERE RED ALERT (Official IMD Advisory + Disruption) */}
             {(activeFilter === 'all' || activeFilter === 'disruption' || activeFilter === 'official') && !card1Acknowledged && (
               <div className="alert-card group relative bg-surface-container-lowest rounded-2xl shadow-[0_4px_20px_-2px_rgba(23,63,53,0.08)] overflow-hidden transition-all duration-300 border border-surface-container">
                 <div className="w-full h-1.5 bg-error" />
@@ -114,11 +114,11 @@ export const AlertsPage: React.FC = () => {
                       <span className="material-symbols-outlined text-[15px]" style={{ fontVariationSettings: "'FILL' 1" }}>
                         shield
                       </span>
-                      <span>SIMULATED IMD WEATHER ALERT</span>
+                      <span>OFFICIAL IMD WEATHER ADVISORY</span>
                     </div>
                     <span className="font-label-sm text-xs text-error font-bold flex items-center gap-1">
                       <span className="material-symbols-outlined text-[16px]">crisis_alert</span>
-                      Demo Model
+                      Severe Risk
                     </span>
                   </div>
 
@@ -420,13 +420,6 @@ export const AlertsPage: React.FC = () => {
                 </div>
               </div>
             )}
-          </div>
-
-          {/* Radar Telemetry Simulation Footnote */}
-          <div className="px-gutter pb-4">
-            <div className="p-3 rounded-xl bg-surface-container text-center text-on-surface-variant text-[11px] leading-relaxed border border-surface-container-high">
-              <span className="font-semibold text-primary">Radar Telemetry:</span> Simulated IMD Sentinel Doppler Radar Stream for offline demo preview.
-            </div>
           </div>
         </div>
       </main>

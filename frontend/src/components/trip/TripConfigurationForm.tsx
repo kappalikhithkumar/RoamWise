@@ -51,10 +51,7 @@ const INTEREST_OPTIONS: { id: InterestType; label: string; icon: string }[] = [
 
 export const TripConfigurationForm: React.FC = () => {
   const navigate = useNavigate();
-  const { updateConfig } = useTrip();
-
-  // Region Scope
-  const [isDomestic, setIsDomestic] = useState<boolean>(true);
+  const { state, updateConfig, clearDestinationError } = useTrip();
 
   // Multi-stop destinations - starts clean with empty stops
   const [stops, setStops] = useState<StopItem[]>(DEFAULT_STOPS);
@@ -200,13 +197,13 @@ export const TripConfigurationForm: React.FC = () => {
     e.preventDefault();
     if (!validate()) return;
 
+    if (state.destinationError) clearDestinationError();
     setIsSubmitting(true);
 
     const destinationSummary = stops.map((s) => s.city).join(' ➔ ');
     const newConfig: TripConfig = {
       destination: destinationSummary,
       destinations: stops.map((s) => s.name),
-      isDomestic,
       startDate,
       endDate,
       budgetTier,
@@ -217,11 +214,8 @@ export const TripConfigurationForm: React.FC = () => {
       tagline: `${travelerType} Expedition across ${stops.map((s) => s.city).join(', ')}`
     };
 
+    navigate('/generating');
     updateConfig(newConfig);
-
-    setTimeout(() => {
-      navigate('/generating');
-    }, 400);
   };
 
   return (
@@ -249,39 +243,6 @@ export const TripConfigurationForm: React.FC = () => {
 
       {/* Section 1: Country & Destination Multi-Stop Engine */}
       <section className="bg-surface-container-lowest rounded-2xl p-space-md shadow-sm flex flex-col gap-space-md border border-surface-container/60">
-        {/* Country Segmented Switch */}
-        <div className="flex flex-col gap-space-xs">
-          <label className="font-label-md text-xs text-on-surface-variant uppercase tracking-wider font-semibold">
-            Region Scope
-          </label>
-          <div className="grid grid-cols-2 p-1 bg-surface-container rounded-xl gap-1">
-            <button
-              type="button"
-              onClick={() => setIsDomestic(true)}
-              className={`flex items-center justify-center gap-1.5 py-2 px-3 rounded-lg font-label-lg text-xs font-semibold transition-all ${
-                isDomestic
-                  ? 'bg-primary text-on-primary shadow-sm'
-                  : 'text-on-surface-variant hover:text-primary'
-              }`}
-            >
-              <span>Domestic (India)</span>
-              <span className="text-sm">🇮🇳</span>
-            </button>
-            <button
-              type="button"
-              onClick={() => setIsDomestic(false)}
-              className={`flex items-center justify-center gap-1.5 py-2 px-3 rounded-lg font-label-lg text-xs font-semibold transition-all ${
-                !isDomestic
-                  ? 'bg-primary text-on-primary shadow-sm'
-                  : 'text-on-surface-variant hover:text-primary'
-              }`}
-            >
-              <span>International</span>
-              <span className="text-sm">✈️</span>
-            </button>
-          </div>
-        </div>
-
         {/* Feature Highlight Header */}
         <div className="pt-space-xs flex flex-col gap-1">
           <div className="flex items-center justify-between">
@@ -397,7 +358,10 @@ export const TripConfigurationForm: React.FC = () => {
             <input
               type="text"
               value={searchCity}
-              onChange={(e) => setSearchCity(e.target.value)}
+              onChange={(e) => {
+                setSearchCity(e.target.value);
+                if (state.destinationError) clearDestinationError();
+              }}
               onKeyDown={(e) => {
                 if (e.key === 'Enter') {
                   e.preventDefault();
@@ -405,9 +369,23 @@ export const TripConfigurationForm: React.FC = () => {
                 }
               }}
               placeholder="Search & add destination (e.g. Visakhapatnam, Munnar)..."
-              className="w-full bg-surface-container rounded-xl py-2.5 pl-10 pr-3 font-body-md text-xs text-on-surface placeholder:text-on-surface-variant/60 focus:outline-none focus:bg-surface-container-lowest focus:ring-1 focus:ring-primary transition-all"
+              className={`w-full bg-surface-container rounded-xl py-2.5 pl-10 pr-3 font-body-md text-xs text-on-surface placeholder:text-on-surface-variant/60 focus:outline-none focus:bg-surface-container-lowest focus:ring-1 ${
+                state.destinationError ? 'ring-1 ring-error border border-error' : 'focus:ring-primary'
+              } transition-all`}
             />
           </div>
+
+          {/* Backend 422 / 503 Destination Error directly under the destination input */}
+          {state.destinationError && (
+            <div className="p-3 rounded-xl bg-error-container text-on-error-container text-xs flex items-start gap-2 border border-error/20 shadow-2xs">
+              <span className="material-symbols-outlined text-[16px] text-error shrink-0 mt-0.5">error</span>
+              <div className="flex-1">
+                <span className="font-bold block text-xs">Destination Verification</span>
+                <span className="text-[11px] leading-relaxed">{state.destinationError}</span>
+              </div>
+            </div>
+          )}
+
           <button
             type="button"
             onClick={handleAddStop}
@@ -519,14 +497,6 @@ export const TripConfigurationForm: React.FC = () => {
             >
               Reset
             </button>
-          </div>
-        )}
-
-        {/* International Note */}
-        {!isDomestic && (
-          <div className="flex items-center gap-1.5 px-1 text-on-surface-variant font-label-sm text-[11px]">
-            <span className="material-symbols-outlined text-[14px] text-outline">info</span>
-            <span>Note: International trips currently support curated single-destination immersions.</span>
           </div>
         )}
       </section>

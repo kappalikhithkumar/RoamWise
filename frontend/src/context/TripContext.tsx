@@ -9,8 +9,6 @@ import {
   ItineraryDiffItem,
   TripSummary
 } from '../types';
-import { INITIAL_TRIP_CONFIG, INITIAL_JAIPUR_DAYS, MOCK_TRIPS } from '../mock/sampleTrip';
-import { INITIAL_ALERTS } from '../mock/notificationsData';
 import { generateDeterministicItinerary } from '../mock/itineraryGenerator';
 import { apiService, BackendTrip } from '../services/api';
 
@@ -33,7 +31,11 @@ interface TripState {
   backendTripId: number | null;
   isBackendOnline: boolean;
   isSyncing: boolean;
-  isDemoMode: boolean;
+  isGenerating: boolean;
+  generationError: string | null;
+  destinationError: string | null;
+  generationSource: string | null;
+  fallbackReason: string | null;
 }
 
 type TripAction =
@@ -55,9 +57,22 @@ type TripAction =
   | { type: 'SET_BACKEND_STATUS'; payload: boolean }
   | { type: 'SET_BACKEND_TRIP_ID'; payload: number | null }
   | { type: 'SET_SYNCING'; payload: boolean }
+  | { type: 'SET_GENERATING'; payload: boolean }
+  | { type: 'SET_GENERATION_ERROR'; payload: string | null }
+  | { type: 'SET_DESTINATION_ERROR'; payload: string | null }
+  | { type: 'CLEAR_DESTINATION_ERROR' }
+  | { type: 'SET_CONFIG_ONLY'; payload: TripConfig }
+  | {
+      type: 'SET_GENERATION_SUCCESS';
+      payload: {
+        config: TripConfig;
+        days: DayItinerary[];
+        generationSource: string;
+        fallbackReason?: string | null;
+      };
+    }
   | { type: 'SET_PENDING_REPLAN'; payload: ReplanProposal }
   | { type: 'HYDRATE_ACTIVE_TRIP'; payload: { backendTripId: number; config: TripConfig; days: DayItinerary[] } }
-  | { type: 'ENTER_DEMO_MODE' }
   | { type: 'RESET_TO_DISCOVERY' };
 
 const INITIAL_PROFILE: UserProfile = {
@@ -101,7 +116,11 @@ const initialState: TripState = {
   backendTripId: null,
   isBackendOnline: false,
   isSyncing: false,
-  isDemoMode: false
+  isGenerating: false,
+  generationError: null,
+  destinationError: null,
+  generationSource: null,
+  fallbackReason: null
 };
 
 function tripReducer(state: TripState, action: TripAction): TripState {
@@ -115,36 +134,55 @@ function tripReducer(state: TripState, action: TripAction): TripState {
     case 'SET_SYNCING':
       return { ...state, isSyncing: action.payload };
 
-    case 'ENTER_DEMO_MODE':
+    case 'SET_GENERATING':
+      return { ...state, isGenerating: action.payload };
+
+    case 'SET_GENERATION_ERROR':
+      return { ...state, generationError: action.payload };
+
+    case 'SET_DESTINATION_ERROR':
+      return { ...state, destinationError: action.payload };
+
+    case 'CLEAR_DESTINATION_ERROR':
+      return { ...state, destinationError: null };
+
+    case 'SET_CONFIG_ONLY':
       return {
         ...state,
-        isDemoMode: true,
+        config: action.payload,
+        hasActiveTrip: false,
+        generationError: null
+      };
+
+    case 'SET_GENERATION_SUCCESS':
+      return {
+        ...state,
+        config: action.payload.config,
+        days: action.payload.days,
         hasActiveTrip: true,
-        backendTripId: null,
-        config: {
-          ...INITIAL_TRIP_CONFIG,
-          tagline: 'Royal Forts, Bazaars & Sunset Pavilions [Demo Mode]'
-        },
-        days: INITIAL_JAIPUR_DAYS,
-        savedTrips: MOCK_TRIPS.map((t) => ({
-          ...t,
-          title: t.title.includes('[Demo]') ? t.title : `${t.title} [Demo]`
-        })),
-        alerts: INITIAL_ALERTS,
-        activeDayNumber: 1
+        activeDayNumber: 1,
+        generationSource: action.payload.generationSource,
+        fallbackReason: action.payload.fallbackReason || null,
+        isGenerating: false,
+        generationError: null,
+        destinationError: null
       };
 
     case 'RESET_TO_DISCOVERY':
       return {
         ...state,
         hasActiveTrip: false,
-        isDemoMode: false,
         backendTripId: null,
         config: DEFAULT_EMPTY_CONFIG,
         days: [],
         savedTrips: [],
         alerts: [],
-        activeDayNumber: 1
+        activeDayNumber: 1,
+        isGenerating: false,
+        generationError: null,
+        destinationError: null,
+        generationSource: null,
+        fallbackReason: null
       };
 
     case 'HYDRATE_ACTIVE_TRIP':
@@ -154,8 +192,10 @@ function tripReducer(state: TripState, action: TripAction): TripState {
         config: action.payload.config,
         days: action.payload.days,
         hasActiveTrip: true,
-        isDemoMode: false,
-        activeDayNumber: 1
+        activeDayNumber: 1,
+        isGenerating: false,
+        generationError: null,
+        destinationError: null
       };
 
     case 'SET_PENDING_REPLAN':
@@ -176,8 +216,7 @@ function tripReducer(state: TripState, action: TripAction): TripState {
         config: action.payload.config,
         days: action.payload.generatedDays,
         activeDayNumber: 1,
-        hasActiveTrip: true,
-        isDemoMode: false
+        hasActiveTrip: true
       };
     }
 
@@ -274,10 +313,10 @@ function tripReducer(state: TripState, action: TripAction): TripState {
 
     case 'CREATE_REPLAN_PROPOSAL': {
       const { scenarioText, delayMinutes } = action.payload;
-      const activeDay = state.days.find((d) => d.dayNumber === state.activeDayNumber) || state.days[0] || INITIAL_JAIPUR_DAYS[0];
-      const act0 = activeDay?.activities?.[0] || INITIAL_JAIPUR_DAYS[0].activities[0];
-      const act1 = activeDay?.activities?.[1] || INITIAL_JAIPUR_DAYS[0].activities[1];
-      const actLast = activeDay?.activities?.[activeDay.activities.length - 1] || INITIAL_JAIPUR_DAYS[0].activities[2];
+      const activeDay = state.days.find((d) => d.dayNumber === state.activeDayNumber) || state.days[0];
+      const act0 = activeDay?.activities?.[0];
+      const act1 = activeDay?.activities?.[1];
+      const actLast = activeDay?.activities?.[activeDay.activities.length - 1];
 
       const diffItems: ItineraryDiffItem[] = [
         {
@@ -459,15 +498,19 @@ interface TripContextValue {
   state: TripState;
   unreadAlertsCount: number;
   hasActiveTrip: boolean;
-  isDemoMode: boolean;
   savedTrips: TripSummary[];
   backendTripId: number | null;
   isBackendOnline: boolean;
   isSyncing: boolean;
+  isGenerating: boolean;
+  generationError: string | null;
+  destinationError: string | null;
+  generationSource: string | null;
+  fallbackReason: string | null;
   toggleActiveTrip: () => void;
-  enterDemoMode: () => void;
-  exitDemoMode: () => Promise<void>;
-  updateConfig: (config: TripConfig) => Promise<void>;
+  updateConfig: (config: TripConfig) => Promise<{ success: boolean; error?: string; status?: number }>;
+  clearDestinationError: () => void;
+  retryGeneration: () => Promise<{ success: boolean; error?: string; status?: number }>;
   setActiveDay: (dayNumber: number) => void;
   toggleVisited: (dayNumber: number, activityId: string) => Promise<void>;
   openPlanB: (activity: Activity, dayNumber: number) => void;
@@ -689,60 +732,6 @@ export const TripProvider: React.FC<{ children: React.ReactNode }> = ({ children
     };
   }, []);
 
-  // Explicit Demo Mode Controls
-  const enterDemoMode = useCallback(() => {
-    dispatch({ type: 'ENTER_DEMO_MODE' });
-  }, []);
-
-  const exitDemoMode = useCallback(async () => {
-    try {
-      dispatch({ type: 'SET_SYNCING', payload: true });
-      const trips = await apiService.getTrips();
-      if (Array.isArray(trips) && trips.length > 0) {
-        dispatch({ type: 'SET_SAVED_TRIPS', payload: formatBackendTrips(trips) });
-        const storedTripId = localStorage.getItem('roamwise_active_backend_id');
-        const targetId = storedTripId ? parseInt(storedTripId, 10) : trips[0].id;
-        const matchedTrip = trips.find((t) => t.id === targetId) || trips[0];
-        if (matchedTrip) {
-          const fullTrip = await apiService.getTrip(matchedTrip.id);
-          if (fullTrip) {
-            const loadedConfig: TripConfig = {
-              destination: fullTrip.destination,
-              destinations: fullTrip.destinations,
-              startDate: fullTrip.startDate,
-              endDate: fullTrip.endDate,
-              budgetTier: fullTrip.budgetTier,
-              interests: fullTrip.interests || [],
-              travelerType: fullTrip.travelerType,
-              pace: fullTrip.pace,
-              weatherAdaptive: fullTrip.weatherAdaptive,
-              tagline: fullTrip.tagline
-            };
-            const loadedDays = fullTrip.days && fullTrip.days.length > 0
-              ? fullTrip.days
-              : generateDeterministicItinerary(loadedConfig);
-            dispatch({
-              type: 'HYDRATE_ACTIVE_TRIP',
-              payload: {
-                backendTripId: fullTrip.id,
-                config: loadedConfig,
-                days: loadedDays
-              }
-            });
-            localStorage.setItem('roamwise_active_backend_id', fullTrip.id.toString());
-          }
-        }
-      } else {
-        localStorage.removeItem('roamwise_active_backend_id');
-        dispatch({ type: 'RESET_TO_DISCOVERY' });
-      }
-    } catch (err) {
-      console.warn('Error exiting demo mode:', err);
-      dispatch({ type: 'RESET_TO_DISCOVERY' });
-    } finally {
-      dispatch({ type: 'SET_SYNCING', payload: false });
-    }
-  }, []);
 
   const unreadAlertsCount = state.alerts.filter((al) => al.unread).length;
   const hasActiveTrip = state.hasActiveTrip;
@@ -753,46 +742,91 @@ export const TripProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const toggleActiveTrip = () => dispatch({ type: 'TOGGLE_ACTIVE_TRIP' });
 
+  const clearDestinationError = useCallback(() => {
+    dispatch({ type: 'CLEAR_DESTINATION_ERROR' });
+  }, []);
+
   // Update trip configuration & persist to backend (with Gemini AI support)
-  const updateConfig = async (config: TripConfig) => {
-    const localDays = generateDeterministicItinerary(config);
-    dispatch({ type: 'UPDATE_CONFIG', payload: { config, generatedDays: localDays } });
+  const updateConfig = async (config: TripConfig): Promise<{ success: boolean; error?: string; status?: number }> => {
+    dispatch({ type: 'SET_GENERATING', payload: true });
+    dispatch({ type: 'SET_GENERATION_ERROR', payload: null });
+    dispatch({ type: 'SET_DESTINATION_ERROR', payload: null });
+    dispatch({ type: 'SET_CONFIG_ONLY', payload: config });
+    dispatch({ type: 'SET_SYNCING', payload: true });
 
     try {
-      dispatch({ type: 'SET_SYNCING', payload: true });
-      let finalDays = localDays;
+      let finalDays: DayItinerary[] = [];
       let finalTagline = config.tagline;
+      let genSource = 'ai';
+      let fbReason: string | undefined = undefined;
 
       // Try AI itinerary generation if online
       if (stateRef.current.isBackendOnline) {
-        try {
-          const genRes = await apiService.generateItinerary(config);
-          if (genRes && genRes.days && genRes.days.length > 0) {
-            finalDays = genRes.days;
-            if (genRes.tagline) finalTagline = genRes.tagline;
-            dispatch({
-              type: 'UPDATE_CONFIG',
-              payload: { config: { ...config, tagline: finalTagline }, generatedDays: finalDays }
-            });
-          }
-        } catch (aiErr) {
-          console.info('Backend AI generation call bypassed, using deterministic itinerary:', aiErr);
+        const genRes = await apiService.generateItinerary(config);
+        if (genRes && genRes.days && genRes.days.length > 0) {
+          finalDays = genRes.days;
+          if (genRes.tagline) finalTagline = genRes.tagline;
+          genSource = genRes.generationSource || 'ai';
+          fbReason = genRes.fallbackReason;
+        } else {
+          throw new Error('Itinerary generation returned no scheduled activities.');
         }
+
+        // Persist to backend database
+        try {
+          const res = await apiService.createTrip({ ...config, tagline: finalTagline, days: finalDays });
+          if (res && res.tripId) {
+            dispatch({ type: 'SET_BACKEND_TRIP_ID', payload: res.tripId });
+            localStorage.setItem('roamwise_active_backend_id', res.tripId.toString());
+            await refreshBackendTrips();
+          }
+        } catch (dbErr) {
+          console.warn('Backend trip persistence failed:', dbErr);
+        }
+      } else {
+        // RoamWise server is offline: fallback to deterministic engine
+        finalDays = generateDeterministicItinerary(config);
+        genSource = 'deterministic-fallback';
+        fbReason = 'RoamWise server offline. Generated standard fallback itinerary.';
       }
 
-      // Persist to backend database
-      const res = await apiService.createTrip({ ...config, tagline: finalTagline, days: finalDays });
-      if (res && res.tripId) {
-        dispatch({ type: 'SET_BACKEND_TRIP_ID', payload: res.tripId });
-        localStorage.setItem('roamwise_active_backend_id', res.tripId.toString());
-        await refreshBackendTrips();
+      dispatch({
+        type: 'SET_GENERATION_SUCCESS',
+        payload: {
+          config: { ...config, tagline: finalTagline },
+          days: finalDays,
+          generationSource: genSource,
+          fallbackReason: fbReason
+        }
+      });
+
+      return { success: true };
+    } catch (err: any) {
+      const status = err?.status || 0;
+      const message = err?.message || 'Failed to generate itinerary. Please try again.';
+
+      if (
+        status === 422 ||
+        status === 503 ||
+        message.toLowerCase().includes('india') ||
+        message.toLowerCase().includes('destination') ||
+        message.toLowerCase().includes('geocoding') ||
+        message.toLowerCase().includes('not found')
+      ) {
+        dispatch({ type: 'SET_DESTINATION_ERROR', payload: message });
       }
-    } catch (err) {
-      console.warn('Backend trip persistence failed, continuing in offline mode:', err);
+
+      dispatch({ type: 'SET_GENERATION_ERROR', payload: message });
+      return { success: false, error: message, status };
     } finally {
+      dispatch({ type: 'SET_GENERATING', payload: false });
       dispatch({ type: 'SET_SYNCING', payload: false });
     }
   };
+
+  const retryGeneration = useCallback(async () => {
+    return updateConfig(stateRef.current.config);
+  }, []);
 
   const setActiveDay = (dayNumber: number) => dispatch({ type: 'SET_ACTIVE_DAY', payload: dayNumber });
 
@@ -813,7 +847,7 @@ export const TripProvider: React.FC<{ children: React.ReactNode }> = ({ children
     });
 
     const activeId = stateRef.current.backendTripId;
-    if (activeId && stateRef.current.isBackendOnline && !stateRef.current.isDemoMode) {
+    if (activeId && stateRef.current.isBackendOnline) {
       try {
         await apiService.updateTrip(activeId, { days: updatedDays });
       } catch (err) {
@@ -871,7 +905,7 @@ export const TripProvider: React.FC<{ children: React.ReactNode }> = ({ children
     dispatch({ type: 'APPLY_PLAN_B', payload: { dayNumber, originalActivityId } });
 
     const activeId = stateRef.current.backendTripId;
-    if (activeId && stateRef.current.isBackendOnline && !stateRef.current.isDemoMode) {
+    if (activeId && stateRef.current.isBackendOnline) {
       try {
         await apiService.updateTrip(activeId, { days: updatedDays });
       } catch (err) {
@@ -884,8 +918,8 @@ export const TripProvider: React.FC<{ children: React.ReactNode }> = ({ children
     // 1. Immediate optimistic proposal
     dispatch({ type: 'CREATE_REPLAN_PROPOSAL', payload: { scenarioText, delayMinutes } });
 
-    // 2. Query Gemini AI via Flask backend if online and not in demo mode
-    if (stateRef.current.isBackendOnline && !stateRef.current.isDemoMode) {
+    // 2. Query Gemini AI via Flask backend if online
+    if (stateRef.current.isBackendOnline) {
       try {
         dispatch({ type: 'SET_SYNCING', payload: true });
         const res = await apiService.replanTrip({
@@ -929,7 +963,7 @@ export const TripProvider: React.FC<{ children: React.ReactNode }> = ({ children
     dispatch({ type: 'ACCEPT_REPLAN' });
 
     const activeId = stateRef.current.backendTripId;
-    if (activeId && stateRef.current.isBackendOnline && !stateRef.current.isDemoMode) {
+    if (activeId && stateRef.current.isBackendOnline) {
       try {
         await apiService.updateTrip(activeId, { days: updatedDays });
       } catch (err) {
@@ -950,15 +984,19 @@ export const TripProvider: React.FC<{ children: React.ReactNode }> = ({ children
         state,
         unreadAlertsCount,
         hasActiveTrip,
-        isDemoMode: state.isDemoMode,
         savedTrips,
         backendTripId,
         isBackendOnline,
         isSyncing,
+        isGenerating: state.isGenerating,
+        generationError: state.generationError,
+        destinationError: state.destinationError,
+        generationSource: state.generationSource,
+        fallbackReason: state.fallbackReason,
         toggleActiveTrip,
-        enterDemoMode,
-        exitDemoMode,
         updateConfig,
+        clearDestinationError,
+        retryGeneration,
         setActiveDay,
         toggleVisited,
         openPlanB,

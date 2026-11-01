@@ -71,7 +71,8 @@ try:
 except ImportError:
     HAS_GENAI = False
 
-DEFAULT_MODEL = os.getenv("GEMINI_MODEL", "gemini-3.5-flash-lite")
+from app.config import Config
+DEFAULT_MODEL = getattr(Config, "GEMINI_MODEL", os.getenv("GEMINI_MODEL", "gemini-3.5-flash-lite"))
 
 # Import POI service — lazy to avoid circular imports
 _poi_service = None

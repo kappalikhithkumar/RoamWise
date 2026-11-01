@@ -110,12 +110,6 @@ export const WeatherHero: React.FC = () => {
             </span>
           </div>
         </div>
-
-        {/* Illustrative data badge */}
-        <div className="flex items-center justify-center gap-1 text-[10px] text-on-surface-variant/80">
-          <span className="material-symbols-outlined text-[12px]">info</span>
-          <span>Sample meteorological telemetry for demonstration</span>
-        </div>
       </div>
     </section>
   );

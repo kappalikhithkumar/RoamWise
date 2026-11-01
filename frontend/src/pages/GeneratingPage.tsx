@@ -6,35 +6,36 @@ interface StageItem {
   id: number;
   label: string;
   sublabel: string;
-  threshold: number; // progress % when this becomes active
-  completedThreshold: number; // progress % when this is completed
+  threshold: number;
+  completedThreshold: number;
 }
 
 const GENERATION_STAGES: StageItem[] = [
   { id: 1, label: 'Understanding your preferences', sublabel: 'Calibrated', threshold: 0, completedThreshold: 20 },
-  { id: 2, label: 'Analysing destinations', sublabel: 'Circuit Stops Matched', threshold: 20, completedThreshold: 38 },
-  { id: 3, label: 'Calculating travel time', sublabel: 'Vande Bharat & Expressways', threshold: 38, completedThreshold: 55 },
-  { id: 4, label: 'Finding suitable activities', sublabel: '18 Curated Spots', threshold: 55, completedThreshold: 72 },
-  { id: 5, label: 'Checking weather forecasts', sublabel: 'Live Syncing IMD Radar', threshold: 72, completedThreshold: 86 },
-  { id: 6, label: 'Balancing budget and travel pace', sublabel: 'Balanced Allocation', threshold: 86, completedThreshold: 95 },
+  { id: 2, label: 'Resolving Indian destination coordinates', sublabel: 'Geospatial Verified', threshold: 20, completedThreshold: 38 },
+  { id: 3, label: 'Calculating travel route & pace', sublabel: 'Expressways & Transit', threshold: 38, completedThreshold: 55 },
+  { id: 4, label: 'Curating authentic Indian attractions', sublabel: 'Verified Points of Interest', threshold: 55, completedThreshold: 72 },
+  { id: 5, label: 'Checking live weather forecasts', sublabel: 'Open-Meteo Meteorology Sync', threshold: 72, completedThreshold: 86 },
+  { id: 6, label: 'Balancing INR (₹) budget and timings', sublabel: 'Balanced Allocation', threshold: 86, completedThreshold: 95 },
   { id: 7, label: 'Preparing your itinerary', sublabel: 'Finalizing', threshold: 95, completedThreshold: 100 }
 ];
 
 const ENGINE_FACTS = [
   'October in Rajasthan offers clear 26°C skies for Amber Fort, with zero monsoon delays anticipated.',
   'Yamuna Expressway traffic flow is optimal between 07:00 and 10:30 for your Agra transfer.',
-  "Delhi evening light shows at Humayun's Tomb have been pinned for Golden Hour alignment."
+  "Delhi evening light shows at Humayun's Tomb have been pinned for Golden Hour alignment.",
+  'High-elevation tea gardens in Munnar experience afternoon mist; sheltered cultural stops are prioritized.'
 ];
 
 export const GeneratingPage: React.FC = () => {
   const navigate = useNavigate();
-  const { state } = useTrip();
+  const { state, isGenerating, generationError, destinationError, retryGeneration } = useTrip();
 
   const [progress, setProgress] = useState(15);
   const [factIndex, setFactIndex] = useState(0);
 
   // Dynamic route label from state
-  const destinationDisplay = state.config.destination || 'Jaipur ➔ Delhi ➔ Agra';
+  const destinationDisplay = state.config.destination || 'Jaipur, Rajasthan';
   const paceDisplay = state.config.pace || 'Balanced';
 
   // Calculate days duration
@@ -49,32 +50,50 @@ export const GeneratingPage: React.FC = () => {
 
   const daysDisplay = getDays();
 
-  // Progress animation timers
+  // Redirect to plan if landed here without generating, error, or active trip
   useEffect(() => {
-    const t1 = setTimeout(() => setProgress(35), 600);
-    const t2 = setTimeout(() => setProgress(58), 1300);
-    const t3 = setTimeout(() => setProgress(78), 2000);
-    const t4 = setTimeout(() => setProgress(92), 2700);
-    const t5 = setTimeout(() => setProgress(100), 3400);
-    const tComplete = setTimeout(() => navigate('/trip'), 4100);
+    if (!isGenerating && !generationError && (!state.hasActiveTrip || state.days.length === 0) && !state.config.destination) {
+      navigate('/plan', { replace: true });
+    }
+  }, [isGenerating, generationError, state.hasActiveTrip, state.days.length, state.config.destination, navigate]);
 
-    return () => {
-      clearTimeout(t1);
-      clearTimeout(t2);
-      clearTimeout(t3);
-      clearTimeout(t4);
-      clearTimeout(t5);
-      clearTimeout(tComplete);
-    };
-  }, [navigate]);
+  // Handle generation success -> navigate to /trip ONLY when complete
+  useEffect(() => {
+    if (!isGenerating && !generationError && state.hasActiveTrip && state.days.length > 0) {
+      setProgress(100);
+      const timer = setTimeout(() => {
+        navigate('/trip', { replace: true });
+      }, 400);
+      return () => clearTimeout(timer);
+    }
+  }, [isGenerating, generationError, state.hasActiveTrip, state.days.length, navigate]);
+
+  // Smooth progressive animation while generating
+  useEffect(() => {
+    if (isGenerating) {
+      const interval = setInterval(() => {
+        setProgress((prev) => {
+          if (prev >= 92) return 92;
+          const inc = Math.floor(Math.random() * 5) + 3;
+          return Math.min(prev + inc, 92);
+        });
+      }, 500);
+      return () => clearInterval(interval);
+    }
+  }, [isGenerating]);
 
   // Rotating facts timer
   useEffect(() => {
     const factInterval = setInterval(() => {
       setFactIndex((prev) => (prev + 1) % ENGINE_FACTS.length);
-    }, 2800);
+    }, 3200);
     return () => clearInterval(factInterval);
   }, []);
+
+  const handleRetry = async () => {
+    setProgress(15);
+    await retryGeneration();
+  };
 
   // Compute active stage
   const currentStageIndex = GENERATION_STAGES.findIndex(
@@ -84,12 +103,62 @@ export const GeneratingPage: React.FC = () => {
   const stageNum = currentStageIndex !== -1 ? currentStageIndex + 1 : 7;
 
   // Remaining time estimate
-  const estRemaining = progress < 40 ? '~4s' : progress < 75 ? '~2s' : progress < 99 ? '~1s' : 'Ready';
+  const estRemaining = progress < 40 ? '~5s' : progress < 75 ? '~3s' : progress < 99 ? '~1s' : 'Ready';
 
   // SVG circle calculation
   const circleRadius = 15.9155;
   const strokeDash = `${progress}, 100`;
 
+  // ERROR STATE VIEW
+  if (generationError) {
+    return (
+      <div className="bg-surface text-on-surface antialiased flex flex-col min-h-screen relative overflow-x-hidden selection:bg-secondary-container selection:text-primary">
+        <main className="flex-1 flex flex-col justify-center items-center relative w-full bg-surface z-10 py-12 max-w-md mx-auto px-4">
+          <div className="w-full rounded-2xl bg-surface-container-lowest p-6 sm:p-7 shadow-card border border-error/30 text-center flex flex-col items-center">
+            <div className="w-14 h-14 rounded-full bg-error-container text-on-error-container flex items-center justify-center mb-4 shadow-sm">
+              <span className="material-symbols-outlined text-[28px] text-error">
+                {destinationError ? 'location_off' : 'cloud_off'}
+              </span>
+            </div>
+
+            <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-error-container/60 text-on-error-container font-label-sm text-[11px] font-semibold mb-2">
+              {destinationError ? 'Destination Verification' : 'Generation Error'}
+            </span>
+
+            <h2 className="font-headline-sm text-lg sm:text-xl text-primary font-bold mb-2">
+              {destinationError ? 'Destination Not Supported' : 'Itinerary Generation Failed'}
+            </h2>
+
+            <p className="font-body-md text-xs sm:text-sm text-on-surface-variant mb-6 leading-relaxed bg-surface-container-low p-3.5 rounded-xl border border-surface-container text-left w-full">
+              {generationError}
+            </p>
+
+            <div className="flex flex-col gap-2.5 w-full">
+              <button
+                type="button"
+                onClick={handleRetry}
+                className="w-full py-3 px-4 rounded-xl bg-primary text-white font-label-lg text-xs font-bold shadow hover:bg-[#204E43] active:scale-[0.99] transition-all flex items-center justify-center gap-2"
+              >
+                <span className="material-symbols-outlined text-[18px]">refresh</span>
+                <span>Retry Generation</span>
+              </button>
+
+              <button
+                type="button"
+                onClick={() => navigate('/plan')}
+                className="w-full py-3 px-4 rounded-xl bg-surface-container text-primary font-label-lg text-xs font-semibold hover:bg-surface-container-high active:scale-[0.99] transition-all flex items-center justify-center gap-2"
+              >
+                <span className="material-symbols-outlined text-[18px]">edit_location_alt</span>
+                <span>Change Destination / Edit Details</span>
+              </button>
+            </div>
+          </div>
+        </main>
+      </div>
+    );
+  }
+
+  // GENERATING LOADING VIEW
   return (
     <div className="bg-surface text-on-surface antialiased flex flex-col min-h-screen relative overflow-x-hidden selection:bg-secondary-container selection:text-primary">
       {/* Subtle Background Icon Ambient Glow */}
@@ -112,7 +181,7 @@ export const GeneratingPage: React.FC = () => {
             <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-surface-container text-on-surface-variant">
               <span className="w-1.5 h-1.5 rounded-full bg-tertiary-fixed-dim animate-ping" />
               <span className="font-label-sm text-[10px] uppercase tracking-wider font-semibold">
-                Adaptive Engine (Demo)
+                Adaptive AI Engine
               </span>
             </div>
           </div>
@@ -124,7 +193,7 @@ export const GeneratingPage: React.FC = () => {
                 auto_awesome
               </span>
               <span className="font-label-md text-xs font-semibold text-primary">
-                Deterministic Synthesis (Demo Engine)
+                Adaptive Route Synthesis
               </span>
             </div>
 
@@ -132,7 +201,7 @@ export const GeneratingPage: React.FC = () => {
               Crafting Your Adaptive Journey
             </h1>
             <p className="font-body-md text-xs text-on-surface-variant max-w-[290px] mb-space-md">
-              RoamWise is preparing your personalised journey.
+              RoamWise is preparing your personalised Indian travel itinerary.
             </p>
 
             {/* Route Overview Pill */}
@@ -201,7 +270,7 @@ export const GeneratingPage: React.FC = () => {
 
             <p className="font-body-sm text-xs text-on-surface-variant flex items-center gap-1.5">
               <span className="material-symbols-outlined text-[15px] text-tertiary-fixed-dim">query_stats</span>
-              <span>Synthesising 142 data points across real-time weather & live transit...</span>
+              <span>Synthesising geospatial POIs across Indian circuits & live weather...</span>
             </p>
           </div>
 
@@ -295,7 +364,7 @@ export const GeneratingPage: React.FC = () => {
                     Live Engine Fact
                   </span>
                   <span className="font-label-sm text-[10px] text-secondary font-medium">
-                    October Microclimate
+                    Regional Insights
                   </span>
                 </div>
                 <p className="font-body-md text-xs text-on-surface leading-snug mb-2 transition-opacity duration-300">
@@ -303,15 +372,10 @@ export const GeneratingPage: React.FC = () => {
                 </p>
                 <div className="flex items-center gap-1.5 text-on-surface-variant font-body-sm text-[11px] bg-surface-container-lowest/70 p-2 rounded-lg">
                   <span className="material-symbols-outlined text-[15px] text-primary shrink-0">shield</span>
-                  <span>RoamWise automatically prepares smart Plan B contingencies for every outdoor stop.</span>
+                  <span>RoamWise automatically prepares smart Plan B contingencies for outdoor stops.</span>
                 </div>
               </div>
             </div>
-          </div>
-
-          {/* Simulation Designation Footnote */}
-          <div className="p-3 rounded-xl bg-surface-container-low text-center text-on-surface-variant text-[11px] leading-relaxed mb-3 border border-surface-container">
-            <span className="font-semibold text-primary">MVP Transparency:</span> Deterministic itinerary synthesis tailored to your selected stops, dates, and budget (Simulated Gemini 1.5 Pro model for offline demo).
           </div>
 
           {/* Cancel / Secondary Action */}

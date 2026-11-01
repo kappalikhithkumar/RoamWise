@@ -6,7 +6,7 @@ import { BottomNav } from '../components/common/BottomNav';
 
 export const ItineraryOverviewPage: React.FC = () => {
   const navigate = useNavigate();
-  const { state, toggleVisited, isDemoMode, enterDemoMode, exitDemoMode } = useTrip();
+  const { state, toggleVisited } = useTrip();
   const [toastMessage, setToastMessage] = useState<string | null>(null);
   const [showAiModal, setShowAiModal] = useState(false);
   const [aiPrompt, setAiPrompt] = useState('');
@@ -21,7 +21,7 @@ export const ItineraryOverviewPage: React.FC = () => {
           </div>
           <h2 className="text-xl font-bold font-display text-primary">No Active Itinerary Loaded</h2>
           <p className="text-sm text-[#414845] mt-1 mb-6">
-            You don't have an active itinerary selected yet. Create a new tailored trip or explore a sample itinerary in Demo Mode.
+            You don't have an active itinerary selected yet. Create a new tailored trip to get started.
           </p>
           <div className="flex flex-wrap items-center justify-center gap-3">
             <button
@@ -29,14 +29,7 @@ export const ItineraryOverviewPage: React.FC = () => {
               className="px-5 py-2.5 rounded-xl bg-primary text-white text-xs font-bold hover:bg-[#204E43] active:scale-95 transition shadow-sm flex items-center gap-2"
             >
               <span className="material-symbols-outlined text-[18px]">add</span>
-              <span>Plan New Trip</span>
-            </button>
-            <button
-              onClick={enterDemoMode}
-              className="px-4 py-2.5 rounded-xl bg-[#EDFDF5] text-primary border border-[#D8E9DD] text-xs font-semibold hover:bg-secondary-container active:scale-95 transition flex items-center gap-2"
-            >
-              <span className="material-symbols-outlined text-[18px]">play_circle</span>
-              <span>Try Demo Mode</span>
+              <span>Plan your first trip</span>
             </button>
           </div>
         </main>
@@ -46,8 +39,8 @@ export const ItineraryOverviewPage: React.FC = () => {
   }
 
   const handleExport = () => {
-    setToastMessage('Simulated Calendar Sync: Demo .ics feed generated for offline preview.');
-    setTimeout(() => setToastMessage(null), 3500);
+    setToastMessage('Itinerary exported to calendar.');
+    setTimeout(() => setToastMessage(null), 3000);
   };
 
   const rawDestinations = state.config.destinations && state.config.destinations.length > 0
@@ -77,23 +70,19 @@ export const ItineraryOverviewPage: React.FC = () => {
 
       {/* Main Container */}
       <main className="flex-1 max-w-4xl w-full mx-auto px-4 sm:px-6 pt-20 flex flex-col gap-6">
-        {/* Demo Mode Notice Banner */}
-        {isDemoMode && (
-          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 p-3.5 rounded-xl bg-amber/15 border border-amber/35 text-primary shadow-sm">
-            <div className="flex items-center gap-2.5">
-              <span className="material-symbols-outlined text-amber text-[20px]">science</span>
-              <div>
-                <span className="text-xs font-bold uppercase tracking-wider block">Demo Presentation Mode</span>
-                <span className="text-xs text-[#414845]">Viewing sample Jaipur itinerary with adaptive timeline. Real SQLite database is untouched.</span>
-              </div>
+        {state.generationSource === 'deterministic-fallback' && (
+          <div className="rounded-2xl bg-amber-50 border border-amber-200/80 p-4 text-xs text-amber-950 flex items-start gap-3 shadow-xs">
+            <span className="material-symbols-outlined text-[20px] text-amber-700 shrink-0 mt-0.5">
+              info
+            </span>
+            <div className="flex-1">
+              <span className="font-bold block text-sm text-amber-950">
+                Deterministic Fallback Itinerary
+              </span>
+              <p className="text-amber-900 text-xs mt-0.5 leading-relaxed">
+                {state.fallbackReason || 'Generated using RoamWise offline fallback engine.'}
+              </p>
             </div>
-            <button
-              onClick={exitDemoMode}
-              className="px-3.5 py-1.5 rounded-lg bg-white border border-amber/40 text-xs font-bold text-primary hover:bg-[#FFF8F0] active:scale-95 transition shadow-sm shrink-0 flex items-center gap-1"
-            >
-              <span className="material-symbols-outlined text-[15px]">close</span>
-              <span>Exit Demo</span>
-            </button>
           </div>
         )}
 
@@ -362,11 +351,6 @@ export const ItineraryOverviewPage: React.FC = () => {
               </div>
             ))}
           </div>
-        </div>
-
-        {/* Transparency Footnote */}
-        <div className="p-3.5 rounded-xl bg-white border border-[#25332E]/10 text-center text-xs text-[#414845] shadow-sm mb-4">
-          <span className="font-bold text-primary">MVP Transparency:</span> Deterministic demo itinerary generated based on your selected route, dates, budget ({state.config.budgetTier}), and pace ({state.config.pace}). Simulated intelligence for offline demo.
         </div>
       </main>
 

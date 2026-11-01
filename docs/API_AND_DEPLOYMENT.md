@@ -10,13 +10,13 @@ Use `.env.example` as a template.
 | Variable | Type | Default | Description |
 | :--- | :--- | :--- | :--- |
 | `FLASK_APP` | String | `backend/run.py` | Flask application entry point |
-| `FLASK_DEBUG` | Boolean | `False` in prod | Enable/disable Flask debug reloader |
+| `FLASK_DEBUG` | Boolean | `False` | Enable/disable Flask debug reloader |
 | `PORT` | Integer | `5000` | Port for the backend API server |
 | `HOST` | String | `127.0.0.1` | Host interface binding (`0.0.0.0` for containers) |
 | `SECRET_KEY` | String | `(generated)` | Flask session encryption key |
 | `DATABASE_PATH` | String | `backend/roamwise.db`| Path to the SQLite database file |
 | `GEMINI_API_KEY` | String | `""` | Google Gemini API key for live AI generation |
-| `GEMINI_MODEL` | String | `gemini-3.8-flash` | Gemini model name |
+| `GEMINI_MODEL` | String | `gemini-3.5-flash-lite` | Gemini model name |
 | `WEATHER_PROVIDER`| String | `open-meteo` | Weather provider (`open-meteo` free tier) |
 
 ### Frontend (`frontend/.env`)
@@ -59,7 +59,7 @@ Use `.env.example` as a template.
 
 ### AI Generation & Replanning
 - `POST /api/trips/generate`
-  - Generates personalized multi-day itinerary using Google Gemini (`gemini-3.8-flash`) with deterministic fallback.
+  - Generates personalized multi-day itinerary using Google Gemini (`gemini-3.5-flash-lite`) with deterministic fallback.
   - Body: `{ "destination": "...", "startDate": "YYYY-MM-DD", "endDate": "YYYY-MM-DD", "budgetTier": "...", "interests": [...], "travelerType": "...", "pace": "..." }`
   - Response: `{ "success": true, "itinerary": { ... }, "days": [ ... ], "generationSource": "gemini-ai" | "deterministic-fallback" }`
 

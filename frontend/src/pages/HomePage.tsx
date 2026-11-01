@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { useTrip } from '../context/TripContext';
 import { Header } from '../components/common/Header';
 import { BottomNav } from '../components/common/BottomNav';
-import { CURATED_CIRCUITS } from '../mock/sampleTrip';
+import { CURATED_CIRCUITS } from '../data/curatedCircuits';
 
 export const HomePage: React.FC = () => {
   const navigate = useNavigate();
@@ -11,9 +11,6 @@ export const HomePage: React.FC = () => {
     state,
     hasActiveTrip,
     toggleActiveTrip,
-    isDemoMode,
-    enterDemoMode,
-    exitDemoMode,
     savedTrips,
     selectTrip
   } = useTrip();
@@ -41,10 +38,8 @@ export const HomePage: React.FC = () => {
   // Compute weather alert state
   const riskDay = state.days.find((d) => (d.rainRisk && d.rainRisk > 40) || d.weatherAlert || d.activities?.some((a) => a.hasPlanBReady && a.weatherRisk === 'high' && !a.isPlanBAlternative));
   const activeAlert = state.alerts.find((al) => al.unread && al.type === 'weather');
-  const hasWeatherRisk = isDemoMode || Boolean(riskDay) || Boolean(activeAlert);
-  const weatherRiskMessage = isDemoMode
-    ? `2:00 PM Rain predicted in ${activeTripCity}. Plan B sheltered indoor alternatives ready.`
-    : riskDay?.weatherAlert || activeAlert?.message || `Rain risk predicted in ${activeTripCity}. Adaptive alternatives prepared.`;
+  const hasWeatherRisk = Boolean(riskDay) || Boolean(activeAlert);
+  const weatherRiskMessage = riskDay?.weatherAlert || activeAlert?.message || `Rain risk predicted in ${activeTripCity}. Adaptive alternatives prepared.`;
 
   const interestCategories = [
     { id: 'adventure', label: '🧗 Adventure', hint: 'Trekking & High Passes' },
@@ -116,31 +111,6 @@ export const HomePage: React.FC = () => {
         {/* ========================================================================= */}
         {hasActiveTrip ? (
           <div className="flex flex-col gap-6 animate-fadeIn">
-            {/* Demo Mode Notice Banner (When running in presentation/demo mode) */}
-            {isDemoMode && (
-              <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 p-3.5 rounded-xl bg-amber/15 border border-amber/35 text-primary shadow-sm">
-                <div className="flex items-center gap-2.5">
-                  <span className="material-symbols-outlined text-amber text-[22px]">science</span>
-                  <div>
-                    <div className="flex items-center gap-2">
-                      <span className="text-xs font-bold uppercase tracking-wider text-primary">Demo Presentation Mode</span>
-                      <span className="px-1.5 py-0.2 rounded text-[10px] bg-amber/25 font-bold text-primary">Sample Data</span>
-                    </div>
-                    <p className="text-xs text-[#414845] mt-0.5">
-                      Viewing sample Jaipur expedition. Changes are simulated in-memory and will not alter the production database.
-                    </p>
-                  </div>
-                </div>
-                <button
-                  onClick={exitDemoMode}
-                  className="px-3.5 py-1.5 rounded-lg bg-white border border-amber/40 text-xs font-bold text-primary hover:bg-[#FFF8F0] active:scale-95 transition shadow-sm shrink-0 flex items-center gap-1"
-                >
-                  <span className="material-symbols-outlined text-[15px]">close</span>
-                  <span>Exit Demo Mode</span>
-                </button>
-              </div>
-            )}
-
             {/* Greeting & Active Expedition Header */}
             <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 pt-1">
               <div>
@@ -154,7 +124,7 @@ export const HomePage: React.FC = () => {
               <div className="inline-flex items-center gap-1.5 self-start sm:self-center px-3 py-1 rounded-full bg-white border border-[#D8E9DD] shadow-sm">
                 <span className="material-symbols-outlined text-amber text-[16px]">cloud_sync</span>
                 <span className="text-xs font-semibold text-primary">
-                  {isDemoMode ? 'Demo Mode Active' : 'Live Context Active'}
+                  Live Context Active
                 </span>
               </div>
             </div>
@@ -165,7 +135,7 @@ export const HomePage: React.FC = () => {
                 <div className="flex-1">
                   <div className="flex items-center gap-2 mb-2">
                     <span className="px-2.5 py-0.5 rounded-full text-[11px] font-bold uppercase tracking-wider bg-[#EDFDF5] text-primary border border-[#D8E9DD]">
-                      {activeTripCity} Circuit {isDemoMode ? '(Demo)' : ''}
+                      {activeTripCity} Circuit
                     </span>
                     <span className="text-xs font-medium text-[#414845]">
                       Day 1 of {Math.max(1, state.days.length)} • {state.config.pace || 'Balanced'} Cadence
@@ -225,7 +195,7 @@ export const HomePage: React.FC = () => {
                           Adaptive Reroute Suggested
                         </span>
                         <span className="px-1.5 py-0.2 rounded text-[10px] bg-amber/20 font-bold text-primary">
-                          {isDemoMode ? 'Demo Risk' : 'Weather Risk'}
+                          Weather Risk
                         </span>
                       </div>
                       <p className="text-sm font-medium text-charcoal mt-0.5">
@@ -437,29 +407,6 @@ export const HomePage: React.FC = () => {
               </div>
             </div>
 
-            {/* Presentation & Demo Mode Card */}
-            <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 p-4 rounded-2xl bg-white border border-[#25332E]/10 shadow-sm">
-              <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-xl bg-amber/15 text-amber flex items-center justify-center shrink-0">
-                  <span className="material-symbols-outlined text-[22px]">play_circle</span>
-                </div>
-                <div>
-                  <div className="flex items-center gap-2">
-                    <span className="text-xs font-bold text-primary block">Presentation & Demo Mode</span>
-                    <span className="px-1.5 py-0.2 rounded text-[10px] bg-amber/20 font-bold text-primary">Demo</span>
-                  </div>
-                  <span className="text-xs text-[#414845]">Load a sample expedition with live weather alerts and Plan B adaptive rerouting.</span>
-                </div>
-              </div>
-              <button
-                onClick={enterDemoMode}
-                className="px-4 py-2 rounded-xl bg-amber/20 hover:bg-amber/30 text-primary border border-amber/40 text-xs font-bold transition active:scale-95 shadow-sm flex items-center gap-1.5 shrink-0"
-              >
-                <span className="material-symbols-outlined text-[16px]">play_arrow</span>
-                <span>Try Demo Mode</span>
-              </button>
-            </div>
-
             {/* Upcoming Trip Preview (Only when real saved trips exist, or clean invitation card) */}
             {savedTrips.length > 0 ? (
               <div className="rounded-2xl bg-white border border-[#25332E]/10 p-5 shadow-card">
@@ -529,7 +476,7 @@ export const HomePage: React.FC = () => {
                       No Expeditions Planned Yet
                     </h4>
                     <p className="text-xs text-[#414845] mt-1 max-w-md">
-                      Plan an adaptive multi-day itinerary with real-time weather rerouting, or try Demo Mode to see Serene Expedition in action.
+                      Plan an adaptive multi-day itinerary across India with real-time weather rerouting and curated local attractions.
                     </p>
                   </div>
 
@@ -539,7 +486,7 @@ export const HomePage: React.FC = () => {
                       className="px-4 py-2 rounded-xl bg-primary text-white text-xs font-bold hover:bg-[#204E43] transition shadow-sm flex items-center gap-1.5"
                     >
                       <span className="material-symbols-outlined text-[16px]">add</span>
-                      <span>Plan Journey</span>
+                      <span>Plan your first trip</span>
                     </button>
                   </div>
                 </div>

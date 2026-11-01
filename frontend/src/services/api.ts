@@ -37,6 +37,18 @@ export interface UpdateTripPayload {
   days?: DayItinerary[];
 }
 
+export class ApiError extends Error {
+  status: number;
+  data?: any;
+
+  constructor(message: string, status: number, data?: any) {
+    super(message);
+    this.name = 'ApiError';
+    this.status = status;
+    this.data = data;
+  }
+}
+
 async function request<T>(endpoint: string, options: RequestInit = {}): Promise<T> {
   const url = `${API_BASE}${endpoint.startsWith('/') ? endpoint : `/${endpoint}`}`;
   const headers = {
@@ -48,8 +60,9 @@ async function request<T>(endpoint: string, options: RequestInit = {}): Promise<
     const res = await fetch(url, { ...options, headers });
     if (!res.ok) {
       let errorMessage = `HTTP Error ${res.status}`;
+      let errorData: any = null;
       try {
-        const errorData = await res.json();
+        errorData = await res.json();
         if (errorData && errorData.error) {
           errorMessage = errorData.error;
         }
@@ -59,12 +72,15 @@ async function request<T>(endpoint: string, options: RequestInit = {}): Promise<
           errorMessage = `HTTP ${res.status}: ${res.statusText}`;
         }
       }
-      throw new Error(errorMessage);
+      throw new ApiError(errorMessage, res.status, errorData);
     }
     return await res.json();
   } catch (err: unknown) {
+    if (err instanceof ApiError) {
+      throw err;
+    }
     if (err instanceof TypeError && (err.message.includes('fetch') || err.message.includes('network') || err.message.includes('Failed to fetch'))) {
-      throw new Error(`Unable to connect to RoamWise API at ${API_BASE}. Server may be offline.`);
+      throw new ApiError(`Unable to connect to RoamWise API at ${API_BASE}. Server may be offline.`, 0);
     }
     throw err;
   }
@@ -131,8 +147,22 @@ export const apiService = {
   /**
    * AI Itinerary Generation via Gemini
    */
-  async generateItinerary(config: TripConfig): Promise<{ success: boolean; itinerary: any; tagline: string; days: DayItinerary[]; generationSource: string }> {
-    return request<{ success: boolean; itinerary: any; tagline: string; days: DayItinerary[]; generationSource: string }>('/trips/generate', {
+  async generateItinerary(config: TripConfig): Promise<{
+    success: boolean;
+    itinerary: any;
+    tagline: string;
+    days: DayItinerary[];
+    generationSource: string;
+    fallbackReason?: string;
+  }> {
+    return request<{
+      success: boolean;
+      itinerary: any;
+      tagline: string;
+      days: DayItinerary[];
+      generationSource: string;
+      fallbackReason?: string;
+    }>('/trips/generate', {
       method: 'POST',
       body: JSON.stringify(config)
     });

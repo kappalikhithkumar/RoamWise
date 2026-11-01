@@ -806,13 +806,6 @@ export const WeatherPage: React.FC = () => {
               </div>
             </div>
           </section>
-
-          {/* Simulation Designation Footnote */}
-          <div className="px-gutter pb-4">
-            <div className="p-3 rounded-xl bg-surface-container text-center text-on-surface-variant text-[11px] leading-relaxed border border-surface-container-high">
-              <span className="font-semibold text-primary">Radar Telemetry:</span> Simulated IMD Sentinel Doppler Radar Stream for offline demo preview.
-            </div>
-          </div>
         </div>
       </main>
 

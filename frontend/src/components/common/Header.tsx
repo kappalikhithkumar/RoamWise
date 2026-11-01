@@ -15,7 +15,7 @@ export const Header: React.FC<HeaderProps> = ({
   onBack
 }) => {
   const navigate = useNavigate();
-  const { state, isBackendOnline, isSyncing, isDemoMode, exitDemoMode, hasActiveTrip } = useTrip();
+  const { state, isBackendOnline, isSyncing, hasActiveTrip } = useTrip();
 
   const handleBack = () => {
     if (onBack) {
@@ -77,17 +77,6 @@ export const Header: React.FC<HeaderProps> = ({
               <span className="font-heading text-base sm:text-lg font-bold text-primary leading-tight truncate max-w-[170px] sm:max-w-xs">
                 {displayTitle}
               </span>
-              {isDemoMode && (
-                <button
-                  onClick={exitDemoMode}
-                  title="Exit Demo Mode"
-                  className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-amber/25 text-primary border border-amber/40 hover:bg-amber/35 transition flex items-center gap-1"
-                >
-                  <span className="w-1.5 h-1.5 rounded-full bg-amber animate-pulse" />
-                  <span>DEMO</span>
-                  <span className="material-symbols-outlined text-[12px]">close</span>
-                </button>
-              )}
             </div>
           </div>
         </div>
