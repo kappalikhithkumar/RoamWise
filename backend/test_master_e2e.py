@@ -96,7 +96,7 @@ try:
     get_res = client.get(f"/api/trips/{trip_id}")
     assert get_res.status_code == 200
     saved_trip = get_res.get_json()
-    assert saved_trip["destination"] == "Hyderabad, Telangana"
+    assert saved_trip["destination"] in ("Hyderabad", "Hyderabad, Telangana")
     assert len(saved_trip["days"]) == 3
     print(f"Trip retrieved. Destination: {saved_trip['destination']}, Days: {len(saved_trip['days'])}")
 
@@ -205,11 +205,11 @@ try:
 
     # C. Weather fallback check
     ws = WeatherService()
-    sim_weather = ws._generate_simulated_fallback("Ooty", 11.4102, 76.6950)
+    sim_weather = ws._generate_unavailable_response("Ooty", 11.4102, 76.6950)
     assert sim_weather["isLive"] is False
-    assert "Fallback" in sim_weather["provider"] or "Simulated" in sim_weather["disclaimer"]
-    assert "disclaimer" in sim_weather
-    print("C. Labelled weather offline disclaimer check: PASSED ✓")
+    assert sim_weather["alerts"] == []
+    assert "Live weather temporarily unavailable" in sim_weather["error"]
+    print("C. Labelled weather offline unavailable check: PASSED ✓")
 
     # D. Missing trip 404 check
     res_404 = client.get("/api/trips/88888")

@@ -1,40 +1,12 @@
 import os
 import json
 import logging
-import socket
 import urllib.request
 import urllib.parse
-from datetime import datetime
-
-# Enforce fast socket connect timeout so offline or firewalled environments don't hang
-socket.setdefaulttimeout(2.5)
+from datetime import datetime, timezone
+from typing import Optional, Tuple
 
 logger = logging.getLogger(__name__)
-
-# Known geographic coordinates for premier destinations
-PRESET_COORDINATES = {
-    "hyderabad": (17.3850, 78.4867),
-    "visakhapatnam": (17.6868, 83.2185),
-    "vizag": (17.6868, 83.2185),
-    "jaipur": (26.9124, 75.7873),
-    "delhi": (28.6139, 77.2090),
-    "agra": (27.1767, 78.0081),
-    "goa": (15.2993, 74.1240),
-    "munnar": (10.0889, 77.0595),
-    "kerala": (9.9312, 76.2673),
-    "varanasi": (25.3176, 82.9739),
-    "bengaluru": (12.9716, 77.5946),
-    "bangalore": (12.9716, 77.5946),
-    "mumbai": (19.0760, 72.8777),
-    "manali": (32.2432, 77.1892),
-    "shimla": (31.1048, 77.1734),
-    "srinagar": (34.0837, 74.7973),
-    "udaipur": (24.5854, 73.7125),
-    "amritsar": (31.6340, 74.8723),
-    "rishikesh": (30.0869, 78.2676),
-    "kyoto": (35.0116, 135.7681),
-    "tokyo": (35.6762, 139.6503)
-}
 
 # WMO Weather interpretation codes
 WMO_CODES = {
@@ -67,30 +39,20 @@ class WeatherService:
         self.provider_name = "Open-Meteo Weather API"
         self.timeout = 5  # seconds
 
-    def get_coordinates(self, destination: str):
-        """Resolve latitude and longitude for destination."""
-        clean_name = destination.split(",")[0].strip().lower()
-        for key, coords in PRESET_COORDINATES.items():
-            if key in clean_name or clean_name in key:
-                return coords
-
-        # Try Open-Meteo Geocoding API if not in preset
+    def get_coordinates(self, destination: str) -> Optional[Tuple[float, float]]:
+        """Resolve latitude and longitude for Indian destination using destinations.resolver."""
         try:
-            url = f"https://geocoding-api.open-meteo.com/v1/search?name={urllib.parse.quote(clean_name)}&count=5&language=en&format=json"
-            req = urllib.request.Request(url, headers={"User-Agent": "RoamWise-Travel-Planner/1.0"})
-            with urllib.request.urlopen(req, timeout=self.timeout) as resp:
-                data = json.loads(resp.read().decode("utf-8"))
-                if "results" in data and len(data["results"]) > 0:
-                    r = data["results"][0]
-                    return float(r["latitude"]), float(r["longitude"])
+            from app.services import destinations
+            res = destinations.resolver.resolve(destination)
+            if res.is_ok and res.destination:
+                return float(res.destination.lat), float(res.destination.lon)
         except Exception as e:
-            logger.info(f"Geocoding lookup bypassed for {destination}: {e}")
+            logger.warning(f"Destination resolution failed in weather service for '{destination}': {e}")
 
-        # Return None if location is unresolvable rather than silently faking coordinates
         return None
 
     def get_weather(self, destination: str) -> dict:
-        """Fetch live weather from Open-Meteo or return clearly labelled fallback."""
+        """Fetch live weather from Open-Meteo or return clear unavailable response."""
         coords = self.get_coordinates(destination)
         if not coords:
             return self._generate_unresolved_location_response(destination)
@@ -115,12 +77,8 @@ class WeatherService:
                 res["geocodingSuccess"] = True
                 return res
         except Exception as e:
-            logger.info(f"Live weather API unreachable ({e}). Using labelled microclimate simulation.")
-            fallback = self._generate_simulated_fallback(destination, lat, lon)
-            fallback["latitude"] = lat
-            fallback["longitude"] = lon
-            fallback["geocodingSuccess"] = True
-            return fallback
+            logger.warning(f"Live weather API unreachable for '{destination}' ({e}). Returning unavailable response.")
+            return self._generate_unavailable_response(destination, lat, lon)
 
     def _generate_unresolved_location_response(self, destination: str) -> dict:
         return {
@@ -129,26 +87,51 @@ class WeatherService:
             "isLive": False,
             "geocodingSuccess": False,
             "error": "Location not found",
-            "disclaimer": f"Could not determine geographic coordinates for '{destination}'. Please check spelling or specify city and country.",
+            "summary": f"Could not determine geographic coordinates for '{destination}'.",
+            "disclaimer": f"Could not determine geographic coordinates for '{destination}'. Destination must be a valid location in India.",
             "current": {
-                "temperature": 25,
+                "temperature": None,
                 "condition": "Location Unresolved",
-                "rainRisk": 0,
-                "humidity": 50,
-                "wind": "0 km/h",
-                "daylight": "12h",
-                "sunrise": "06:00 AM",
-                "sunset": "06:00 PM",
-                "icon": "help"
+                "icon": "help",
+                "uvIndex": None,
+                "humidity": None,
+                "wind": "N/A",
+                "daylight": "N/A",
+                "sunrise": "--",
+                "sunset": "--",
+                "rainRisk": 0
             },
-            "alerts": [{
-                "id": "alert-unresolved-loc",
-                "type": "weather",
-                "title": f"Unresolved Location: '{destination}'",
-                "time": "Now",
-                "description": f"Could not verify geographic coordinates for '{destination}'. Live weather forecasts cannot be fetched automatically.",
-                "planBReady": False
-            }],
+            "alerts": [],
+            "hourly": []
+        }
+
+    def _generate_unavailable_response(self, destination: str, lat: Optional[float] = None, lon: Optional[float] = None) -> dict:
+        """Return clear 'Live weather temporarily unavailable' response with isLive=False and empty alerts."""
+        return {
+            "destination": destination,
+            "provider": self.provider_name,
+            "providerAttribution": "Weather data by Open-Meteo.com (CC-BY 4.0)",
+            "isLive": False,
+            "lastUpdated": datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M:%S UTC"),
+            "latitude": lat,
+            "longitude": lon,
+            "geocodingSuccess": lat is not None and lon is not None,
+            "error": "Live weather temporarily unavailable",
+            "summary": "Live weather temporarily unavailable",
+            "disclaimer": "Live weather temporarily unavailable. Please verify network connectivity or try again later.",
+            "current": {
+                "temperature": None,
+                "condition": "Unavailable",
+                "icon": "cloud_off",
+                "uvIndex": None,
+                "humidity": None,
+                "wind": "N/A",
+                "daylight": "N/A",
+                "sunrise": "--",
+                "sunset": "--",
+                "rainRisk": 0
+            },
+            "alerts": [],
             "hourly": []
         }
 
@@ -225,7 +208,8 @@ class WeatherService:
             "provider": self.provider_name,
             "providerAttribution": "Weather data by Open-Meteo.com (CC-BY 4.0)",
             "isLive": True,
-            "lastUpdated": datetime.utcnow().strftime("%Y-%m-%d %H:%M:%S UTC"),
+            "lastUpdated": datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M:%S UTC"),
+            "summary": f"{temp}°C • {cond_text}",
             "current": {
                 "temperature": temp,
                 "condition": cond_text,
@@ -239,65 +223,7 @@ class WeatherService:
                 "rainRisk": rain_max
             },
             "alerts": alerts,
-            "hourly": hourly_forecast[:6] if hourly_forecast else [
-                {"time": "10 AM", "temp": temp, "rainRisk": rain_max // 2, "icon": "wb_sunny"},
-                {"time": "01 PM", "temp": temp + 2, "rainRisk": rain_max, "icon": icon},
-                {"time": "04 PM", "temp": temp + 1, "rainRisk": rain_max, "icon": icon},
-                {"time": "07 PM", "temp": temp - 2, "rainRisk": rain_max // 3, "icon": "wb_sunny"}
-            ]
-        }
-
-    def _generate_simulated_fallback(self, destination: str, lat: float, lon: float) -> dict:
-        """Labelled microclimate fallback forecast when live provider is offline."""
-        now = datetime.now()
-        clean = destination.split(",")[0].strip()
-
-        # Deterministic variation based on destination letters
-        char_sum = sum(ord(c) for c in clean)
-        base_temp = 22 + (char_sum % 8)  # 22 - 29 C
-        base_rain = (char_sum * 7) % 65  # 0 - 64%
-
-        cond = "Sunny & Pleasant" if base_rain < 30 else ("Partly Cloudy" if base_rain < 50 else "Passing Showers")
-        icon = "wb_sunny" if base_rain < 30 else ("partly_cloudy_day" if base_rain < 50 else "rainy")
-
-        alerts = []
-        if base_rain >= 40:
-            alerts.append({
-                "id": "alert-simulated-01",
-                "type": "rain_front",
-                "title": f"Precipitation Warning ({base_rain}% Estimated)",
-                "time": "Afternoon Window",
-                "description": f"Microclimate simulation indicates {cond.lower()} in {clean}. Sheltered indoor alternatives recommended for outdoor trails.",
-                "planBReady": True
-            })
-
-        return {
-            "destination": destination,
-            "provider": "RoamWise Microclimate Engine (Offline Fallback)",
-            "providerAttribution": "Offline fallback simulation. Connect to live network for Open-Meteo forecast.",
-            "isLive": False,
-            "disclaimer": "Simulated forecast. Live weather API currently offline.",
-            "lastUpdated": now.strftime("%Y-%m-%d %H:%M:%S Local"),
-            "current": {
-                "temperature": base_temp,
-                "condition": cond,
-                "icon": icon,
-                "uvIndex": 4,
-                "humidity": 55,
-                "wind": "11 km/h NE",
-                "daylight": "11h 24m",
-                "sunrise": "06:18 AM",
-                "sunset": "05:42 PM",
-                "rainRisk": base_rain
-            },
-            "alerts": alerts,
-            "hourly": [
-                {"time": "09 AM", "temp": base_temp - 2, "rainRisk": max(0, base_rain - 15), "icon": "wb_sunny"},
-                {"time": "12 PM", "temp": base_temp + 1, "rainRisk": base_rain, "icon": icon},
-                {"time": "03 PM", "temp": base_temp, "rainRisk": base_rain, "icon": icon},
-                {"time": "06 PM", "temp": base_temp - 3, "rainRisk": max(0, base_rain - 20), "icon": "partly_cloudy_day"},
-                {"time": "09 PM", "temp": base_temp - 5, "rainRisk": 5, "icon": "clear_night"}
-            ]
+            "hourly": hourly_forecast[:6]
         }
 
 

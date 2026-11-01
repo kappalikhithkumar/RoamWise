@@ -3,6 +3,7 @@ from datetime import datetime, timedelta
 from flask import Blueprint, jsonify, request
 from app.database import get_db, serialize_trip, serialize_day, serialize_activity
 from app.services.gemini_service import gemini_service
+from app.services.destinations import destination_resolver
 
 trips_bp = Blueprint("trips", __name__)
 
@@ -10,9 +11,26 @@ trips_bp = Blueprint("trips", __name__)
 def generate_itinerary_endpoint():
     """Generate an itinerary using Gemini AI with deterministic fallback."""
     data = request.get_json() or {}
-    destination = data.get("destination")
-    if not destination:
+    raw_dest = data.get("destination")
+    if not raw_dest or not str(raw_dest).strip():
         return jsonify({"error": "Destination is required"}), 400
+
+    resolution = destination_resolver.resolve(str(raw_dest).strip())
+    if resolution.status in ("not_found", "not_india"):
+        return jsonify({"error": resolution.message}), 422
+    elif resolution.status == "lookup_unavailable":
+        return jsonify({"error": resolution.message}), 503
+
+    resolved = resolution.destination
+    data["destination"] = resolved.name
+    data["resolvedDestination"] = resolved.name
+    data["state"] = resolved.state
+    data["lat"] = resolved.lat
+    data["lon"] = resolved.lon
+    data["latitude"] = resolved.lat
+    data["longitude"] = resolved.lon
+    if "destinations" in data and isinstance(data["destinations"], list):
+        data["destinations"] = [resolved.name]
 
     result = gemini_service.generate_itinerary(data)
     return jsonify({
@@ -20,7 +38,8 @@ def generate_itinerary_endpoint():
         "itinerary": result,
         "tagline": result.get("tagline"),
         "days": result.get("days", []),
-        "generationSource": result.get("generationSource", "ai")
+        "generationSource": result.get("generationSource", "ai"),
+        "fallbackReason": result.get("fallbackReason")
     }), 200
 
 @trips_bp.route("/trips/replan", methods=["POST"])
@@ -41,7 +60,8 @@ def replan_trip_endpoint():
     return jsonify({
         "success": True,
         "proposal": proposal,
-        "generationSource": proposal.get("generationSource", "ai")
+        "generationSource": proposal.get("generationSource", "ai"),
+        "fallbackReason": proposal.get("fallbackReason")
     }), 200
 
 @trips_bp.route("/trips", methods=["GET"])
@@ -76,8 +96,25 @@ def create_trip():
     if not raw_dest or not str(raw_dest).strip():
         return jsonify({"error": "Destination is required"}), 400
         
-    destination = str(raw_dest).strip()
-    destinations = data.get("destinations", [destination])
+    resolution = destination_resolver.resolve(str(raw_dest).strip())
+    if resolution.status in ("not_found", "not_india"):
+        return jsonify({"error": resolution.message}), 422
+    elif resolution.status == "lookup_unavailable":
+        return jsonify({"error": resolution.message}), 503
+
+    resolved = resolution.destination
+    destination = resolved.name
+    destinations = [resolved.name] if not data.get("destinations") else data.get("destinations")
+    if isinstance(destinations, list) and destinations:
+        destinations[0] = resolved.name
+
+    data["destination"] = resolved.name
+    data["resolvedDestination"] = resolved.name
+    data["state"] = resolved.state
+    data["lat"] = resolved.lat
+    data["lon"] = resolved.lon
+    data["latitude"] = resolved.lat
+    data["longitude"] = resolved.lon
     
     now = datetime.now()
     default_start = (now + timedelta(days=7)).strftime("%Y-%m-%d")
@@ -94,11 +131,23 @@ def create_trip():
     is_domestic = 1 if data.get("isDomestic", True) else 0
     
     days_data = data.get("days", [])
+    if not days_data and isinstance(data.get("itinerary"), dict):
+        days_data = data["itinerary"].get("days", [])
+    if not days_data and isinstance(data.get("itineraryDays"), list):
+        days_data = data.get("itineraryDays", [])
+
+    ai_itinerary = None
     if not days_data:
-        ai_itinerary = gemini_service.generate_itinerary(data)
-        days_data = ai_itinerary.get("days", [])
-        if not data.get("tagline"):
-            tagline = ai_itinerary.get("tagline", tagline)
+        # If client already generated the itinerary or provided generation metadata, do not call Gemini again
+        if data.get("generationSource") or data.get("itinerary") or data.get("fallbackReason"):
+            days_data = []
+        else:
+            ai_itinerary = gemini_service.generate_itinerary(data)
+            days_data = ai_itinerary.get("days", [])
+            if not data.get("tagline"):
+                tagline = ai_itinerary.get("tagline", tagline)
+    elif not data.get("tagline") and isinstance(data.get("itinerary"), dict) and data["itinerary"].get("tagline"):
+        tagline = data["itinerary"]["tagline"]
     
     db = get_db()
     cursor = db.cursor()
@@ -212,10 +261,15 @@ def create_trip():
     trip_row = db.execute("SELECT * FROM trips WHERE id = ?", (trip_id,)).fetchone()
     trip_result = serialize_trip(trip_row, saved_days if saved_days else None)
     
+    gen_source = data.get("generationSource") or (ai_itinerary.get("generationSource") if ai_itinerary else "saved")
+    fb_reason = data.get("fallbackReason") or (ai_itinerary.get("fallbackReason") if ai_itinerary else None)
+
     return jsonify({
         "message": "Trip saved successfully",
         "tripId": trip_id,
-        "trip": trip_result
+        "trip": trip_result,
+        "generationSource": gen_source,
+        "fallbackReason": fb_reason
     }), 201
 
 @trips_bp.route("/trips/<int:trip_id>", methods=["GET"])

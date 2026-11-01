@@ -70,25 +70,6 @@ CITY_BBOXES: dict[str, tuple[float, float, float, float]] = {
     "araku valley": (18.30, 82.85, 18.40, 82.95),
     "kodaikanal": (10.23, 77.47, 10.27, 77.51),
     "darjeeling": (27.03, 88.25, 27.07, 88.30),
-    # International — major cities
-    "paris": (48.82, 2.27, 48.91, 2.42),
-    "london": (51.46, -0.20, 51.56, -0.05),
-    "rome": (41.87, 12.44, 41.93, 12.52),
-    "amsterdam": (52.34, 4.85, 52.40, 4.95),
-    "berlin": (52.48, 13.37, 52.55, 13.47),
-    "barcelona": (41.35, 2.13, 41.43, 2.20),
-    "vienna": (48.19, 16.34, 48.23, 16.42),
-    "prague": (50.07, 14.40, 50.10, 14.46),
-    "istanbul": (41.00, 28.95, 41.05, 29.05),
-    "tokyo": (35.65, 139.63, 35.73, 139.78),
-    "kyoto": (34.97, 135.72, 35.03, 135.80),
-    "osaka": (34.66, 135.49, 34.70, 135.54),
-    "singapore": (1.26, 103.78, 1.37, 103.90),
-    "bangkok": (13.72, 100.48, 13.80, 100.57),
-    "dubai": (25.18, 55.25, 25.26, 55.35),
-    "new york": (40.69, -74.05, 40.77, -73.96),
-    "sydney": (-33.90, 151.18, -33.85, 151.23),
-    "hallstatt": (47.55, 13.63, 47.57, 13.65),
 }
 
 # Category priority used in display + Plan B logic
@@ -99,7 +80,7 @@ OVERPASS_TAGS = {
 }
 
 
-def _build_overpass_query(bbox: tuple[float, float, float, float], limit: int = 25) -> str:
+def _build_overpass_query(bbox: tuple[float, float, float, float], limit: int = 120) -> str:
     """Build an Overpass QL query for a bounding box."""
     s, w, n, e = bbox
     bbox_str = f"({s},{w},{n},{e})"
@@ -117,20 +98,45 @@ out tags center {limit};
 
 
 def _resolve_bbox(destination: str) -> Optional[tuple[float, float, float, float]]:
-    """Find bounding box for a destination by fuzzy key match."""
-    dest_lower = destination.lower().strip()
-    # Exact match first
-    if dest_lower in CITY_BBOXES:
-        return CITY_BBOXES[dest_lower]
-    # Substring match
-    for key, bbox in CITY_BBOXES.items():
-        if key in dest_lower or dest_lower in key:
-            return bbox
-    return None
+    """
+    Find bounding box for an Indian destination via destinations.resolver.
+    If destination is not in predefined CITY_BBOXES, dynamically builds
+    a ~7 km bounding box around the geocoded lat/lon coordinates.
+    """
+    import math
+    from app.services import destinations
+
+    res = destinations.resolver.resolve(destination)
+    if not res.is_ok or not res.destination:
+        return None
+
+    canonical_name = res.destination.name.lower().strip()
+    if canonical_name in CITY_BBOXES:
+        return CITY_BBOXES[canonical_name]
+
+    from app.services.destinations import ALIASES
+    alias_key = ALIASES.get(canonical_name)
+    if alias_key and alias_key in CITY_BBOXES:
+        return CITY_BBOXES[alias_key]
+
+    # For any resolved Indian destination NOT in CITY_BBOXES:
+    # Build a bbox of about 7 km around the geocoded lat/lon
+    lat = float(res.destination.lat)
+    lon = float(res.destination.lon)
+    delta_lat = 7.0 / 111.0
+    cos_lat = math.cos(math.radians(lat))
+    delta_lon = 7.0 / (111.0 * cos_lat) if cos_lat > 0.01 else 7.0 / 111.0
+
+    return (
+        round(lat - delta_lat, 4),
+        round(lon - delta_lon, 4),
+        round(lat + delta_lat, 4),
+        round(lon + delta_lon, 4),
+    )
 
 
 def _extract_pois(elements: list[dict]) -> list[dict]:
-    """Transform raw Overpass elements into normalized POI dicts."""
+    """Transform raw Overpass elements into normalized POI dicts, ranking Wikipedia/Wikidata places first."""
     pois = []
     seen_names: set[str] = set()
     for el in elements:
@@ -170,6 +176,15 @@ def _extract_pois(elements: list[dict]) -> list[dict]:
             "tags": {k: v for k, v in tags.items() if k in ("tourism", "historic", "leisure", "wikidata", "wikipedia", "opening_hours", "fee")},
             "source": "openstreetmap",
         })
+
+    # Rank Wikipedia / Wikidata-tagged places first
+    def _rank_poi(p: dict) -> tuple[int, int]:
+        tags = p.get("tags", {})
+        has_wiki = 1 if ("wikipedia" in tags or "wikidata" in tags) else 0
+        is_major = 1 if p.get("category") in ("Museum", "Monument", "Palace", "Fort/Castle", "Temple", "Attraction") else 0
+        return (has_wiki, is_major)
+
+    pois.sort(key=_rank_poi, reverse=True)
     return pois
 
 
@@ -186,6 +201,9 @@ class POIService:
     If neither tier can produce results, returns an empty list with a disclosure message
     rather than inventing attraction names.
     """
+
+    def __init__(self):
+        self._cache: dict[str, tuple[float, dict]] = {}
 
     def get_pois(
         self,
@@ -205,73 +223,123 @@ class POIService:
                 "destination": str,
             }
         """
-        pois = []
-        source = "none"
-        disclosure = ""
+        import time
+        from app.services import destinations
 
-        # ── Tier 1: Check curated verified database first (sub-millisecond, highly reliable) ──
-        if not prefer_live:
-            curated = _get_curated_pois(destination)
-            if curated:
-                pois = curated
-                source = "curated"
-                disclosure = (
-                    f"Attractions sourced from verified landmark database for {destination}. "
-                    "Recognized heritage sites, museums, and natural landmarks with real coordinates."
-                )
-                logger.info(f"[POI] Using curated database: {len(pois)} POIs for '{destination}'")
+        # Resolve destination via destinations.resolver
+        res = destinations.resolver.resolve(destination)
+        if not res.is_ok or not res.destination:
+            return {
+                "pois": [],
+                "source": "none",
+                "sourceDisclosure": res.message,
+                "destination": destination,
+            }
 
-        # ── Tier 2: OpenStreetMap Overpass API (for uncataloged destinations or when live requested) ──
-        if not pois:
-            bbox = _resolve_bbox(destination)
-            if bbox:
-                try:
-                    query = _build_overpass_query(bbox, limit=max_results * 2)
-                    encoded = urllib.parse.quote(query)
-                    url = f"{OVERPASS_ENDPOINT}?data={encoded}"
-                    req = urllib.request.Request(
-                        url,
-                        headers={"User-Agent": "RoamWise-AI-Planner/2.0 (travel app; contact@roamwise.ai)"}
-                    )
-                    with urllib.request.urlopen(req, timeout=3.5) as resp:
-                        data = json.loads(resp.read().decode())
-                    elements = data.get("elements", [])
-                    pois = _extract_pois(elements)
-                    if pois:
-                        source = "openstreetmap"
-                        disclosure = (
-                            f"Attractions sourced live from OpenStreetMap contributors for {destination}. "
-                            "Names, coordinates, and categories are community-verified data."
-                        )
-                        logger.info(f"[POI] Overpass returned {len(pois)} POIs for '{destination}'")
-                except Exception as e:
-                    logger.warning(f"[POI] Overpass API unavailable for '{destination}': {e}")
+        canonical_name = res.destination.name
+        canonical_key = canonical_name.lower().strip()
+        now = time.time()
 
-        # ── Tier 3: Secondary check of curated if prefer_live was true but Overpass failed ──
-        if not pois and prefer_live:
-            curated = _get_curated_pois(destination)
-            if curated:
-                pois = curated
-                source = "curated"
-                disclosure = (
-                    f"Attractions sourced from verified landmark database for {destination} (Overpass live fallback)."
-                )
+        # ── 24h in-memory cache keyed by canonical destination ───────────
+        cache_key = f"{canonical_key}:{'live' if prefer_live else 'default'}"
+        cached_entry = None
+        if cache_key in self._cache:
+            cached_time, cached_data = self._cache[cache_key]
+            if now - cached_time < 86400:  # 24 hours
+                cached_entry = cached_data
+        elif not prefer_live and canonical_key in self._cache:
+            cached_time, cached_data = self._cache[canonical_key]
+            if now - cached_time < 86400:
+                cached_entry = cached_data
 
-        # ── Tier 4: No external POIs found ────────────────────────────────
-        if not pois:
+        if cached_entry:
+            raw_pois = cached_entry["pois"]
+            source = cached_entry["source"]
+            disclosure = cached_entry["sourceDisclosure"]
+        else:
+            raw_pois = []
             source = "none"
-            disclosure = (
-                f"No external verified POI database match found for '{destination}'. "
-                "Gemini AI will synthesize recommendations using its parametric travel knowledge. "
-                "Please verify opening hours independently before travel."
-            )
-            logger.info(f"[POI] No POIs found for '{destination}' — falling back to model knowledge")
+            disclosure = ""
+
+            # ── Tier 1: Check curated verified database first (sub-millisecond, highly reliable) ──
+            if not prefer_live:
+                curated = _get_curated_pois(destination)
+                if curated:
+                    raw_pois = list(curated)
+                    source = "curated"
+                    disclosure = (
+                        f"Attractions sourced from verified landmark database for {destination}. "
+                        "Recognized heritage sites, museums, and natural landmarks with real coordinates."
+                    )
+                    logger.info(f"[POI] Using curated database: {len(raw_pois)} POIs for '{destination}'")
+
+            # ── Tier 2: OpenStreetMap Overpass API (for uncataloged destinations or when live requested) ──
+            if not raw_pois:
+                bbox = _resolve_bbox(destination)
+                if bbox:
+                    try:
+                        # Query about 120 elements as specified
+                        query = _build_overpass_query(bbox, limit=120)
+                        encoded = urllib.parse.quote(query)
+                        url = f"{OVERPASS_ENDPOINT}?data={encoded}"
+                        req = urllib.request.Request(
+                            url,
+                            headers={"User-Agent": "RoamWise-AI-Planner/2.0 (travel app; contact@roamwise.ai)"}
+                        )
+                        # Client timeout set to server timeout + 3s (8s + 3s = 11s)
+                        client_timeout = OVERPASS_TIMEOUT_SECONDS + 3
+                        with urllib.request.urlopen(req, timeout=client_timeout) as resp:
+                            data = json.loads(resp.read().decode())
+                        elements = data.get("elements", [])
+                        raw_pois = _extract_pois(elements)
+                        if raw_pois:
+                            source = "openstreetmap"
+                            disclosure = (
+                                f"Attractions sourced live from OpenStreetMap contributors for {destination}. "
+                                "Names, coordinates, and categories are community-verified data."
+                            )
+                            logger.info(f"[POI] Overpass returned {len(raw_pois)} POIs for '{destination}'")
+                    except Exception as e:
+                        logger.warning(f"[POI] Overpass API unavailable for '{destination}': {e}")
+
+            # ── Tier 3: Secondary check of curated if prefer_live was true but Overpass failed ──
+            if not raw_pois and prefer_live:
+                curated = _get_curated_pois(destination)
+                if curated:
+                    raw_pois = list(curated)
+                    source = "curated"
+                    disclosure = (
+                        f"Attractions sourced from verified landmark database for {destination} (Overpass live fallback)."
+                    )
+
+            # ── Tier 4: No external POIs found ────────────────────────────────
+            if not raw_pois:
+                source = "none"
+                disclosure = (
+                    f"No external verified POI database match found for '{destination}'. "
+                    "Gemini AI will synthesize recommendations using its parametric travel knowledge. "
+                    "Please verify opening hours independently before travel."
+                )
+                logger.info(f"[POI] No POIs found for '{destination}' — falling back to model knowledge")
+
+            # Store in 24h in-memory cache keyed by canonical destination
+            self._cache[cache_key] = (now, {
+                "pois": raw_pois,
+                "source": source,
+                "sourceDisclosure": disclosure,
+            })
+            if canonical_key not in self._cache:
+                self._cache[canonical_key] = (now, {
+                    "pois": raw_pois,
+                    "source": source,
+                    "sourceDisclosure": disclosure,
+                })
 
         # Filter by interests if provided
-        if interests and pois:
-            pois = _filter_by_interests(pois, interests, max_results)
+        if interests and raw_pois:
+            pois = _filter_by_interests(raw_pois, interests, max_results)
         else:
-            pois = pois[:max_results]
+            pois = raw_pois[:max_results]
 
         return {
             "pois": pois,
@@ -555,66 +623,6 @@ _CURATED_DB: dict[str, list[dict]] = {
         _curated_landmark("Haji Ali Dargah", "Worli, Mumbai", "Attraction", 18.9824, 72.8091,
                           {"tourism": "attraction", "wikipedia": "en:Haji Ali Dargah"}),
     ],
-
-    # ── International: Paris ─────────────────────────────────────────────
-    "paris": [
-        _curated_landmark("Musée du Louvre", "1st arrondissement, Paris", "Museum", 48.8606, 2.3376,
-                          {"tourism": "museum", "wikipedia": "en:Louvre"}),
-        _curated_landmark("Eiffel Tower", "Champ de Mars, Paris", "Monument", 48.8584, 2.2945,
-                          {"tourism": "attraction", "wikipedia": "en:Eiffel Tower"}),
-        _curated_landmark("Musée d'Orsay", "7th arrondissement, Paris", "Museum", 48.8600, 2.3266,
-                          {"tourism": "museum", "wikipedia": "en:Musée d'Orsay"}),
-        _curated_landmark("Notre-Dame de Paris", "Île de la Cité, Paris", "Attraction", 48.8530, 2.3499,
-                          {"tourism": "attraction", "wikipedia": "en:Notre-Dame de Paris"}),
-        _curated_landmark("Sacré-Cœur Basilica (Montmartre)", "18th arrondissement, Paris", "Attraction", 48.8867, 2.3431,
-                          {"tourism": "attraction", "wikipedia": "en:Sacré-Cœur, Paris"}),
-        _curated_landmark("Sainte-Chapelle", "Île de la Cité, Paris", "Attraction", 48.8554, 2.3450,
-                          {"tourism": "attraction", "wikipedia": "en:Sainte-Chapelle"}),
-        _curated_landmark("Jardin du Luxembourg", "6th arrondissement, Paris", "Garden", 48.8462, 2.3372,
-                          {"leisure": "garden", "wikipedia": "en:Luxembourg Gardens"}),
-        _curated_landmark("Versailles Palace & Gardens", "Versailles, Île-de-France", "Palace", 48.8049, 2.1204,
-                          {"historic": "palace", "wikipedia": "en:Palace of Versailles"}),
-        _curated_landmark("Centre Pompidou", "4th arrondissement, Paris", "Art Gallery", 48.8607, 2.3523,
-                          {"tourism": "gallery", "wikipedia": "en:Centre Pompidou"}),
-    ],
-
-    # ── International: Tokyo ─────────────────────────────────────────────
-    "tokyo": [
-        _curated_landmark("Senso-ji Temple", "Asakusa, Tokyo", "Temple", 35.7147, 139.7967,
-                          {"tourism": "attraction", "wikipedia": "en:Sensō-ji"}),
-        _curated_landmark("Meiji Jingu Shrine", "Shibuya, Tokyo", "Temple", 35.6763, 139.6993,
-                          {"tourism": "attraction", "wikipedia": "en:Meiji Shrine"}),
-        _curated_landmark("Shibuya Crossing & Sky", "Shibuya, Tokyo", "Viewpoint", 35.6595, 139.7004,
-                          {"tourism": "viewpoint", "wikipedia": "en:Shibuya Scramble Crossing"}),
-        _curated_landmark("Tokyo National Museum", "Ueno, Tokyo", "Museum", 35.7188, 139.7760,
-                          {"tourism": "museum", "wikipedia": "en:Tokyo National Museum"}),
-        _curated_landmark("Shinjuku Gyoen National Garden", "Shinjuku, Tokyo", "Garden", 35.6852, 139.7100,
-                          {"leisure": "garden", "wikipedia": "en:Shinjuku Gyoen"}),
-        _curated_landmark("Ueno Park & Ueno Zoo", "Ueno, Tokyo", "Park", 35.7146, 139.7731,
-                          {"leisure": "park", "wikipedia": "en:Ueno Park"}),
-        _curated_landmark("Tsukiji Outer Market", "Tsukiji, Tokyo", "Attraction", 35.6656, 139.7707,
-                          {"tourism": "attraction", "wikipedia": "en:Tsukiji fish market"}),
-        _curated_landmark("Tokyo Skytree", "Oshiage, Tokyo", "Viewpoint", 35.7101, 139.8107,
-                          {"tourism": "viewpoint", "wikipedia": "en:Tokyo Skytree"}),
-        _curated_landmark("Akihabara Electric Town", "Chiyoda, Tokyo", "Attraction", 35.7022, 139.7742,
-                          {"tourism": "attraction", "wikipedia": "en:Akihabara"}),
-    ],
-
-    # ── International: Hallstatt ─────────────────────────────────────────
-    "hallstatt": [
-        _curated_landmark("Hallstatt Skywalk Welterbeblick", "Hallstatt, Upper Austria", "Viewpoint", 47.5631, 13.6494,
-                          {"tourism": "viewpoint", "wikipedia": "en:Hallstatt"}),
-        _curated_landmark("Salzwelten Hallstatt Salt Mine", "Hallstatt, Upper Austria", "Attraction", 47.5631, 13.6380,
-                          {"tourism": "attraction", "wikipedia": "en:Hallstatt salt mine"}),
-        _curated_landmark("Hallstatt Ossuary (Beinhaus)", "Hallstatt, Upper Austria", "Attraction", 47.5618, 13.6489,
-                          {"tourism": "attraction", "wikipedia": "en:Hallstatt ossuary"}),
-        _curated_landmark("Hallstatt Market Square", "Marktplatz, Hallstatt", "Attraction", 47.5624, 13.6494,
-                          {"tourism": "attraction"}),
-        _curated_landmark("Echern Valley Waterfall Trail", "Hallstatt, Upper Austria", "Nature Reserve", 47.5541, 13.6285,
-                          {"tourism": "attraction"}),
-        _curated_landmark("Hallstätter See (Lake Hallstatt)", "Hallstatt, Upper Austria", "Attraction", 47.5564, 13.6492,
-                          {"tourism": "attraction", "wikipedia": "en:Hallstätter See"}),
-    ],
 }
 
 # Register aliases
@@ -623,21 +631,30 @@ _CURATED_DB["vizag"] = _CURATED_DB["visakhapatnam"]
 _CURATED_DB["mysore"] = _CURATED_DB["mysuru"]
 _CURATED_DB["new delhi"] = _CURATED_DB["delhi"]
 _CURATED_DB["bombay"] = _CURATED_DB["mumbai"]
+_CURATED_DB["calcutta"] = _CURATED_DB.get("kolkata", [])
+_CURATED_DB["madras"] = _CURATED_DB.get("chennai", [])
+_CURATED_DB["cochin"] = _CURATED_DB.get("kochi", [])
+_CURATED_DB["banaras"] = _CURATED_DB.get("varanasi", [])
 
 
 def _get_curated_pois(destination: str) -> list[dict]:
-    """Fuzzy-match a destination name to the curated database."""
-    dest_lower = destination.lower().strip()
-    # Exact match
-    if dest_lower in _CURATED_DB:
-        return _CURATED_DB[dest_lower]
-    # Substring match
-    for key, pois in _CURATED_DB.items():
-        if key in dest_lower or dest_lower in key:
-            return pois
-    # Multi-word partial match (e.g. "Bangalore, Karnataka" → "bangalore")
-    parts = re.split(r"[,\s]+", dest_lower)
-    for part in parts:
-        if len(part) >= 4 and part in _CURATED_DB:
-            return _CURATED_DB[part]
+    """Match a destination name to the curated database using destinations.resolver (exact canonical key only)."""
+    from app.services import destinations
+    res = destinations.resolver.resolve(destination)
+    if not res.is_ok or not res.destination:
+        return []
+
+    canonical_name = res.destination.name.lower().strip()
+    if canonical_name in _CURATED_DB:
+        return _CURATED_DB[canonical_name]
+
+    from app.services.destinations import ALIASES
+    alias_key = ALIASES.get(canonical_name)
+    if alias_key and alias_key in _CURATED_DB:
+        return _CURATED_DB[alias_key]
+
     return []
+
+
+# Global singleton instance
+poi_service = POIService()

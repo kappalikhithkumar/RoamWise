@@ -1,10 +1,67 @@
 import os
+import re
+import time
 import json
+import difflib
 import logging
 import concurrent.futures
 from datetime import datetime, timedelta
 
 logger = logging.getLogger(__name__)
+
+STOP_WORDS = {
+    "the", "and", "of", "in", "at", "to", "for", "a", "an", "on", "with",
+    "by", "from", "visit", "explore", "tour", "walk", "view", "see"
+}
+
+def _normalize_title_tokens(text: str) -> tuple[str, set[str]]:
+    t = str(text or "").lower().strip()
+    t = re.sub(r"\(.*?\)", "", t)
+    t = re.sub(r"[^\w\s]", " ", t)
+    words = [w for w in t.split() if w]
+    sig_words = {w for w in words if w not in STOP_WORDS}
+    norm_str = " ".join(words)
+    return norm_str, sig_words
+
+def _match_activity_to_poi(act_title: str, pois: list[dict]) -> tuple[bool, dict | None]:
+    """
+    Validate activity title against POI list:
+    Match with difflib ratio >= 0.85 or token containment.
+    """
+    act_norm, act_tokens = _normalize_title_tokens(act_title)
+    if not act_norm:
+        return False, None
+
+    best_match = None
+    best_score = 0.0
+
+    for poi in pois:
+        poi_name = poi.get("name", "")
+        poi_norm, poi_tokens = _normalize_title_tokens(poi_name)
+        if not poi_norm:
+            continue
+
+        # 1. difflib ratio >= 0.85
+        ratio = difflib.SequenceMatcher(None, act_norm, poi_norm).ratio()
+        if ratio >= 0.85:
+            if ratio > best_score:
+                best_score = ratio
+                best_match = poi
+            continue
+
+        # 2. Token containment
+        if poi_tokens and act_tokens:
+            if poi_tokens.issubset(act_tokens) and len(poi_tokens) >= 1:
+                return True, poi
+            if act_tokens.issubset(poi_tokens) and len(act_tokens) >= 2:
+                return True, poi
+            if (len(poi_norm) >= 6 and poi_norm in act_norm) or (len(act_norm) >= 6 and act_norm in poi_norm):
+                return True, poi
+
+    if best_match is not None:
+        return True, best_match
+
+    return False, None
 
 # Try importing the official google-genai SDK
 try:
@@ -55,7 +112,7 @@ class GeminiService:
             executor = concurrent.futures.ThreadPoolExecutor(max_workers=1)
             try:
                 future = executor.submit(self._call_gemini_generation, config)
-                ai_itinerary = future.result(timeout=15.0)
+                ai_itinerary = future.result(timeout=40.0)
                 valid, sanitized = self._validate_itinerary(ai_itinerary, config)
                 if valid:
                     sanitized["generationSource"] = "gemini-ai"
@@ -66,14 +123,14 @@ class GeminiService:
                     fallback_reason = "Gemini output failed schema validation"
                     logger.info("Gemini output failed validation, using fallback.")
             except concurrent.futures.TimeoutError:
-                fallback_reason = "Gemini API request timed out after 15.0s"
+                fallback_reason = "Gemini API request timed out after 40.0s"
                 logger.info(f"Gemini live generation bypassed ({fallback_reason}), using fallback.")
             except Exception as e:
                 err_str = str(e)
                 if "429" in err_str or "RESOURCE_EXHAUSTED" in err_str:
-                    fallback_reason = "Gemini API Free Tier quota limit (20 req/day) exceeded (429 Resource Exhausted)"
+                    fallback_reason = "AI quota or rate limit reached"
                 elif "Timeout" in err_str or "timeout" in err_str:
-                    fallback_reason = "Gemini API request timed out after 15.0s"
+                    fallback_reason = "Gemini API request timed out after 40.0s"
                 else:
                     fallback_reason = f"Gemini API error: {err_str[:120]}"
                 logger.info(f"Gemini live generation bypassed ({fallback_reason}), using fallback.")
@@ -92,6 +149,18 @@ class GeminiService:
     def _call_gemini_generation(self, config: dict) -> dict:
         destination = config.get("destination", "Jaipur, Rajasthan")
         destinations = config.get("destinations", [destination])
+        state = config.get("state")
+        if not state:
+            try:
+                from app.services import destinations as dest_module
+                res = dest_module.resolver.resolve(destination)
+                if res.is_ok and res.destination:
+                    state = res.destination.state
+            except Exception:
+                pass
+        state_str = f", {state}" if (state and state.lower() not in destination.lower()) else ""
+        destination_full = f"{destination}{state_str}, India"
+
         start_date = config.get("startDate", "2026-11-20")
         end_date = config.get("endDate", "2026-11-23")
         budget = config.get("budgetTier", "Moderate")
@@ -110,6 +179,7 @@ class GeminiService:
         # ── Fetch verified POIs to ground the prompt ────────────────────
         poi_context_block = ""
         poi_source = "gemini-memory"
+        pois = []
         try:
             svc = _get_poi_service()
             if svc:
@@ -148,23 +218,24 @@ If you are uncertain whether a place exists, omit it rather than inventing it.
             logger.warning(f"POI context fetch failed: {e}")
 
         prompt = f"""
-You are RoamWise AI, an expert adaptive travel planner with deep geographic knowledge.
-Create a detailed, high-quality, realistic {num_days}-day travel itinerary for {destination}.
+You are RoamWise AI, an expert adaptive travel planner with deep geographic knowledge of India.
+Create a detailed, high-quality, realistic {num_days}-day travel itinerary for {destination_full}.
 Destinations included: {', '.join(destinations)}.
+State / Union Territory: {state if state else 'India'}.
 Dates: {start_date} to {end_date} ({num_days} days total).
 Traveler Type: {traveler}
 Travel Pace: {pace} (if Relaxed: 2-3 stops/day; Balanced: 3-4 stops/day; Packed: 4-5 stops/day)
-Budget Tier: {budget} (give realistic costs in local currency; use ₹ for Indian destinations, $ for US, € for Europe, ¥ for Japan etc.)
+Budget Tier: {budget} (all costs must be estimated realistically in Indian Rupees ₹ only)
 Interests: {', '.join(interests)}
 {poi_context_block}
 CRITICAL RULES:
-1. Use REAL, SPECIFIC attraction names — not generic names like "City Heritage Quarter" or "Grand Botanical Sanctuary".
+1. Destination is strictly within India ({destination_full}). Use REAL, SPECIFIC Indian attraction names — not generic names like "City Heritage Quarter" or "Grand Botanical Sanctuary".
 2. Each day must have a distinct set of activities — do NOT repeat any attraction across days.
-3. Activities must be geographically clustered per day to minimize unnecessary travel.
+3. Activities must be geographically clustered per day to minimize unnecessary travel across Indian traffic.
 4. Consider the selected pace strictly: Relaxed=2-3 stops, Balanced=3-4 stops, Packed=4-5 stops.
-5. Plan B alternatives must be real indoor/sheltered venues (e.g. a specific museum, not a generic "indoor gallery").
-6. Costs must be realistic for the destination and budget tier.
-7. The "location" field must name a real neighborhood, road, or district — not a generic placeholder.
+5. Plan B alternatives must be real indoor/sheltered venues (e.g. a specific museum or temple hall, not a generic "indoor gallery").
+6. All costs must be realistic for domestic travel in India, specified in Indian Rupees (₹) only.
+7. The "location" field must name a real neighborhood, road, or district in {destination} — not a generic placeholder.
 
 Output MUST be valid JSON adhering strictly to this schema:
 {{
@@ -218,18 +289,29 @@ Output MUST be valid JSON adhering strictly to this schema:
   ]
 }}
 """
-        response = self.client.models.generate_content(
-            model=DEFAULT_MODEL,
-            contents=prompt,
-            config=types.GenerateContentConfig(
-                response_mime_type="application/json",
-                temperature=0.6
-            )
-        )
-        result = json.loads(response.text)
-        # Attach poi_source metadata for transparency
-        result["_poiSource"] = poi_source
-        return result
+        # Call Gemini with retry once on 429
+        for attempt in range(2):
+            try:
+                response = self.client.models.generate_content(
+                    model=DEFAULT_MODEL,
+                    contents=prompt,
+                    config=types.GenerateContentConfig(
+                        response_mime_type="application/json",
+                        temperature=0.6
+                    )
+                )
+                result = json.loads(response.text)
+                # Attach poi_source metadata and verified candidate POIs for validation
+                result["_poiSource"] = poi_source
+                result["_pois"] = pois
+                return result
+            except Exception as e:
+                err_str = str(e)
+                if ("429" in err_str or "RESOURCE_EXHAUSTED" in err_str) and attempt == 0:
+                    logger.warning("Gemini 429 rate limit encountered. Retrying once after 2.0s backoff...")
+                    time.sleep(2.0)
+                    continue
+                raise
 
 
     def _validate_itinerary(self, data: dict, config: dict) -> tuple[bool, dict]:
@@ -297,6 +379,39 @@ Output MUST be valid JSON adhering strictly to this schema:
         if not sanitized_days:
             return False, None
 
+        # ── POI Verification and Filtering ──────────────────────────────
+        pois = data.get("_pois", [])
+        poi_source = data.get("_poiSource", "none")
+
+        if poi_source in ("curated", "openstreetmap") and pois:
+            for day in sanitized_days:
+                day_acts = day.get("activities", [])
+                for act in day_acts:
+                    matched, matched_poi = _match_activity_to_poi(act.get("title", ""), pois)
+                    if matched and matched_poi:
+                        act["verified"] = True
+                        if matched_poi.get("lat") is not None:
+                            act["lat"] = float(matched_poi["lat"])
+                            act["latitude"] = float(matched_poi["lat"])
+                        if matched_poi.get("lon") is not None:
+                            act["lon"] = float(matched_poi["lon"])
+                            act["longitude"] = float(matched_poi["lon"])
+                        if matched_poi.get("area"):
+                            act["location"] = matched_poi["area"]
+                        elif matched_poi.get("name"):
+                            act["location"] = matched_poi["name"]
+                    else:
+                        act["verified"] = False
+
+                # Drop unverified activities when verified POIs exist,
+                # but only if the day keeps at least 2 activities.
+                # Otherwise keep them and set verified=false.
+                verified_acts = [a for a in day_acts if a.get("verified")]
+                if len(verified_acts) >= 2:
+                    day["activities"] = verified_acts
+                else:
+                    day["activities"] = day_acts
+
         return True, {
             "tagline": data.get("tagline", f"{config.get('travelerType', 'Curated')} Expedition across {config.get('destination')}"),
             "days": sanitized_days
@@ -311,7 +426,7 @@ Output MUST be valid JSON adhering strictly to this schema:
             executor = concurrent.futures.ThreadPoolExecutor(max_workers=1)
             try:
                 future = executor.submit(self._call_gemini_replan, current_trip, scenario_text, delay_minutes, active_day_number)
-                ai_replan = future.result(timeout=2.0)
+                ai_replan = future.result(timeout=25.0)
                 if ai_replan and "proposedActivities" in ai_replan and len(ai_replan["proposedActivities"]) > 0:
                     ai_replan = self._enforce_replan_safety(current_trip, ai_replan, active_day_number)
                     ai_replan["generationSource"] = "gemini-ai"
@@ -375,15 +490,24 @@ STRICT REQUIREMENTS:
   ]
 }}
 """
-        response = self.client.models.generate_content(
-            model=DEFAULT_MODEL,
-            contents=prompt,
-            config=types.GenerateContentConfig(
-                response_mime_type="application/json",
-                temperature=0.5
-            )
-        )
-        return json.loads(response.text)
+        for attempt in range(2):
+            try:
+                response = self.client.models.generate_content(
+                    model=DEFAULT_MODEL,
+                    contents=prompt,
+                    config=types.GenerateContentConfig(
+                        response_mime_type="application/json",
+                        temperature=0.5
+                    )
+                )
+                return json.loads(response.text)
+            except Exception as e:
+                err_str = str(e)
+                if ("429" in err_str or "RESOURCE_EXHAUSTED" in err_str) and attempt == 0:
+                    logger.warning("Gemini replan 429 encountered. Retrying once after 2.0s backoff...")
+                    time.sleep(2.0)
+                    continue
+                raise
 
     def _enforce_replan_safety(self, current_trip: dict, replan_res: dict, active_day_number: int) -> dict:
         """Guarantee completed activities remain exactly as they were."""
