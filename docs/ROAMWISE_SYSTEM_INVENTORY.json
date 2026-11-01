@@ -1,0 +1,463 @@
+{
+  "metadata": {
+    "projectName": "RoamWise",
+    "tagline": "AI-Powered Adaptive Travel Planner",
+    "version": "1.0.0",
+    "auditDate": "2026-10-31",
+    "gitBranch": "feature/serene-expedition-ui",
+    "repositoryRoot": "C:\\Users\\gayat\\.gemini\\antigravity\\scratch\\roamwise",
+    "designTheme": "Serene Expedition"
+  },
+  "technologyStack": {
+    "frontend": {
+      "framework": "React 18.3.1",
+      "language": "TypeScript 5.6.2",
+      "buildTool": "Vite 5.4.11",
+      "routing": "React Router 7.18.5",
+      "styling": "Tailwind CSS 3.4.15",
+      "cssPreprocessors": [
+        "PostCSS 8.4.49",
+        "Autoprefixer 10.4.20"
+      ],
+      "iconLibraries": [
+        "Google Material Symbols Outlined",
+        "Lucide React 1.16.0"
+      ],
+      "stateManagement": "React Context API (TripContext) + useReducer",
+      "devServerPort": 5173
+    },
+    "backend": {
+      "framework": "Flask 3.0+",
+      "language": "Python 3.14 (64-bit)",
+      "cors": "Flask-CORS 4.0+",
+      "databaseDriver": "sqlite3 (Standard Library)",
+      "aiSdk": "google-genai 2.0+",
+      "environmentLoader": "python-dotenv 1.0+",
+      "serverPort": 5000,
+      "wsgiServer": "backend/wsgi.py"
+    },
+    "database": {
+      "engine": "SQLite 3",
+      "path": "backend/roamwise.db",
+      "foreignKeysEnforced": true,
+      "migrationStrategy": "Dynamic column verification (_ensure_column)"
+    }
+  },
+  "directoryStructure": {
+    "root": [
+      ".env.example",
+      ".gitignore",
+      "README.md",
+      "test_frontend_lifecycle.mjs"
+    ],
+    "frontend": "frontend/src/ (pages, components, context, services, types, mock)",
+    "backend": "backend/app/ (routes, services, config.py, database.py)",
+    "designReference": "design-reference-v2/ (DESIGN.md, manifest.json, screens/, assets/)",
+    "documentation": "docs/ (ROAMWISE_COMPREHENSIVE_APPLICATION_DOSSIER.md, ROAMWISE_SYSTEM_INVENTORY.json, API_AND_DEPLOYMENT.md)"
+  },
+  "routes": [
+    {
+      "url": "/",
+      "page": "HomePage",
+      "componentFile": "frontend/src/pages/HomePage.tsx",
+      "title": "Home Dashboard & Discovery Hub",
+      "mode": "Dual (Active / Discovery)"
+    },
+    {
+      "url": "/trips",
+      "page": "MyTripsPage",
+      "componentFile": "frontend/src/pages/MyTripsPage.tsx",
+      "title": "My Trips & Expedition Logbook",
+      "mode": "CRUD & Archive"
+    },
+    {
+      "url": "/plan",
+      "page": "PlanTripPage",
+      "componentFile": "frontend/src/pages/PlanTripPage.tsx",
+      "title": "Trip Configuration Engine",
+      "mode": "Interactive Form"
+    },
+    {
+      "url": "/generating",
+      "page": "GeneratingPage",
+      "componentFile": "frontend/src/pages/GeneratingPage.tsx",
+      "title": "AI Generating Pipeline",
+      "mode": "Progress Feedback"
+    },
+    {
+      "url": "/trip",
+      "page": "ItineraryOverviewPage",
+      "componentFile": "frontend/src/pages/ItineraryOverviewPage.tsx",
+      "title": "Itinerary Overview Dashboard",
+      "mode": "Roadmap"
+    },
+    {
+      "url": "/trip/day/:dayId",
+      "page": "DayDetailPage",
+      "componentFile": "frontend/src/pages/DayDetailPage.tsx",
+      "title": "Day Detail Timeline",
+      "mode": "Execution & Plan B"
+    },
+    {
+      "url": "/weather",
+      "page": "WeatherPage",
+      "componentFile": "frontend/src/pages/WeatherPage.tsx",
+      "title": "Live Weather Intelligence",
+      "mode": "Open-Meteo & Radar"
+    },
+    {
+      "url": "/map",
+      "page": "MapPage",
+      "componentFile": "frontend/src/pages/MapPage.tsx",
+      "title": "Route & Navigation Canvas",
+      "mode": "Schematic SVG"
+    },
+    {
+      "url": "/replan",
+      "page": "ReplanningPage",
+      "componentFile": "frontend/src/pages/ReplanningPage.tsx",
+      "title": "Adaptive Replanning",
+      "mode": "Disruption Input"
+    },
+    {
+      "url": "/review-plan",
+      "page": "ReviewPlanPage",
+      "componentFile": "frontend/src/pages/ReviewPlanPage.tsx",
+      "title": "Updated Plan Review & Diff",
+      "mode": "Diff Approval"
+    },
+    {
+      "url": "/alerts",
+      "page": "AlertsPage",
+      "componentFile": "frontend/src/pages/AlertsPage.tsx",
+      "title": "Travel Alerts & Sentinel Center",
+      "mode": "Feed & Triggers"
+    },
+    {
+      "url": "/profile",
+      "page": "ProfilePage",
+      "componentFile": "frontend/src/pages/ProfilePage.tsx",
+      "title": "User Profile & Preferences",
+      "mode": "Account & Theme"
+    }
+  ],
+  "apiEndpoints": [
+    {
+      "method": "GET",
+      "url": "/api/health",
+      "purpose": "API health check and diagnostics",
+      "status": "IMPLEMENTED"
+    },
+    {
+      "method": "POST",
+      "url": "/api/trips/generate",
+      "purpose": "Grounded AI itinerary synthesis via Gemini",
+      "status": "IMPLEMENTED"
+    },
+    {
+      "method": "POST",
+      "url": "/api/trips/replan",
+      "purpose": "AI adaptive schedule re-pacing and disruption recovery",
+      "status": "IMPLEMENTED"
+    },
+    {
+      "method": "GET",
+      "url": "/api/trips",
+      "purpose": "List all saved trips with day count metrics",
+      "status": "IMPLEMENTED"
+    },
+    {
+      "method": "POST",
+      "url": "/api/trips",
+      "purpose": "Save new trip with multi-day breakdown and activities",
+      "status": "IMPLEMENTED"
+    },
+    {
+      "method": "GET",
+      "url": "/api/trips/<id>",
+      "purpose": "Retrieve full trip details and daily schedules",
+      "status": "IMPLEMENTED"
+    },
+    {
+      "method": "PUT",
+      "url": "/api/trips/<id>",
+      "purpose": "Update trip config, visited check-offs, and Plan B swaps",
+      "status": "IMPLEMENTED"
+    },
+    {
+      "method": "DELETE",
+      "url": "/api/trips/<id>",
+      "purpose": "Cascade delete trip, days, and activities from database",
+      "status": "IMPLEMENTED"
+    },
+    {
+      "method": "GET",
+      "url": "/api/weather/<destination>",
+      "purpose": "Live atmospheric forecast and rain risk from Open-Meteo",
+      "status": "IMPLEMENTED"
+    },
+    {
+      "method": "GET",
+      "url": "/api/alerts",
+      "purpose": "Active travel alerts and environmental notices",
+      "status": "PARTIALLY SIMULATED"
+    }
+  ],
+  "databaseTables": [
+    {
+      "tableName": "trips",
+      "purpose": "Stores core trip metadata, dates, budgets, traveler types, and preferences",
+      "columns": [
+        "id",
+        "destination",
+        "start_date",
+        "end_date",
+        "budget_tier",
+        "travel_style",
+        "traveler_type",
+        "pace",
+        "weather_adaptive",
+        "tagline",
+        "destinations_json",
+        "interests_json",
+        "is_domestic",
+        "created_at"
+      ],
+      "primaryKey": "id",
+      "foreignKeys": []
+    },
+    {
+      "tableName": "trip_days",
+      "purpose": "Stores daily breakdown records, themes, dates, and day-level weather forecasts",
+      "columns": [
+        "id",
+        "trip_id",
+        "day_number",
+        "day_of_week",
+        "date_str",
+        "theme",
+        "weather_summary",
+        "temperature",
+        "rain_risk",
+        "weather_condition",
+        "weather_alert"
+      ],
+      "primaryKey": "id",
+      "foreignKeys": [
+        "trip_id -> trips.id (ON DELETE CASCADE)"
+      ]
+    },
+    {
+      "tableName": "activities",
+      "purpose": "Stores individual activity stops, time slots, costs, locations, visited flags, and Plan B JSON alternatives",
+      "columns": [
+        "id",
+        "day_id",
+        "activity_key",
+        "title",
+        "time_slot",
+        "period",
+        "duration",
+        "cost",
+        "cost_display",
+        "category",
+        "location",
+        "is_indoor",
+        "weather_risk",
+        "weather_risk_label",
+        "description",
+        "image_url",
+        "is_visited",
+        "is_locked",
+        "is_plan_b_alternative",
+        "has_plan_b_ready",
+        "plan_b_alternative_json"
+      ],
+      "primaryKey": "id",
+      "foreignKeys": [
+        "day_id -> trip_days.id (ON DELETE CASCADE)"
+      ]
+    },
+    {
+      "tableName": "alerts",
+      "purpose": "Stores environmental and schedule notifications linked to trips",
+      "columns": [
+        "id",
+        "trip_id",
+        "alert_type",
+        "title",
+        "message",
+        "severity",
+        "is_read",
+        "created_at"
+      ],
+      "primaryKey": "id",
+      "foreignKeys": [
+        "trip_id -> trips.id (ON DELETE CASCADE)"
+      ]
+    }
+  ],
+  "environmentVariables": [
+    {
+      "name": "FLASK_APP",
+      "description": "Entry point for Flask application",
+      "default": "backend/run.py"
+    },
+    {
+      "name": "FLASK_DEBUG",
+      "description": "Enables Flask debug mode and hot reloading",
+      "default": "True"
+    },
+    {
+      "name": "PORT",
+      "description": "Local HTTP port for Flask backend server",
+      "default": "5000"
+    },
+    {
+      "name": "HOST",
+      "description": "Local bind host address",
+      "default": "127.0.0.1"
+    },
+    {
+      "name": "SECRET_KEY",
+      "description": "Flask session encryption secret",
+      "default": "roamwise-dev-secret-key"
+    },
+    {
+      "name": "DATABASE_PATH",
+      "description": "Absolute or relative path to SQLite database file",
+      "default": "backend/roamwise.db"
+    },
+    {
+      "name": "GEMINI_API_KEY",
+      "description": "Google AI Studio API key for Gemini 2.5/3.5 models",
+      "default": ""
+    },
+    {
+      "name": "GEMINI_MODEL",
+      "description": "Model identifier for Google GenAI SDK",
+      "default": "gemini-3.5-flash-lite"
+    },
+    {
+      "name": "WEATHER_PROVIDER",
+      "description": "External atmospheric weather provider",
+      "default": "open-meteo"
+    }
+  ],
+  "externalProviders": {
+    "ai": {
+      "provider": "Google DeepMind / Google AI Studio",
+      "sdk": "google-genai",
+      "model": "gemini-3.5-flash-lite",
+      "temperature": 0.6,
+      "timeoutSeconds": 15.0
+    },
+    "weather": {
+      "provider": "Open-Meteo Forecast & Geocoding APIs",
+      "endpoints": [
+        "https://api.open-meteo.com/v1/forecast",
+        "https://geocoding-api.open-meteo.com/v1/search"
+      ],
+      "attribution": "Weather data by Open-Meteo.com (CC-BY 4.0)",
+      "timeoutSeconds": 2.5
+    },
+    "poiDiscovery": {
+      "tier1": "Curated Local Landmark Registry (14 major global hubs)",
+      "tier2": "OpenStreetMap Overpass API (https://overpass-api.de/api/interpreter)",
+      "timeoutSeconds": 3.5
+    },
+    "maps": {
+      "rendering": "Internal SVG Canvas Schematic",
+      "externalNavigation": "Google Maps Search and Direction URL Handlers"
+    }
+  },
+  "testInventory": [
+    {
+      "file": "backend/test_master_e2e.py",
+      "suite": "Master End-to-End Test Suite",
+      "testsCount": 11,
+      "status": "PASSED (11/11)",
+      "databaseUsed": "Isolated test_master.db"
+    },
+    {
+      "file": "backend/test_backend.py",
+      "suite": "Backend Unit & API Test Suite",
+      "testsCount": 4,
+      "status": "PASSED",
+      "databaseUsed": "Isolated test_roamwise.db"
+    },
+    {
+      "file": "frontend (tsc && vite build)",
+      "suite": "TypeScript Type-Check & Production Build",
+      "status": "PASSED (0 errors, 7.97s)",
+      "output": "dist/assets/ (index.js, index.css)"
+    }
+  ],
+  "knownDefects": [
+    {
+      "id": "BUG-01",
+      "severity": "HIGH",
+      "component": "GeneratingPage.tsx",
+      "title": "Asynchronous AI generation race condition with fixed 4.1s timer"
+    },
+    {
+      "id": "BUG-02",
+      "severity": "MEDIUM",
+      "component": "AlertsPage.tsx / WeatherPage.tsx",
+      "title": "Hardcoded Plan B parameters (2, 'act-2-3') on secondary pages"
+    },
+    {
+      "id": "BUG-03",
+      "severity": "MEDIUM",
+      "component": "alerts.py",
+      "title": "Hardcoded Kyoto mock alerts returned from backend alerts route"
+    },
+    {
+      "id": "BUG-04",
+      "severity": "LOW",
+      "component": "ProfilePage.tsx",
+      "title": "Hardcoded dates string ('Nov 14 – 18, 2026') in Profile Settings"
+    },
+    {
+      "id": "BUG-05",
+      "severity": "MEDIUM",
+      "component": "MapView.tsx",
+      "title": "Schematic SVG map pins not using calibrated geocoded projection"
+    },
+    {
+      "id": "BUG-06",
+      "severity": "HIGH",
+      "component": "routes/trips.py",
+      "title": "Unauthenticated API endpoints and single-tenant database namespace"
+    },
+    {
+      "id": "BUG-07",
+      "severity": "MEDIUM",
+      "component": "itineraryGenerator.ts",
+      "title": "Generic synthesized landmark names for uncatalogued cities in fallback"
+    },
+    {
+      "id": "BUG-08",
+      "severity": "LOW",
+      "component": "ItineraryOverviewPage.tsx",
+      "title": "Total budget calculated via heuristic multiplier rather than summed costs"
+    },
+    {
+      "id": "BUG-09",
+      "severity": "LOW",
+      "component": "ReviewPlanPage.tsx",
+      "title": "Direct navigation defaults to hardcoded Jaipur diff items"
+    },
+    {
+      "id": "BUG-10",
+      "severity": "LOW",
+      "component": "WeatherPage.tsx",
+      "title": "Static AQI metric (95 Satisfactory) displayed for dynamic cities"
+    }
+  ],
+  "deploymentReadiness": {
+    "localWeb": "READY (Node.js 18+ and Python 3.12+ required)",
+    "cloudWeb": "PARTIALLY READY (Static frontend ready for Vercel/Netlify; backend requires persistent disk or PostgreSQL)",
+    "androidApk": "NOT IMPLEMENTED (Capacitor/Cordova wrapper not installed; no Android project)"
+  }
+}
