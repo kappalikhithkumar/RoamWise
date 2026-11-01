@@ -26,10 +26,114 @@ from typing import Optional
 logger = logging.getLogger(__name__)
 
 # ---------------------------------------------------------------------------
-# Overpass configuration
+# Overpass & Wikipedia configuration
 # ---------------------------------------------------------------------------
-OVERPASS_ENDPOINT = "https://overpass-api.de/api/interpreter"
+OVERPASS_MIRRORS = [
+    "https://overpass-api.de/api/interpreter",
+    "https://overpass.kumi.systems/api/interpreter",
+]
+OVERPASS_ENDPOINT = OVERPASS_MIRRORS[0]
 OVERPASS_TIMEOUT_SECONDS = 8  # Tight budget — must not stall itinerary generation
+POI_CACHE_TTL_SECONDS = 30 * 86400  # 30-day TTL for SQLite persistent cache
+
+def _get_db_path() -> str:
+    """Resolve database path for SQLite persistent POI cache."""
+    try:
+        from flask import current_app
+        if current_app and current_app.config.get("DATABASE_PATH"):
+            return current_app.config["DATABASE_PATH"]
+    except Exception:
+        pass
+    import os
+    from pathlib import Path
+    base_dir = Path(__file__).resolve().parent.parent.parent
+    return os.getenv("DATABASE_PATH", str(base_dir / "roamwise.db"))
+
+def _ensure_poi_cache_table(conn):
+    """Ensure SQLite table poi_cache exists with expected schema."""
+    conn.execute("""
+        CREATE TABLE IF NOT EXISTS poi_cache (
+            destination_key TEXT PRIMARY KEY,
+            json TEXT NOT NULL,
+            fetched_at REAL NOT NULL
+        )
+    """)
+    conn.commit()
+
+def get_cached_pois_from_db(destination_key: str, db_path: Optional[str] = None) -> Optional[dict]:
+    """Retrieve cached POIs from SQLite poi_cache if present and within 30-day TTL."""
+    import sqlite3
+    import time
+    try:
+        path = db_path or _get_db_path()
+        conn = sqlite3.connect(path)
+        conn.row_factory = sqlite3.Row
+        _ensure_poi_cache_table(conn)
+        row = conn.execute(
+            "SELECT json, fetched_at FROM poi_cache WHERE destination_key = ?",
+            (destination_key.lower().strip(),)
+        ).fetchone()
+        conn.close()
+        if row:
+            fetched_at = float(row["fetched_at"])
+            if time.time() - fetched_at < POI_CACHE_TTL_SECONDS:
+                return json.loads(row["json"])
+    except Exception as e:
+        logger.warning(f"[POI Cache] Error reading cache for {destination_key}: {e}")
+    return None
+
+def save_cached_pois_to_db(destination_key: str, data: dict, db_path: Optional[str] = None) -> None:
+    """Save POIs to SQLite poi_cache table."""
+    import sqlite3
+    import time
+    try:
+        path = db_path or _get_db_path()
+        conn = sqlite3.connect(path)
+        _ensure_poi_cache_table(conn)
+        conn.execute(
+            "INSERT OR REPLACE INTO poi_cache (destination_key, json, fetched_at) VALUES (?, ?, ?)",
+            (destination_key.lower().strip(), json.dumps(data), time.time())
+        )
+        conn.commit()
+        conn.close()
+    except Exception as e:
+        logger.warning(f"[POI Cache] Error writing cache for {destination_key}: {e}")
+
+def _fetch_wikipedia_geosearch(lat: float, lon: float, limit: int = 50, radius: int = 10000) -> list[dict]:
+    """Query Wikipedia GeoSearch API around coordinates."""
+    params = urllib.parse.urlencode({
+        "action": "query",
+        "list": "geosearch",
+        "gscoord": f"{lat}|{lon}",
+        "gsradius": str(radius),
+        "gslimit": str(limit),
+        "format": "json"
+    })
+    url = f"https://en.wikipedia.org/w/api.php?{params}"
+    req = urllib.request.Request(
+        url,
+        headers={"User-Agent": "RoamWise-AI-Planner/2.0 (travel app; contact@roamwise.ai)"}
+    )
+    with urllib.request.urlopen(req, timeout=10) as resp:
+        data = json.loads(resp.read().decode())
+    return data.get("query", {}).get("geosearch", [])
+
+def _derive_wiki_category(title: str) -> str:
+    """Categorize a Wikipedia article title into a standardized POI category."""
+    t = title.lower()
+    if any(k in t for k in ("museum", "gallery", "exhibition")):
+        return "Museum"
+    if any(k in t for k in ("palace", "mahal", "haveli")):
+        return "Palace"
+    if any(k in t for k in ("fort", "castle", "citadel", "garh", "durg")):
+        return "Fort"
+    if any(k in t for k in ("temple", "mandir", "mosque", "masjid", "church", "cathedral", "gurdwara", "dargah", "ashram")):
+        return "Spiritual / Temple"
+    if any(k in t for k in ("garden", "park", "lake", "falls", "waterfall", "beach", "sanctuary", "reserve", "forest", "hills", "valley")):
+        return "Nature & Outdoors"
+    if any(k in t for k in ("monument", "memorial", "tomb", "stupa", "pillar", "gate", "ghat")):
+        return "Monument"
+    return "Attraction"
 
 # ---------------------------------------------------------------------------
 # Geocoding bounding boxes for well-known cities (lat_min, lon_min, lat_max, lon_max)
@@ -70,6 +174,13 @@ CITY_BBOXES: dict[str, tuple[float, float, float, float]] = {
     "araku valley": (18.30, 82.85, 18.40, 82.95),
     "kodaikanal": (10.23, 77.47, 10.27, 77.51),
     "darjeeling": (27.03, 88.25, 27.07, 88.30),
+    "tirupati": (13.58, 79.35, 13.68, 79.48),
+    "kadapa": (14.42, 78.78, 14.52, 78.88),
+    "pune": (18.45, 73.78, 18.60, 73.95),
+    "shimla": (31.05, 77.12, 31.15, 77.22),
+    "mahabalipuram": (12.60, 80.17, 12.65, 80.22),
+    "pushkar": (26.46, 74.52, 26.52, 74.58),
+    "puducherry": (11.90, 79.78, 12.00, 79.85),
 }
 
 # Category priority used in display + Plan B logic
@@ -190,20 +301,29 @@ def _extract_pois(elements: list[dict]) -> list[dict]:
 
 class POIService:
     """
-    Two-tier POI discovery service.
+    Multi-tier resilient POI discovery service for Indian destinations.
 
-    Tier 1 (Live): Queries OpenStreetMap Overpass API for real named attractions with
-                   verified coordinates. Results are disclosed as `source: openstreetmap`.
+    Tier 1 (Persistent Cache): Checks SQLite `poi_cache` table (30-day TTL) before
+                                making any network call.
+    Tier 2 (OpenStreetMap): Queries Overpass API across two mirrors (overpass-api.de,
+                             then overpass.kumi.systems) with 2 attempts each and backoff.
+    Tier 3 (Wikipedia GeoSearch): If Overpass fails, queries Wikipedia GeoSearch API
+                                  around resolved coordinates (source: wikipedia).
+    Tier 4 (Curated Fallback): Curated landmark database for offline reliability.
 
-    Tier 2 (Fallback): Returns from a curated, hand-verified dictionary of landmarks
-                        per supported city. Results are disclosed as `source: curated`.
-
-    If neither tier can produce results, returns an empty list with a disclosure message
-    rather than inventing attraction names.
+    Discloses provenance honestly (openstreetmap, wikipedia, curated, or none).
     """
 
-    def __init__(self):
+    def __init__(
+        self,
+        db_path: Optional[str] = None,
+        overpass_fetcher=None,
+        wikipedia_fetcher=None,
+    ):
+        self.db_path = db_path
         self._cache: dict[str, tuple[float, dict]] = {}
+        self.overpass_fetcher = overpass_fetcher
+        self.wikipedia_fetcher = wikipedia_fetcher or _fetch_wikipedia_geosearch
 
     def get_pois(
         self,
@@ -213,12 +333,12 @@ class POIService:
         prefer_live: bool = False,
     ) -> dict:
         """
-        Retrieve POIs for a destination.
+        Retrieve POIs for an Indian destination.
 
         Returns:
             {
                 "pois": [...],
-                "source": "curated" | "openstreetmap" | "none",
+                "source": "openstreetmap" | "wikipedia" | "curated" | "none",
                 "sourceDisclosure": str,
                 "destination": str,
             }
@@ -238,102 +358,140 @@ class POIService:
 
         canonical_name = res.destination.name
         canonical_key = canonical_name.lower().strip()
+        lat = float(res.destination.lat)
+        lon = float(res.destination.lon)
         now = time.time()
 
-        # ── 24h in-memory cache keyed by canonical destination ───────────
-        cache_key = f"{canonical_key}:{'live' if prefer_live else 'default'}"
-        cached_entry = None
-        if cache_key in self._cache:
-            cached_time, cached_data = self._cache[cache_key]
-            if now - cached_time < 86400:  # 24 hours
-                cached_entry = cached_data
-        elif not prefer_live and canonical_key in self._cache:
-            cached_time, cached_data = self._cache[canonical_key]
-            if now - cached_time < 86400:
-                cached_entry = cached_data
+        # ── 1. CHECK PERSISTENT SQLITE CACHE BEFORE ANY NETWORK CALL ──
+        cached_data = None
+        if canonical_key in self._cache:
+            c_time, c_data = self._cache[canonical_key]
+            if now - c_time < POI_CACHE_TTL_SECONDS:
+                cached_data = c_data
 
-        if cached_entry:
-            raw_pois = cached_entry["pois"]
-            source = cached_entry["source"]
-            disclosure = cached_entry["sourceDisclosure"]
+        if not cached_data:
+            db_cached = get_cached_pois_from_db(canonical_key, db_path=self.db_path)
+            if db_cached:
+                cached_data = db_cached
+                self._cache[canonical_key] = (now, db_cached)
+
+        if cached_data:
+            raw_pois = cached_data.get("pois", [])
+            source = cached_data.get("source", "none")
+            disclosure = cached_data.get("sourceDisclosure", "")
         else:
             raw_pois = []
             source = "none"
             disclosure = ""
 
-            # ── Tier 1: Check curated verified database first (sub-millisecond, highly reliable) ──
-            if not prefer_live:
-                curated = _get_curated_pois(destination)
-                if curated:
-                    raw_pois = list(curated)
-                    source = "curated"
-                    disclosure = (
-                        f"Attractions sourced from verified landmark database for {destination}. "
-                        "Recognized heritage sites, museums, and natural landmarks with real coordinates."
-                    )
-                    logger.info(f"[POI] Using curated database: {len(raw_pois)} POIs for '{destination}'")
+            # ── 2. OVERPASS API: TRY 2 MIRRORS IN ORDER WITH 2 ATTEMPTS EACH ──
+            bbox = _resolve_bbox(destination)
+            if bbox:
+                query = _build_overpass_query(bbox, limit=120)
+                client_timeout = OVERPASS_TIMEOUT_SECONDS + 3
 
-            # ── Tier 2: OpenStreetMap Overpass API (for uncataloged destinations or when live requested) ──
-            if not raw_pois:
-                bbox = _resolve_bbox(destination)
-                if bbox:
-                    try:
-                        # Query about 120 elements as specified
-                        query = _build_overpass_query(bbox, limit=120)
-                        encoded = urllib.parse.quote(query)
-                        url = f"{OVERPASS_ENDPOINT}?data={encoded}"
-                        req = urllib.request.Request(
-                            url,
-                            headers={"User-Agent": "RoamWise-AI-Planner/2.0 (travel app; contact@roamwise.ai)"}
-                        )
-                        # Client timeout set to server timeout + 3s (8s + 3s = 11s)
-                        client_timeout = OVERPASS_TIMEOUT_SECONDS + 3
-                        with urllib.request.urlopen(req, timeout=client_timeout) as resp:
-                            data = json.loads(resp.read().decode())
-                        elements = data.get("elements", [])
-                        raw_pois = _extract_pois(elements)
-                        if raw_pois:
-                            source = "openstreetmap"
-                            disclosure = (
-                                f"Attractions sourced live from OpenStreetMap contributors for {destination}. "
-                                "Names, coordinates, and categories are community-verified data."
+                for mirror in OVERPASS_MIRRORS:
+                    for attempt in range(2):
+                        try:
+                            if self.overpass_fetcher:
+                                elements = self.overpass_fetcher(mirror, bbox)
+                            else:
+                                encoded = urllib.parse.quote(query)
+                                url = f"{mirror}?data={encoded}"
+                                req = urllib.request.Request(
+                                    url,
+                                    headers={"User-Agent": "RoamWise-AI-Planner/2.0 (travel app; contact@roamwise.ai)"}
+                                )
+                                with urllib.request.urlopen(req, timeout=client_timeout) as resp:
+                                    data = json.loads(resp.read().decode())
+                                elements = data.get("elements", [])
+
+                            if elements:
+                                extracted = _extract_pois(elements)
+                                if extracted:
+                                    raw_pois = extracted
+                                    source = "openstreetmap"
+                                    disclosure = (
+                                        f"Attractions sourced live from OpenStreetMap contributors for {canonical_name}. "
+                                        "Names, coordinates, and categories are community-verified data."
+                                    )
+                                    logger.info(
+                                        f"[POI] Overpass mirror '{mirror}' returned {len(raw_pois)} POIs for '{canonical_name}'"
+                                    )
+                                    break
+                        except Exception as e:
+                            logger.warning(
+                                f"[POI] Overpass mirror '{mirror}' attempt {attempt + 1} failed for '{canonical_name}': {e}"
                             )
-                            logger.info(f"[POI] Overpass returned {len(raw_pois)} POIs for '{destination}'")
-                    except Exception as e:
-                        logger.warning(f"[POI] Overpass API unavailable for '{destination}': {e}")
+                            if attempt == 0:
+                                time.sleep(1.0)
+                    if raw_pois:
+                        break
 
-            # ── Tier 3: Secondary check of curated if prefer_live was true but Overpass failed ──
-            if not raw_pois and prefer_live:
+            # ── 3. WIKIPEDIA GEOSEARCH FALLBACK (radius 10000 m, limit 50) ──
+            if not raw_pois:
+                try:
+                    fetcher = self.wikipedia_fetcher or _fetch_wikipedia_geosearch
+                    wiki_items = fetcher(lat, lon, limit=50, radius=10000)
+                    wiki_pois = []
+                    seen_titles = set()
+                    for it in wiki_items:
+                        title = it.get("title", "").strip()
+                        if not title or title.lower() in seen_titles:
+                            continue
+                        seen_titles.add(title.lower())
+                        w_lat = it.get("lat")
+                        w_lon = it.get("lon")
+                        wiki_pois.append({
+                            "name": title,
+                            "lat": float(w_lat) if w_lat is not None else None,
+                            "lon": float(w_lon) if w_lon is not None else None,
+                            "category": _derive_wiki_category(title),
+                            "tags": {"wikipedia": title},
+                            "source": "wikipedia",
+                        })
+                    if wiki_pois:
+                        raw_pois = wiki_pois
+                        source = "wikipedia"
+                        disclosure = (
+                            f"Attractions sourced from Wikipedia GeoSearch for {canonical_name}. "
+                            "Geographic landmarks verified via Wikipedia coordinates."
+                        )
+                        logger.info(
+                            f"[POI] Wikipedia GeoSearch returned {len(raw_pois)} POIs for '{canonical_name}'"
+                        )
+                except Exception as e:
+                    logger.warning(f"[POI] Wikipedia GeoSearch fallback failed for '{canonical_name}': {e}")
+
+            # ── 4. CURATED LOCAL DATABASE FALLBACK ──
+            if not raw_pois:
                 curated = _get_curated_pois(destination)
                 if curated:
                     raw_pois = list(curated)
                     source = "curated"
                     disclosure = (
-                        f"Attractions sourced from verified landmark database for {destination} (Overpass live fallback)."
+                        f"Attractions sourced from verified landmark database for {canonical_name}."
                     )
+                    logger.info(f"[POI] Using curated database: {len(raw_pois)} POIs for '{canonical_name}'")
 
-            # ── Tier 4: No external POIs found ────────────────────────────────
+            # ── 5. NO POIs FOUND ──
             if not raw_pois:
                 source = "none"
                 disclosure = (
-                    f"No external verified POI database match found for '{destination}'. "
-                    "Gemini AI will synthesize recommendations using its parametric travel knowledge. "
-                    "Please verify opening hours independently before travel."
+                    f"No external verified POI database match found for '{canonical_name}'. "
+                    "Places not verified against map data. Please double-check before travel."
                 )
-                logger.info(f"[POI] No POIs found for '{destination}' — falling back to model knowledge")
+                logger.info(f"[POI] No POIs found for '{canonical_name}'")
 
-            # Store in 24h in-memory cache keyed by canonical destination
-            self._cache[cache_key] = (now, {
+            # ── 6. PERSIST TO SQLITE POI_CACHE (30-day TTL) & MEMORY ──
+            cache_payload = {
                 "pois": raw_pois,
                 "source": source,
                 "sourceDisclosure": disclosure,
-            })
-            if canonical_key not in self._cache:
-                self._cache[canonical_key] = (now, {
-                    "pois": raw_pois,
-                    "source": source,
-                    "sourceDisclosure": disclosure,
-                })
+            }
+            if raw_pois:
+                save_cached_pois_to_db(canonical_key, cache_payload, db_path=self.db_path)
+            self._cache[canonical_key] = (now, cache_payload)
 
         # Filter by interests if provided
         if interests and raw_pois:
@@ -623,6 +781,112 @@ _CURATED_DB: dict[str, list[dict]] = {
         _curated_landmark("Haji Ali Dargah", "Worli, Mumbai", "Attraction", 18.9824, 72.8091,
                           {"tourism": "attraction", "wikipedia": "en:Haji Ali Dargah"}),
     ],
+
+    # ── Tirupati ─────────────────────────────────────────────────────────
+    "tirupati": [
+        _curated_landmark("Sri Venkateswara Swamy Temple", "Tirumala Hills, Tirupati", "Temple", 13.6833, 79.3472,
+                          {"tourism": "attraction", "wikipedia": "en:Venkateswara Temple, Tirumala"}),
+        _curated_landmark("Sri Govindaraja Swamy Temple", "Tirupati", "Temple", 13.6300, 79.4180,
+                          {"tourism": "attraction", "wikipedia": "en:Govindaraja Temple, Tirupati"}),
+        _curated_landmark("Sri Padmavathi Ammavari Temple", "Tiruchanur, Tirupati", "Temple", 13.6111, 79.4503,
+                          {"tourism": "attraction", "wikipedia": "en:Padmavathi Temple"}),
+        _curated_landmark("Kapila Theertham & Waterfall", "Alipiri, Tirupati", "Temple", 13.6548, 79.4216,
+                          {"tourism": "attraction", "wikipedia": "en:Kapila Theertham"}),
+        _curated_landmark("Chandragiri Fort & Raja Mahal", "Chandragiri, Tirupati District", "Fort/Castle", 13.5833, 79.3167,
+                          {"historic": "fort", "wikipedia": "en:Chandragiri, Andhra Pradesh"}),
+        _curated_landmark("Silathoranam (Natural Rock Arch)", "Tirumala Hills, Tirupati", "Monument", 13.6917, 79.3517,
+                          {"tourism": "attraction", "wikipedia": "en:Silathoranam"}),
+        _curated_landmark("Sri Venkateswara Zoological Park", "Pudipatla, Tirupati", "Zoo", 13.6067, 79.3800,
+                          {"tourism": "zoo", "wikipedia": "en:Sri Venkateswara Zoological Park"}),
+    ],
+
+    # ── Kadapa ───────────────────────────────────────────────────────────
+    "kadapa": [
+        _curated_landmark("Gandikota Fort & Canyon Overlook", "Gandikota, Kadapa District", "Fort/Castle", 14.8150, 78.2861,
+                          {"historic": "fort", "wikipedia": "en:Gandikota"}),
+        _curated_landmark("Ameen Peer Dargah", "Pedda Dargah, Kadapa", "Attraction", 14.4756, 78.8267,
+                          {"tourism": "attraction", "wikipedia": "en:Ameen Peer Dargah"}),
+        _curated_landmark("Vontimitta Sri Kodandarama Swamy Temple", "Vontimitta, Kadapa District", "Temple", 14.3944, 79.0306,
+                          {"tourism": "attraction", "wikipedia": "en:Kodandarama Temple, Vontimitta"}),
+        _curated_landmark("Pushpagiri Temple Complex", "Pushpagiri, Kadapa District", "Temple", 14.5958, 78.7561,
+                          {"tourism": "attraction", "wikipedia": "en:Pushpagiri, Andhra Pradesh"}),
+        _curated_landmark("Sri Lakshmi Venkateswara Swamy Temple", "Devuni Kadapa", "Temple", 14.4842, 78.8522,
+                          {"tourism": "attraction", "wikipedia": "en:Devuni Kadapa"}),
+        _curated_landmark("Bhagavan Mahaveer Government Museum", "Kadapa", "Museum", 14.4722, 78.8250,
+                          {"tourism": "museum"}),
+    ],
+
+    # ── Pune ─────────────────────────────────────────────────────────────
+    "pune": [
+        _curated_landmark("Shaniwar Wada", "Bajirao Road, Shaniwar Peth, Pune", "Fort/Castle", 18.5196, 73.8553,
+                          {"historic": "fort", "wikipedia": "en:Shaniwar Wada"}),
+        _curated_landmark("Aga Khan Palace", "Nagar Road, Kalyani Nagar, Pune", "Palace", 18.5524, 73.9015,
+                          {"historic": "palace", "wikipedia": "en:Aga Khan Palace"}),
+        _curated_landmark("Sinhagad Fort", "Sinhagad Ghat Road, Pune", "Fort/Castle", 18.3663, 73.7558,
+                          {"historic": "fort", "wikipedia": "en:Sinhagad"}),
+        _curated_landmark("Dagdusheth Halwai Ganpati Temple", "Budhwar Peth, Pune", "Temple", 18.5165, 73.8560,
+                          {"tourism": "attraction", "wikipedia": "en:Dagdusheth Halwai Ganapati Temple"}),
+        _curated_landmark("Raja Dinkar Kelkar Museum", "Shukrawar Peth, Pune", "Museum", 18.5108, 73.8542,
+                          {"tourism": "museum", "wikipedia": "en:Raja Dinkar Kelkar Museum"}),
+        _curated_landmark("Pataleshwar Cave Temple", "Jangali Maharaj Road, Pune", "Heritage Ruins", 18.5283, 73.8505,
+                          {"historic": "archaeological_site", "wikipedia": "en:Pataleshwar"}),
+    ],
+
+    # ── Shimla ───────────────────────────────────────────────────────────
+    "shimla": [
+        _curated_landmark("The Ridge & Christ Church", "The Ridge, Shimla", "Attraction", 31.1048, 77.1734,
+                          {"tourism": "attraction", "wikipedia": "en:Christ Church, Shimla"}),
+        _curated_landmark("Mall Road Promenade", "Mall Road, Shimla", "Attraction", 31.1030, 77.1720,
+                          {"tourism": "attraction", "wikipedia": "en:Mall Road, Shimla"}),
+        _curated_landmark("Jakhoo Temple & Giant Hanuman Statue", "Jakhoo Hill, Shimla", "Temple", 31.1009, 77.1850,
+                          {"tourism": "attraction", "wikipedia": "en:Jakhoo"}),
+        _curated_landmark("Rashtrapati Niwas (Viceregal Lodge)", "Observatory Hill, Shimla", "Palace", 31.1042, 77.1417,
+                          {"historic": "palace", "wikipedia": "en:Rashtrapati Niwas"}),
+        _curated_landmark("Kalka-Shimla Heritage Railway View", "Shimla Station", "Attraction", 31.1036, 77.1647,
+                          {"tourism": "attraction", "wikipedia": "en:Kalka–Shimla railway"}),
+    ],
+
+    # ── Mahabalipuram ─────────────────────────────────────────────────────
+    "mahabalipuram": [
+        _curated_landmark("Shore Temple", "Shore Temple Road, Mahabalipuram", "Heritage Ruins", 12.6164, 80.1994,
+                          {"historic": "archaeological_site", "wikipedia": "en:Shore Temple"}),
+        _curated_landmark("Pancha Rathas (Five Rathas)", "Mahabalipuram", "Heritage Ruins", 12.6094, 80.1931,
+                          {"historic": "archaeological_site", "wikipedia": "en:Pancha Rathas"}),
+        _curated_landmark("Arjuna's Penance (Descent of the Ganges)", "Mahabalipuram", "Monument", 12.6178, 80.1928,
+                          {"tourism": "attraction", "wikipedia": "en:Descent of the Ganges (relief)"}),
+        _curated_landmark("Krishna's Butter Ball", "Mahabalipuram", "Monument", 12.6186, 80.1925,
+                          {"tourism": "attraction", "wikipedia": "en:Krishna's Butterball"}),
+        _curated_landmark("Mahabalipuram Beach", "Mahabalipuram", "Attraction", 12.6150, 80.1980,
+                          {"tourism": "attraction"}),
+    ],
+
+    # ── Pushkar ──────────────────────────────────────────────────────────
+    "pushkar": [
+        _curated_landmark("Brahma Temple, Pushkar", "Pushkar", "Temple", 26.4889, 74.5517,
+                          {"tourism": "attraction", "wikipedia": "en:Brahma Temple, Pushkar"}),
+        _curated_landmark("Pushkar Lake & Sacred Ghats", "Pushkar", "Attraction", 26.4897, 74.5550,
+                          {"tourism": "attraction", "wikipedia": "en:Pushkar Lake"}),
+        _curated_landmark("Savitri Devi Temple (Ratnagiri Hill)", "Pushkar", "Temple", 26.4850, 74.5367,
+                          {"tourism": "viewpoint", "wikipedia": "en:Savitri Devi Temple, Pushkar"}),
+        _curated_landmark("Varaha Temple", "Pushkar", "Temple", 26.4900, 74.5540,
+                          {"tourism": "attraction", "wikipedia": "en:Varaha Temple, Pushkar"}),
+    ],
+
+    # ── Puducherry ───────────────────────────────────────────────────────
+    "puducherry": [
+        _curated_landmark("Promenade Beach (Rock Beach)", "White Town, Puducherry", "Attraction", 11.9338, 79.8358,
+                          {"tourism": "attraction", "wikipedia": "en:Promenade Beach"}),
+        _curated_landmark("Sri Aurobindo Ashram", "Rue de la Marine, Puducherry", "Attraction", 11.9369, 79.8344,
+                          {"tourism": "attraction", "wikipedia": "en:Sri Aurobindo Ashram"}),
+        _curated_landmark("Auroville Matrimandir & Peace Area", "Auroville, Puducherry", "Monument", 12.0070, 79.8107,
+                          {"tourism": "attraction", "wikipedia": "en:Matrimandir"}),
+        _curated_landmark("French War Memorial", "Goubert Avenue, Puducherry", "Monument", 11.9317, 79.8358,
+                          {"tourism": "attraction", "wikipedia": "en:French War Memorial (Puducherry)"}),
+        _curated_landmark("Arulmigu Manakula Vinayagar Temple", "Manakula Vinayagar Koil Street, Puducherry", "Temple", 11.9356, 79.8344,
+                          {"tourism": "attraction", "wikipedia": "en:Manakula Vinayagar Temple"}),
+        _curated_landmark("Paradise Beach (Chunnambar)", "Nonankuppam, Puducherry", "Attraction", 11.8722, 79.8056,
+                          {"tourism": "attraction"}),
+    ],
 }
 
 # Register aliases
@@ -635,6 +899,11 @@ _CURATED_DB["calcutta"] = _CURATED_DB.get("kolkata", [])
 _CURATED_DB["madras"] = _CURATED_DB.get("chennai", [])
 _CURATED_DB["cochin"] = _CURATED_DB.get("kochi", [])
 _CURATED_DB["banaras"] = _CURATED_DB.get("varanasi", [])
+_CURATED_DB["tirupathi"] = _CURATED_DB["tirupati"]
+_CURATED_DB["cuddapah"] = _CURATED_DB["kadapa"]
+_CURATED_DB["pondicherry"] = _CURATED_DB["puducherry"]
+_CURATED_DB["mamallapuram"] = _CURATED_DB["mahabalipuram"]
+_CURATED_DB["poona"] = _CURATED_DB["pune"]
 
 
 def _get_curated_pois(destination: str) -> list[dict]:

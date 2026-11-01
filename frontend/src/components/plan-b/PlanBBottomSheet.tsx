@@ -1,5 +1,6 @@
 import React from 'react';
 import { useTrip } from '../../context/TripContext';
+import { getCategoryGradientAndIcon } from '../../utils/categoryTheme';
 
 export const PlanBBottomSheet: React.FC = () => {
   const { state, closePlanB, applyPlanB } = useTrip();
@@ -77,8 +78,14 @@ export const PlanBBottomSheet: React.FC = () => {
               </div>
               <div className="flex items-center gap-3">
                 <div className="w-12 h-12 rounded-xl overflow-hidden shrink-0 bg-surface-container">
-                  {activity.imageUrl && (
+                  {activity.imageUrl ? (
                     <img src={activity.imageUrl} alt="" className="w-full h-full object-cover" />
+                  ) : (
+                    <div className={`w-full h-full bg-gradient-to-br ${getCategoryGradientAndIcon(activity.category).gradient} flex items-center justify-center text-white`}>
+                      <span className="material-symbols-outlined text-[20px] opacity-95">
+                        {getCategoryGradientAndIcon(activity.category).icon}
+                      </span>
+                    </div>
                   )}
                 </div>
                 <div className="flex flex-col min-w-0 flex-1">
@@ -116,8 +123,14 @@ export const PlanBBottomSheet: React.FC = () => {
                 </div>
                 <div className="flex items-center gap-3">
                   <div className="w-12 h-12 rounded-xl overflow-hidden shrink-0 bg-surface-container">
-                    {alt.imageUrl && (
+                    {alt.imageUrl ? (
                       <img src={alt.imageUrl} alt="" className="w-full h-full object-cover" />
+                    ) : (
+                      <div className={`w-full h-full bg-gradient-to-br ${getCategoryGradientAndIcon(alt.category).gradient} flex items-center justify-center text-white`}>
+                        <span className="material-symbols-outlined text-[20px] opacity-95">
+                          {getCategoryGradientAndIcon(alt.category).icon}
+                        </span>
+                      </div>
                     )}
                   </div>
                   <div className="flex flex-col min-w-0 flex-1">

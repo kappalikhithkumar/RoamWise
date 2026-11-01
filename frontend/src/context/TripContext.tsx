@@ -36,6 +36,8 @@ interface TripState {
   destinationError: string | null;
   generationSource: string | null;
   fallbackReason: string | null;
+  poiSource: string | null;
+  verification: string | null;
 }
 
 type TripAction =
@@ -69,6 +71,8 @@ type TripAction =
         days: DayItinerary[];
         generationSource: string;
         fallbackReason?: string | null;
+        poiSource?: string | null;
+        verification?: string | null;
       };
     }
   | { type: 'SET_PENDING_REPLAN'; payload: ReplanProposal }
@@ -120,7 +124,9 @@ const initialState: TripState = {
   generationError: null,
   destinationError: null,
   generationSource: null,
-  fallbackReason: null
+  fallbackReason: null,
+  poiSource: null,
+  verification: null
 };
 
 function tripReducer(state: TripState, action: TripAction): TripState {
@@ -163,6 +169,8 @@ function tripReducer(state: TripState, action: TripAction): TripState {
         activeDayNumber: 1,
         generationSource: action.payload.generationSource,
         fallbackReason: action.payload.fallbackReason || null,
+        poiSource: action.payload.poiSource ?? (action.payload.config.poiSource || null),
+        verification: action.payload.verification ?? (action.payload.config.verification || null),
         isGenerating: false,
         generationError: null,
         destinationError: null
@@ -182,7 +190,9 @@ function tripReducer(state: TripState, action: TripAction): TripState {
         generationError: null,
         destinationError: null,
         generationSource: null,
-        fallbackReason: null
+        fallbackReason: null,
+        poiSource: null,
+        verification: null
       };
 
     case 'HYDRATE_ACTIVE_TRIP':
@@ -193,6 +203,10 @@ function tripReducer(state: TripState, action: TripAction): TripState {
         days: action.payload.days,
         hasActiveTrip: true,
         activeDayNumber: 1,
+        generationSource: 'saved',
+        fallbackReason: null,
+        poiSource: action.payload.config.poiSource || null,
+        verification: action.payload.config.verification || null,
         isGenerating: false,
         generationError: null,
         destinationError: null
@@ -507,6 +521,8 @@ interface TripContextValue {
   destinationError: string | null;
   generationSource: string | null;
   fallbackReason: string | null;
+  poiSource: string | null;
+  verification: string | null;
   toggleActiveTrip: () => void;
   updateConfig: (config: TripConfig) => Promise<{ success: boolean; error?: string; status?: number }>;
   clearDestinationError: () => void;
@@ -598,7 +614,8 @@ export const TripProvider: React.FC<{ children: React.ReactNode }> = ({ children
           travelerType: fullTrip.travelerType,
           pace: fullTrip.pace,
           weatherAdaptive: fullTrip.weatherAdaptive,
-          tagline: fullTrip.tagline
+          tagline: fullTrip.tagline,
+          transitBetween: fullTrip.transitBetween
         };
         const loadedDays = fullTrip.days && fullTrip.days.length > 0
           ? fullTrip.days
@@ -690,7 +707,8 @@ export const TripProvider: React.FC<{ children: React.ReactNode }> = ({ children
                   travelerType: fullTrip.travelerType,
                   pace: fullTrip.pace,
                   weatherAdaptive: fullTrip.weatherAdaptive,
-                  tagline: fullTrip.tagline
+                  tagline: fullTrip.tagline,
+                  transitBetween: fullTrip.transitBetween
                 };
                 dispatch({
                   type: 'HYDRATE_ACTIVE_TRIP',
@@ -759,6 +777,7 @@ export const TripProvider: React.FC<{ children: React.ReactNode }> = ({ children
       let finalTagline = config.tagline;
       let genSource = 'ai';
       let fbReason: string | undefined = undefined;
+      let finalConfig: TripConfig = { ...config };
 
       // Try AI itinerary generation if online
       if (stateRef.current.isBackendOnline) {
@@ -768,13 +787,23 @@ export const TripProvider: React.FC<{ children: React.ReactNode }> = ({ children
           if (genRes.tagline) finalTagline = genRes.tagline;
           genSource = genRes.generationSource || 'ai';
           fbReason = genRes.fallbackReason;
+
+          finalConfig = {
+            ...config,
+            tagline: finalTagline,
+            destination: genRes.destination || config.destination,
+            destinations: genRes.destinations || config.destinations,
+            transitBetween: genRes.transitBetween || config.transitBetween,
+            poiSource: genRes.poiSource || config.poiSource,
+            verification: genRes.verification || config.verification
+          };
         } else {
           throw new Error('Itinerary generation returned no scheduled activities.');
         }
 
         // Persist to backend database
         try {
-          const res = await apiService.createTrip({ ...config, tagline: finalTagline, days: finalDays });
+          const res = await apiService.createTrip({ ...finalConfig, days: finalDays });
           if (res && res.tripId) {
             dispatch({ type: 'SET_BACKEND_TRIP_ID', payload: res.tripId });
             localStorage.setItem('roamwise_active_backend_id', res.tripId.toString());
@@ -788,15 +817,18 @@ export const TripProvider: React.FC<{ children: React.ReactNode }> = ({ children
         finalDays = generateDeterministicItinerary(config);
         genSource = 'deterministic-fallback';
         fbReason = 'RoamWise server offline. Generated standard fallback itinerary.';
+        finalConfig = { ...config, tagline: finalTagline };
       }
 
       dispatch({
         type: 'SET_GENERATION_SUCCESS',
         payload: {
-          config: { ...config, tagline: finalTagline },
+          config: finalConfig,
           days: finalDays,
           generationSource: genSource,
-          fallbackReason: fbReason
+          fallbackReason: fbReason,
+          poiSource: finalConfig.poiSource,
+          verification: finalConfig.verification
         }
       });
 
@@ -993,6 +1025,8 @@ export const TripProvider: React.FC<{ children: React.ReactNode }> = ({ children
         destinationError: state.destinationError,
         generationSource: state.generationSource,
         fallbackReason: state.fallbackReason,
+        poiSource: state.poiSource,
+        verification: state.verification,
         toggleActiveTrip,
         updateConfig,
         clearDestinationError,

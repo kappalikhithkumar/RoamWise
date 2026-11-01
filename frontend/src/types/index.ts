@@ -41,6 +41,22 @@ export type InterestType =
   | 'Shopping'
   | 'Relaxation';
 
+export interface DayDestination {
+  name: string;
+  state: string;
+  lat: number;
+  lon: number;
+}
+
+export interface TransitEntry {
+  from: string;
+  to: string;
+  straightLineKm: number;
+  approxRoadKm: number;
+  label: string; // e.g. "approx"
+  warning?: string;
+}
+
 export interface TripConfig {
   destination: string;
   destinations?: string[];
@@ -53,6 +69,9 @@ export interface TripConfig {
   pace: TravelPace;
   weatherAdaptive: boolean;
   tagline?: string;
+  transitBetween?: TransitEntry[];
+  poiSource?: string;
+  verification?: string;
 }
 
 export interface Activity {
@@ -106,6 +125,7 @@ export interface DayItinerary {
   weatherCondition: 'sunny' | 'partly_cloudy' | 'rainy' | 'thunderstorm';
   weatherAlert?: string;
   activities: Activity[];
+  dayDestination?: DayDestination;
 }
 
 export interface WeatherSensor {

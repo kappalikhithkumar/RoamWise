@@ -7,6 +7,7 @@ geocoding verification strictly bounded to the Republic of India.
 
 import time
 import json
+import math
 import logging
 import urllib.request
 import urllib.parse
@@ -101,11 +102,17 @@ REGISTRY: Dict[str, CanonicalPlace] = {
     "kodaikanal": CanonicalPlace("Kodaikanal", "Tamil Nadu", 10.2381, 77.4892),
     "araku valley": CanonicalPlace("Araku Valley", "Andhra Pradesh", 18.3273, 82.8775),
     "goa": CanonicalPlace("Goa", "Goa", 15.2993, 74.1240),
+    "tirupati": CanonicalPlace("Tirupati", "Andhra Pradesh", 13.6288, 79.4192),
+    "kadapa": CanonicalPlace("Kadapa", "Andhra Pradesh", 14.4673, 78.8242),
+    "puducherry": CanonicalPlace("Puducherry", "Puducherry", 11.9416, 79.8083),
+    "mahabalipuram": CanonicalPlace("Mahabalipuram", "Tamil Nadu", 12.6269, 80.1927),
 
     # North India
     "delhi": CanonicalPlace("Delhi", "Delhi", 28.6139, 77.2090),
     "mumbai": CanonicalPlace("Mumbai", "Maharashtra", 19.0760, 72.8777),
+    "pune": CanonicalPlace("Pune", "Maharashtra", 18.5204, 73.8567),
     "jaipur": CanonicalPlace("Jaipur", "Rajasthan", 26.9124, 75.7873),
+    "pushkar": CanonicalPlace("Pushkar", "Rajasthan", 26.4897, 74.5511),
     "agra": CanonicalPlace("Agra", "Uttar Pradesh", 27.1767, 78.0081),
     "varanasi": CanonicalPlace("Varanasi", "Uttar Pradesh", 25.3176, 82.9739),
     "lucknow": CanonicalPlace("Lucknow", "Uttar Pradesh", 26.8467, 80.9462),
@@ -137,6 +144,11 @@ ALIASES: Dict[str, str] = {
     "madras": "chennai",
     "cochin": "kochi",
     "banaras": "varanasi",
+    "tirupathi": "tirupati",
+    "cuddapah": "kadapa",
+    "pondicherry": "puducherry",
+    "mamallapuram": "mahabalipuram",
+    "poona": "pune",
 }
 
 # ---------------------------------------------------------------------------
@@ -372,3 +384,83 @@ class DestinationResolver:
 # Singleton instance for general backend import
 destination_resolver = DestinationResolver()
 resolver = destination_resolver
+
+
+# ---------------------------------------------------------------------------
+# Multi-Destination Helpers: Haversine, Transit & Day Allocation
+# ---------------------------------------------------------------------------
+
+def haversine_km(lat1: float, lon1: float, lat2: float, lon2: float) -> float:
+    """Calculate the great-circle distance between two points in km using the Haversine formula."""
+    R = 6371.0  # Earth's mean radius in km
+    phi1 = math.radians(lat1)
+    phi2 = math.radians(lat2)
+    delta_phi = math.radians(lat2 - lat1)
+    delta_lambda = math.radians(lon2 - lon1)
+    a = (math.sin(delta_phi / 2.0) ** 2 +
+         math.cos(phi1) * math.cos(phi2) * (math.sin(delta_lambda / 2.0) ** 2))
+    c = 2.0 * math.atan2(math.sqrt(a), math.sqrt(1.0 - a))
+    return R * c
+
+
+def allocate_trip_days(total_days: int, destinations: List[ResolvedDestination]) -> List[ResolvedDestination]:
+    """
+    Allocate trip days across destinations in order.
+    Guarantees at least 1 day per destination (when total_days >= len(destinations)),
+    with extra days allocated to the earlier destinations in order.
+    """
+    if not destinations or total_days <= 0:
+        return []
+    n = len(destinations)
+    if total_days < n:
+        return list(destinations[:total_days])
+
+    base_days = total_days // n
+    remainder = total_days % n
+
+    allocations: List[ResolvedDestination] = []
+    for i, dest in enumerate(destinations):
+        count = base_days + (1 if i < remainder else 0)
+        allocations.extend([dest] * count)
+    return allocations
+
+
+def calculate_transit_between(destinations: List[ResolvedDestination]) -> List[Dict[str, Any]]:
+    """
+    Compute straight-line distance and approximate road distance (km * 1.3)
+    between consecutive destinations. Never outputs train/flight names or exact durations.
+    Adds a warning if approx road distance > 400 km.
+    """
+    transit_list: List[Dict[str, Any]] = []
+    if not destinations or len(destinations) < 2:
+        return transit_list
+
+    for i in range(len(destinations) - 1):
+        d_from = destinations[i]
+        d_to = destinations[i + 1]
+
+        from_name = getattr(d_from, "name", None) or (d_from.get("name") if isinstance(d_from, dict) else str(d_from))
+        to_name = getattr(d_to, "name", None) or (d_to.get("name") if isinstance(d_to, dict) else str(d_to))
+
+        from_lat = float(getattr(d_from, "lat", None) or (d_from.get("lat") if isinstance(d_from, dict) else 0.0))
+        from_lon = float(getattr(d_from, "lon", None) or (d_from.get("lon") if isinstance(d_from, dict) else 0.0))
+        to_lat = float(getattr(d_to, "lat", None) or (d_to.get("lat") if isinstance(d_to, dict) else 0.0))
+        to_lon = float(getattr(d_to, "lon", None) or (d_to.get("lon") if isinstance(d_to, dict) else 0.0))
+
+        straight_km = round(haversine_km(from_lat, from_lon, to_lat, to_lon), 1)
+        road_km = round(straight_km * 1.3, 1)
+
+        entry: Dict[str, Any] = {
+            "from": from_name,
+            "to": to_name,
+            "straightLineKm": straight_km,
+            "approxRoadKm": road_km,
+            "label": "approx"
+        }
+        if road_km > 400.0:
+            entry["warning"] = f"Long transfer ({road_km} km approx). Consider an early departure or scheduled break."
+
+        transit_list.append(entry)
+
+    return transit_list
+

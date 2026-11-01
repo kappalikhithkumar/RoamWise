@@ -43,14 +43,40 @@ export const ItineraryOverviewPage: React.FC = () => {
     setTimeout(() => setToastMessage(null), 3000);
   };
 
-  const rawDestinations = state.config.destinations && state.config.destinations.length > 0
-    ? state.config.destinations
-    : state.config.destination
-    ? state.config.destination.split(/➔|,|to/).map((s) => s.trim()).filter(Boolean)
-    : ['Jaipur, Rajasthan'];
+  // Group consecutive days by destination for accurate route breakdown
+  const destinationGroups: { name: string; state: string; startDay: number; endDay: number }[] = [];
+  state.days.forEach((d) => {
+    const dName = d.dayDestination?.name || (state.config.destinations?.[0] || state.config.destination || 'Jaipur').split(',')[0].trim();
+    const dState = d.dayDestination?.state || '';
+    const last = destinationGroups[destinationGroups.length - 1];
+    if (last && last.name.toLowerCase() === dName.toLowerCase()) {
+      last.endDay = d.dayNumber;
+    } else {
+      destinationGroups.push({
+        name: dName,
+        state: dState,
+        startDay: d.dayNumber,
+        endDay: d.dayNumber
+      });
+    }
+  });
 
-  const primaryCity = rawDestinations[0]?.split(',')[0] || 'Rajasthan';
-  const circuitTitle = state.config.tagline || `${primaryCity} Curated Circuit Expedition`;
+  // Extract unique canonical destinations
+  const canonicalDestList = destinationGroups.length > 0
+    ? destinationGroups.map((g) => ({ name: g.name, state: g.state }))
+    : (state.config.destinations && state.config.destinations.length > 0
+        ? state.config.destinations.map((d) => {
+            const parts = d.split(',').map((p) => p.trim());
+            return { name: parts[0], state: parts[1] || '' };
+          })
+        : [{ name: (state.config.destination || 'Jaipur').split(',')[0].trim(), state: '' }]);
+
+  const primaryCity = canonicalDestList[0]?.name || 'Rajasthan';
+  const circuitTitle = state.config.tagline || (
+    canonicalDestList.length > 1
+      ? `${canonicalDestList.map((d) => d.name).join(' – ')} Curated Circuit`
+      : `${primaryCity} Curated Circuit Expedition`
+  );
 
   // Compute budget estimate dynamically
   const budgetMultiplier = state.config.budgetTier === 'Budget-friendly' ? 2400 : state.config.budgetTier === 'Premium' ? 13500 : 5800;
@@ -81,6 +107,22 @@ export const ItineraryOverviewPage: React.FC = () => {
               </span>
               <p className="text-amber-900 text-xs mt-0.5 leading-relaxed">
                 {state.fallbackReason || 'Generated using RoamWise offline fallback engine.'}
+              </p>
+            </div>
+          </div>
+        )}
+
+        {(state.verification === 'unverified' || state.poiSource === 'none' || state.config.verification === 'unverified' || state.config.poiSource === 'none') && (
+          <div className="rounded-2xl bg-amber-50 border border-amber-300 p-4 text-xs text-amber-950 flex items-start gap-3 shadow-xs">
+            <span className="material-symbols-outlined text-[20px] text-amber-700 shrink-0 mt-0.5">
+              warning
+            </span>
+            <div className="flex-1">
+              <span className="font-bold block text-sm text-amber-950">
+                Places not verified against map data. Please double-check before travel.
+              </span>
+              <p className="text-amber-900 text-xs mt-0.5 leading-relaxed">
+                Itinerary activities could not be cross-referenced with live OpenStreetMap or geographic landmark databases.
               </p>
             </div>
           </div>
@@ -124,10 +166,10 @@ export const ItineraryOverviewPage: React.FC = () => {
               {circuitTitle}
             </h1>
             <p className="text-sm font-semibold text-secondary mt-1 flex items-center gap-1.5 flex-wrap">
-              {rawDestinations.map((dest, i) => (
-                <React.Fragment key={dest}>
+              {canonicalDestList.map((dest, i) => (
+                <React.Fragment key={`${dest.name}-${i}`}>
                   {i > 0 && <span className="text-primary font-bold">➔</span>}
-                  <span>{dest.split(',')[0]}</span>
+                  <span>{dest.name}</span>
                 </React.Fragment>
               ))}
             </p>
@@ -144,7 +186,7 @@ export const ItineraryOverviewPage: React.FC = () => {
             <div className="p-3 rounded-xl bg-[#EDFDF5] border border-[#D8E9DD]">
               <span className="text-[11px] font-bold uppercase tracking-wider text-primary block">Pacing</span>
               <span className="text-xs sm:text-sm font-bold text-primary mt-0.5 block">
-                {state.days.length} Days • {rawDestinations.length} Stop{rawDestinations.length > 1 ? 's' : ''}
+                {state.days.length} Days • {canonicalDestList.length} Stop{canonicalDestList.length > 1 ? 's' : ''}
               </span>
               <span className="text-[11px] text-[#414845]">{state.config.pace} Cadence</span>
             </div>
@@ -168,21 +210,16 @@ export const ItineraryOverviewPage: React.FC = () => {
           <div className="mt-5 pt-4 border-t border-[#25332E]/10">
             <div className="flex items-center justify-between text-xs font-bold text-primary mb-2">
               <span>Route Allocation</span>
-              <span>{rawDestinations.length} Destination{rawDestinations.length > 1 ? 's' : ''}</span>
+              <span>{destinationGroups.length} Destination{destinationGroups.length > 1 ? 's' : ''}</span>
             </div>
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-2.5">
-              {rawDestinations.map((dest, idx) => {
-                const total = state.days.length;
-                const startDay = Math.floor((idx / rawDestinations.length) * total) + 1;
-                const endDay = Math.floor(((idx + 1) / rawDestinations.length) * total);
-                const daysLabel = startDay === endDay ? `Day ${startDay}` : `Days ${startDay}–${endDay}`;
-                const cityName = dest.split(',')[0];
-                const regionName = dest.split(',')[1] || 'Region';
+              {destinationGroups.map((group, idx) => {
+                const daysLabel = group.startDay === group.endDay ? `Day ${group.startDay}` : `Days ${group.startDay}–${group.endDay}`;
                 return (
-                  <div key={dest} className="p-2.5 rounded-lg bg-[#EDFDF5] border border-[#D8E9DD]">
+                  <div key={`${group.name}-${idx}`} className="p-2.5 rounded-lg bg-[#EDFDF5] border border-[#D8E9DD]">
                     <span className="text-[10px] font-bold uppercase text-primary">{daysLabel}</span>
-                    <div className="font-display font-bold text-xs text-primary">{cityName}</div>
-                    <span className="text-[11px] text-[#414845]">{regionName}</span>
+                    <div className="font-display font-bold text-xs text-primary">{group.name}</div>
+                    {group.state && <span className="text-[11px] text-[#414845]">{group.state}</span>}
                   </div>
                 );
               })}
@@ -190,31 +227,76 @@ export const ItineraryOverviewPage: React.FC = () => {
           </div>
 
           {/* Intercity Transit Card */}
-          <div className="mt-4 p-3 rounded-xl bg-[#FFF8F0] border border-amber/30 flex items-center justify-between gap-3">
-            <div className="flex items-center gap-2.5">
-              <div className="w-8 h-8 rounded-lg bg-amber/20 text-amber flex items-center justify-center shrink-0">
-                <span className="material-symbols-outlined text-[18px]">
-                  {rawDestinations.length > 1 ? 'train' : 'directions_car'}
-                </span>
+          {state.config.transitBetween && state.config.transitBetween.length > 0 ? (
+            <div className="mt-4 p-3.5 rounded-xl bg-[#FFF8F0] border border-amber/30 flex flex-col gap-2.5">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2.5">
+                  <div className="w-8 h-8 rounded-lg bg-amber/20 text-amber flex items-center justify-center shrink-0">
+                    <span className="material-symbols-outlined text-[18px]">commute</span>
+                  </div>
+                  <div>
+                    <span className="text-[10px] font-bold uppercase tracking-wider text-amber block">
+                      Intercity Transit
+                    </span>
+                    <span className="text-xs font-bold text-primary">
+                      {state.config.transitBetween.length} Intercity Leg{state.config.transitBetween.length > 1 ? 's' : ''}
+                    </span>
+                  </div>
+                </div>
+                <button
+                  onClick={() => navigate('/map')}
+                  className="text-xs font-bold text-primary hover:text-amber underline shrink-0"
+                >
+                  Route Map
+                </button>
               </div>
-              <div>
-                <span className="text-[10px] font-bold uppercase tracking-wider text-amber block">
-                  {rawDestinations.length > 1 ? 'Upcoming Intercity Transit' : 'Local Heritage Mobility'}
-                </span>
-                <span className="text-xs font-bold text-primary">
-                  {rawDestinations.length > 1
-                    ? `Transit • ${rawDestinations[0].split(',')[0]} ➔ ${rawDestinations[1].split(',')[0]} via Vande Bharat / Express (3h 45m)`
-                    : `Dedicated AC Chauffeur & Heritage Circuit Transfers (${state.config.budgetTier} Tier)`}
-                </span>
+
+              <div className="flex flex-col gap-2 pt-2 border-t border-amber/20">
+                {state.config.transitBetween.map((leg, idx) => (
+                  <div key={idx} className="flex flex-col gap-1 text-xs">
+                    <div className="flex items-center justify-between flex-wrap gap-1">
+                      <span className="font-bold text-primary flex items-center gap-1.5">
+                        <span>{leg.from}</span>
+                        <span className="text-amber font-bold">➔</span>
+                        <span>{leg.to}</span>
+                      </span>
+                      <span className="text-[11px] text-[#414845]">
+                        ~{leg.approxRoadKm} km road ({leg.label}) • {leg.straightLineKm} km straight-line
+                      </span>
+                    </div>
+                    {leg.warning && (
+                      <div className="flex items-center gap-1 text-[11px] text-amber-900 bg-amber-100/70 rounded px-2 py-0.5">
+                        <span className="material-symbols-outlined text-[14px] text-amber-700">warning</span>
+                        <span>{leg.warning}</span>
+                      </div>
+                    )}
+                  </div>
+                ))}
               </div>
             </div>
-            <button
-              onClick={() => navigate('/map')}
-              className="text-xs font-bold text-primary hover:text-amber underline shrink-0"
-            >
-              Route Map
-            </button>
-          </div>
+          ) : (
+            <div className="mt-4 p-3 rounded-xl bg-[#EDFDF5] border border-[#D8E9DD] flex items-center justify-between gap-3">
+              <div className="flex items-center gap-2.5">
+                <div className="w-8 h-8 rounded-lg bg-primary/10 text-primary flex items-center justify-center shrink-0">
+                  <span className="material-symbols-outlined text-[18px]">directions_car</span>
+                </div>
+                <div>
+                  <span className="text-[10px] font-bold uppercase tracking-wider text-primary block">
+                    Local City Transit
+                  </span>
+                  <span className="text-xs font-bold text-primary">
+                    Local transfers & heritage mobility ({state.config.budgetTier} Tier)
+                  </span>
+                </div>
+              </div>
+              <button
+                onClick={() => navigate('/map')}
+                className="text-xs font-bold text-primary hover:text-secondary underline shrink-0"
+              >
+                Route Map
+              </button>
+            </div>
+          )}
 
           {/* Quick Action Matrix (Screen 13 Spec) */}
           <div className="mt-4 pt-3 border-t border-[#25332E]/10 flex flex-wrap items-center justify-between gap-2">
@@ -283,7 +365,9 @@ export const ItineraryOverviewPage: React.FC = () => {
                         Day {day.dayNumber}: {day.theme}
                       </h3>
                       <p className="text-xs text-[#414845] mt-0.5">
-                        {day.dayOfWeek}, {day.dateStr} • {day.activities.length} Curated Stops
+                        {day.dayOfWeek}, {day.dateStr}
+                        {day.dayDestination ? ` • ${day.dayDestination.name}` : ''} •{' '}
+                        {day.activities.length} Curated Stops
                       </p>
                     </div>
                   </div>

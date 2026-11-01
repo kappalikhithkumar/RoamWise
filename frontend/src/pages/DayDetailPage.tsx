@@ -3,6 +3,7 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { useTrip } from '../context/TripContext';
 import { Header } from '../components/common/Header';
 import { BottomNav } from '../components/common/BottomNav';
+import { getCategoryGradientAndIcon } from '../utils/categoryTheme';
 
 export const DayDetailPage: React.FC = () => {
   const { dayId } = useParams<{ dayId: string }>();
@@ -95,6 +96,17 @@ export const DayDetailPage: React.FC = () => {
             </button>
           </div>
         </div>
+
+        {(state.verification === 'unverified' || state.poiSource === 'none' || state.config.verification === 'unverified' || state.config.poiSource === 'none') && (
+          <div className="rounded-xl bg-amber-50 border border-amber-300 p-3.5 text-xs text-amber-950 flex items-center gap-2.5 shadow-xs">
+            <span className="material-symbols-outlined text-[20px] text-amber-700 shrink-0">
+              warning
+            </span>
+            <span className="text-amber-900 text-xs font-semibold">
+              Places not verified against map data. Please double-check before travel.
+            </span>
+          </div>
+        )}
 
         {/* Day Selector Tabs (Screen 02 Spec) */}
         <div className="flex items-center gap-2 overflow-x-auto no-scrollbar py-1 border-b border-[#25332E]/10">
@@ -305,16 +317,25 @@ export const DayDetailPage: React.FC = () => {
                         </p>
                       </div>
 
-                      {/* Photo Thumbnail */}
-                      {act.imageUrl && (
-                        <div className="w-full sm:w-28 h-24 rounded-xl overflow-hidden shrink-0 border border-[#25332E]/10">
+                      {/* Photo Thumbnail or Category Gradient Placeholder */}
+                      <div className="w-full sm:w-28 h-24 rounded-xl overflow-hidden shrink-0 border border-[#25332E]/10">
+                        {act.imageUrl ? (
                           <img
                             src={act.imageUrl}
                             alt={act.title}
                             className="w-full h-full object-cover"
                           />
-                        </div>
-                      )}
+                        ) : (
+                          <div
+                            className={`w-full h-full bg-gradient-to-br ${getCategoryGradientAndIcon(act.category).gradient} flex items-center justify-center text-white shadow-inner`}
+                            title={act.category}
+                          >
+                            <span className="material-symbols-outlined text-[28px] opacity-95">
+                              {getCategoryGradientAndIcon(act.category).icon}
+                            </span>
+                          </div>
+                        )}
+                      </div>
                     </div>
 
                     {/* Card Footer Actions */}

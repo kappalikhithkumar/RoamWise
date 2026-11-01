@@ -1,4 +1,4 @@
-import { TripConfig, DayItinerary, TravelAlert } from '../types';
+import { TripConfig, DayItinerary, TravelAlert, TransitEntry } from '../types';
 
 const API_BASE = (import.meta.env.VITE_API_BASE_URL || '/api').replace(/\/+$/, '');
 
@@ -151,17 +151,27 @@ export const apiService = {
     success: boolean;
     itinerary: any;
     tagline: string;
+    destination?: string;
+    destinations?: string[];
+    transitBetween?: TransitEntry[];
     days: DayItinerary[];
     generationSource: string;
     fallbackReason?: string;
+    poiSource?: string;
+    verification?: string;
   }> {
     return request<{
       success: boolean;
       itinerary: any;
       tagline: string;
+      destination?: string;
+      destinations?: string[];
+      transitBetween?: TransitEntry[];
       days: DayItinerary[];
       generationSource: string;
       fallbackReason?: string;
+      poiSource?: string;
+      verification?: string;
     }>('/trips/generate', {
       method: 'POST',
       body: JSON.stringify(config)

@@ -4,6 +4,10 @@ import time
 import json
 import difflib
 import logging
+import sqlite3
+import urllib.request
+import urllib.parse
+from pathlib import Path
 import concurrent.futures
 from datetime import datetime, timedelta
 
@@ -88,6 +92,97 @@ def _get_poi_service():
     return _poi_service
 
 
+_WIKI_IMAGE_CACHE: dict[str, str] = {}
+
+def get_wikipedia_page_image(title: str) -> str:
+    """
+    Fetch thumbnail image URL for a verified POI using Wikipedia pageimages API.
+    action=query&titles={title}&prop=pageimages&format=json&pithumbsize=600
+    Returns image URL string, or empty string "" if none found.
+    Caches results in-memory and SQLite table `wiki_image_cache`.
+    """
+    if not title:
+        return ""
+    clean_title = re.sub(r"\(.*?\)", "", str(title)).strip()
+    if not clean_title:
+        return ""
+    cache_key = clean_title.lower()
+    if cache_key in _WIKI_IMAGE_CACHE:
+        return _WIKI_IMAGE_CACHE[cache_key]
+
+    # Check SQLite cache
+    db_path = None
+    try:
+        from flask import current_app
+        if current_app and current_app.config.get("DATABASE_PATH"):
+            db_path = current_app.config["DATABASE_PATH"]
+    except Exception:
+        pass
+    if not db_path:
+        base_dir = Path(__file__).resolve().parent.parent.parent
+        db_path = os.getenv("DATABASE_PATH", str(base_dir / "roamwise.db"))
+
+    try:
+        conn = sqlite3.connect(db_path)
+        conn.execute("""
+            CREATE TABLE IF NOT EXISTS wiki_image_cache (
+                title_key TEXT PRIMARY KEY,
+                image_url TEXT NOT NULL,
+                fetched_at REAL NOT NULL
+            )
+        """)
+        row = conn.execute("SELECT image_url FROM wiki_image_cache WHERE title_key = ?", (cache_key,)).fetchone()
+        if row:
+            conn.close()
+            _WIKI_IMAGE_CACHE[cache_key] = row[0]
+            return row[0]
+        conn.close()
+    except Exception as e:
+        logger.debug(f"SQLite image cache read error: {e}")
+
+    # Fetch via Wikipedia pageimages API
+    image_url = ""
+    try:
+        params = urllib.parse.urlencode({
+            "action": "query",
+            "titles": clean_title,
+            "prop": "pageimages",
+            "format": "json",
+            "pithumbsize": "600",
+            "formatversion": "2"
+        })
+        url = f"https://en.wikipedia.org/w/api.php?{params}"
+        req = urllib.request.Request(
+            url,
+            headers={"User-Agent": "RoamWise-AI-Planner/2.0 (travel app; contact@roamwise.ai)"}
+        )
+        with urllib.request.urlopen(req, timeout=8) as resp:
+            data = json.loads(resp.read().decode())
+        pages = data.get("query", {}).get("pages", [])
+        if pages and isinstance(pages, list):
+            thumbnail = pages[0].get("thumbnail")
+            if thumbnail and isinstance(thumbnail, dict) and thumbnail.get("source"):
+                image_url = thumbnail["source"]
+    except Exception as e:
+        logger.debug(f"Wikipedia pageimages lookup failed for '{clean_title}': {e}")
+
+    _WIKI_IMAGE_CACHE[cache_key] = image_url
+
+    # Persist to SQLite
+    try:
+        conn = sqlite3.connect(db_path)
+        conn.execute(
+            "INSERT OR REPLACE INTO wiki_image_cache (title_key, image_url, fetched_at) VALUES (?, ?, ?)",
+            (cache_key, image_url, time.time())
+        )
+        conn.commit()
+        conn.close()
+    except Exception as e:
+        logger.debug(f"SQLite image cache write error: {e}")
+
+    return image_url
+
+
 class GeminiService:
     def __init__(self, api_key: str = None):
         self.api_key = api_key if api_key is not None else os.getenv("GEMINI_API_KEY", "")
@@ -108,17 +203,114 @@ class GeminiService:
         Tries live Gemini generation first; falls back cleanly to deterministic synthesis
         if Gemini is unavailable, offline, or returns invalid data.
         """
+        from app.services.destinations import (
+            destination_resolver,
+            allocate_trip_days,
+            haversine_km,
+            calculate_transit_between,
+            ResolvedDestination
+        )
+
+        # 1. Resolve all destinations
+        raw_dest_list = config.get("destinations")
+        if not raw_dest_list or not isinstance(raw_dest_list, list):
+            raw_str = config.get("destination", "")
+            if "➔" in raw_str:
+                raw_dest_list = [s.strip() for s in raw_str.split("➔") if s.strip()]
+            elif "->" in raw_str:
+                raw_dest_list = [s.strip() for s in raw_str.split("->") if s.strip()]
+            else:
+                raw_dest_list = [raw_str.strip()] if raw_str.strip() else ["Jaipur"]
+
+        resolved_destinations: list[ResolvedDestination] = []
+        for d in raw_dest_list:
+            if isinstance(d, ResolvedDestination):
+                resolved_destinations.append(d)
+            elif isinstance(d, dict) and "name" in d and "lat" in d:
+                resolved_destinations.append(
+                    ResolvedDestination(d["name"], d.get("state", "India"), float(d["lat"]), float(d["lon"]))
+                )
+            else:
+                res = destination_resolver.resolve(str(d))
+                if res.is_ok and res.destination:
+                    resolved_destinations.append(res.destination)
+
+        if not resolved_destinations:
+            res = destination_resolver.resolve("Jaipur, Rajasthan")
+            if res.is_ok and res.destination:
+                resolved_destinations = [res.destination]
+
+        # Calculate number of days
+        start_date = config.get("startDate", "2026-11-20")
+        end_date = config.get("endDate", "2026-11-23")
+        try:
+            d1 = datetime.strptime(start_date, "%Y-%m-%d")
+            d2 = datetime.strptime(end_date, "%Y-%m-%d")
+            num_days = max(1, min((d2 - d1).days + 1, 14))
+        except Exception:
+            num_days = len(resolved_destinations) if len(resolved_destinations) > 1 else 3
+
+        day_destinations = allocate_trip_days(num_days, resolved_destinations)
+        interests = config.get("interests", ["Culture", "Food", "History"])
+
+        # Fetch POIs per unique destination
+        svc = _get_poi_service()
+        per_dest_pois: dict[str, list[dict]] = {}
+        per_dest_poi_source: dict[str, str] = {}
+        for dest in resolved_destinations:
+            if dest.name not in per_dest_pois:
+                if svc:
+                    p_res = svc.get_pois(dest.name, max_results=30, interests=interests)
+                    per_dest_pois[dest.name] = p_res.get("pois", [])
+                    per_dest_poi_source[dest.name] = p_res.get("source", "none")
+                else:
+                    per_dest_pois[dest.name] = []
+                    per_dest_poi_source[dest.name] = "none"
+
+        # Determine overall POI source across destinations
+        sources = set(per_dest_poi_source.values()) if per_dest_poi_source else set()
+        if not sources or sources == {"none"}:
+            overall_poi_source = "none"
+        elif "openstreetmap" in sources:
+            overall_poi_source = "openstreetmap"
+        elif "wikipedia" in sources:
+            overall_poi_source = "wikipedia"
+        elif "curated" in sources:
+            overall_poi_source = "curated"
+        else:
+            overall_poi_source = "none"
+
+        transit_between = calculate_transit_between(resolved_destinations)
+
         fallback_reason = "No API key configured"
         if self.is_available():
             executor = concurrent.futures.ThreadPoolExecutor(max_workers=1)
             try:
-                future = executor.submit(self._call_gemini_generation, config)
+                future = executor.submit(
+                    self._call_gemini_generation,
+                    config,
+                    resolved_destinations,
+                    day_destinations,
+                    per_dest_pois,
+                    per_dest_poi_source
+                )
                 ai_itinerary = future.result(timeout=40.0)
-                valid, sanitized = self._validate_itinerary(ai_itinerary, config)
+                valid, sanitized = self._validate_itinerary(
+                    ai_itinerary,
+                    config,
+                    resolved_destinations,
+                    day_destinations,
+                    per_dest_pois,
+                    per_dest_poi_source
+                )
                 if valid:
                     sanitized["generationSource"] = "gemini-ai"
                     sanitized["modelUsed"] = DEFAULT_MODEL
-                    sanitized["poiSource"] = ai_itinerary.get("_poiSource", "gemini-memory")
+                    sanitized["poiSource"] = overall_poi_source
+                    sanitized["verification"] = "unverified" if overall_poi_source == "none" else "verified"
+                    sanitized["destinations"] = [d.name for d in resolved_destinations]
+                    sanitized["destination"] = " ➔ ".join(d.name for d in resolved_destinations)
+                    sanitized["transitBetween"] = transit_between
                     return sanitized
                 else:
                     fallback_reason = "Gemini output failed schema validation"
@@ -142,101 +334,92 @@ class GeminiService:
                     pass
 
         # Robust Deterministic Synthesis Fallback
-        fallback = self._generate_fallback_itinerary(config)
+        fallback = self._generate_fallback_itinerary(
+            config,
+            resolved_destinations,
+            day_destinations,
+            per_dest_pois,
+            per_dest_poi_source
+        )
         fallback["generationSource"] = "deterministic-fallback"
         fallback["fallbackReason"] = fallback_reason
+        fallback["destinations"] = [d.name for d in resolved_destinations]
+        fallback["destination"] = " ➔ ".join(d.name for d in resolved_destinations)
+        fallback["transitBetween"] = transit_between
+        fallback["poiSource"] = overall_poi_source
+        fallback["verification"] = "unverified" if overall_poi_source == "none" else "verified"
         return fallback
 
-    def _call_gemini_generation(self, config: dict) -> dict:
-        destination = config.get("destination", "Jaipur, Rajasthan")
-        destinations = config.get("destinations", [destination])
-        state = config.get("state")
-        if not state:
-            try:
-                from app.services import destinations as dest_module
-                res = dest_module.resolver.resolve(destination)
-                if res.is_ok and res.destination:
-                    state = res.destination.state
-            except Exception:
-                pass
-        state_str = f", {state}" if (state and state.lower() not in destination.lower()) else ""
-        destination_full = f"{destination}{state_str}, India"
-
+    def _call_gemini_generation(
+        self,
+        config: dict,
+        resolved_destinations: list,
+        day_destinations: list,
+        per_dest_pois: dict,
+        per_dest_poi_source: dict
+    ) -> dict:
+        destination_full = " ➔ ".join(f"{d.name}, {d.state}" for d in resolved_destinations) + ", India"
         start_date = config.get("startDate", "2026-11-20")
         end_date = config.get("endDate", "2026-11-23")
         budget = config.get("budgetTier", "Moderate")
         interests = config.get("interests", ["Culture", "Food", "History"])
         traveler = config.get("travelerType", "Couple")
         pace = config.get("pace", "Balanced")
+        num_days = len(day_destinations)
 
-        # Calculate number of days
-        try:
-            d1 = datetime.strptime(start_date, "%Y-%m-%d")
-            d2 = datetime.strptime(end_date, "%Y-%m-%d")
-            num_days = max(1, min((d2 - d1).days + 1, 14))
-        except Exception:
-            num_days = 3
+        day_schedule_lines = [
+            f"  - Day {idx+1}: {d.name}, {d.state} (Center: lat {d.lat}, lon {d.lon})"
+            for idx, d in enumerate(day_destinations)
+        ]
 
-        # ── Fetch verified POIs to ground the prompt ────────────────────
-        poi_context_block = ""
-        poi_source = "gemini-memory"
-        pois = []
-        try:
-            svc = _get_poi_service()
-            if svc:
-                poi_result = svc.get_pois(destination, max_results=30, interests=interests)
-                pois = poi_result.get("pois", [])
-                poi_source = poi_result.get("source", "none")
-                if pois:
-                    poi_lines = []
-                    for p in pois:
-                        coords = f" (lat:{p['lat']}, lon:{p['lon']})" if p.get("lat") else ""
-                        area = f" — {p.get('area', p.get('tags', {}).get('wikipedia', ''))}" if p.get("area") else ""
-                        poi_lines.append(f"  - {p['name']}{area}{coords} [{p['category']}]")
-                    disclosure = poi_result.get("sourceDisclosure", "")
-                    poi_context_block = f"""
-VERIFIED ATTRACTIONS DATABASE ({poi_source.upper()}):
-The following are real, verified attractions for {destination}. 
-You MUST prioritize these in your itinerary. Do NOT rename, generalize, or invent alternatives to these places.
-You MAY add other well-known real attractions you know about, but only if they genuinely exist.
-Disclosure: {disclosure}
+        poi_context_sections = []
+        for d in resolved_destinations:
+            pois = per_dest_pois.get(d.name, [])
+            p_source = per_dest_poi_source.get(d.name, "none")
+            if pois:
+                p_lines = []
+                for p in pois[:25]:
+                    coords = f" (lat:{p['lat']}, lon:{p['lon']})" if p.get("lat") else ""
+                    area = f" — {p.get('area', '')}" if p.get("area") else ""
+                    p_lines.append(f"    - {p['name']}{area}{coords} [{p['category']}]")
+                poi_context_sections.append(
+                    f"VERIFIED ATTRACTIONS FOR {d.name.upper()}, {d.state} ({p_source.upper()}):\n" + "\n".join(p_lines)
+                )
+            else:
+                poi_context_sections.append(
+                    f"ATTRACTIONS FOR {d.name.upper()}, {d.state}: Use verified real attractions located in {d.name}."
+                )
 
-{chr(10).join(poi_lines)}
-
-IMPORTANT: Use the exact attraction names above as activity "title" values.
-Do not substitute generic names like "{destination} Heritage Quarter Walking Tour" or
-"{destination} Central Arts & Cultural Museum" when specific real places are available.
-"""
-                else:
-                    poi_context_block = f"""
-POI DISCOVERY RESULT: No verified attraction database is available for '{destination}'.
-You must use your knowledge of real, well-known attractions in {destination}.
-Only include places that genuinely exist and are recognized by travelers.
-Do not invent attraction names, museum names, or generic place descriptions.
-If you are uncertain whether a place exists, omit it rather than inventing it.
-"""
-        except Exception as e:
-            logger.warning(f"POI context fetch failed: {e}")
+        poi_context_block = "\n\n".join(poi_context_sections)
 
         prompt = f"""
 You are RoamWise AI, an expert adaptive travel planner with deep geographic knowledge of India.
 Create a detailed, high-quality, realistic {num_days}-day travel itinerary for {destination_full}.
-Destinations included: {', '.join(destinations)}.
-State / Union Territory: {state if state else 'India'}.
+Destinations included in order: {', '.join(d.name for d in resolved_destinations)}.
 Dates: {start_date} to {end_date} ({num_days} days total).
 Traveler Type: {traveler}
 Travel Pace: {pace} (if Relaxed: 2-3 stops/day; Balanced: 3-4 stops/day; Packed: 4-5 stops/day)
 Budget Tier: {budget} (all costs must be estimated realistically in Indian Rupees ₹ only)
 Interests: {', '.join(interests)}
+
+STRICT DAY DESTINATION ALLOCATION:
+{chr(10).join(day_schedule_lines)}
+
 {poi_context_block}
+
 CRITICAL RULES:
-1. Destination is strictly within India ({destination_full}). Use REAL, SPECIFIC Indian attraction names — not generic names like "City Heritage Quarter" or "Grand Botanical Sanctuary".
-2. Each day must have a distinct set of activities — do NOT repeat any attraction across days.
-3. Activities must be geographically clustered per day to minimize unnecessary travel across Indian traffic.
-4. Consider the selected pace strictly: Relaxed=2-3 stops, Balanced=3-4 stops, Packed=4-5 stops.
-5. Plan B alternatives must be real indoor/sheltered venues (e.g. a specific museum or temple hall, not a generic "indoor gallery").
-6. All costs must be realistic for domestic travel in India, specified in Indian Rupees (₹) only.
-7. The "location" field must name a real neighborhood, road, or district in {destination} — not a generic placeholder.
+1. STRICT DAY DESTINATION CONFINEMENT: Each day is strictly assigned to its allocated destination:
+   - Day X activities MUST take place in Day X's assigned destination ONLY.
+   - Activities for Day X must come ONLY from that day's destination POIs or authentic local landmarks in that destination.
+   - NEVER place an attraction from another city in a day (e.g. do NOT put Visakhapatnam stops on a Kadapa or Tirupati day).
+2. DISTANCE LIMIT: Every activity MUST be within 40 km of that day's destination center coordinates.
+3. Use REAL, SPECIFIC Indian attraction names — not generic names like "City Heritage Quarter" or "Grand Botanical Sanctuary".
+4. Each day must have a distinct set of activities — do NOT repeat any attraction across days.
+5. Consider the selected pace strictly: Relaxed=2-3 stops, Balanced=3-4 stops, Packed=4-5 stops.
+6. Plan B alternatives must be a DIFFERENT real venue that is indoor or sheltered located in that day's destination, not a sub-area of the main activity.
+7. All costs must be realistic for domestic travel in India, specified in Indian Rupees (₹) only.
+8. Each day in the output JSON MUST include the assigned "dayDestination": {{"name": "<City>", "state": "<State>", "lat": <Lat>, "lon": <Lon>}}.
+9. Do NOT output any "imageUrl" fields. Imagery is attached automatically by the backend.
 
 Output MUST be valid JSON adhering strictly to this schema:
 {{
@@ -251,27 +434,32 @@ Output MUST be valid JSON adhering strictly to this schema:
       "temperature": "26°C",
       "rainRisk": 10,
       "weatherCondition": "sunny",
+      "dayDestination": {{
+        "name": "{day_destinations[0].name}",
+        "state": "{day_destinations[0].state}",
+        "lat": {day_destinations[0].lat},
+        "lon": {day_destinations[0].lon}
+      }},
       "activities": [
         {{
           "id": "act-1-1",
-          "title": "REAL specific attraction name (e.g. Lalbagh Botanical Garden, not 'City Botanical Sanctuary')",
+          "title": "REAL specific attraction name in {day_destinations[0].name}",
           "timeSlot": "09:00 AM",
           "period": "morning",
           "duration": "2.5h",
           "cost": 500,
           "costDisplay": "₹500",
           "category": "History",
-          "location": "Specific street / neighbourhood / area name",
+          "location": "Specific street / neighbourhood / area in {day_destinations[0].name}",
           "isIndoor": false,
           "weatherRisk": "low",
           "weatherRiskLabel": "☀️ Low Risk",
           "description": "Engaging 2-sentence description with specific historical or geographical facts.",
-          "imageUrl": "https://images.unsplash.com/photo-1599661046289-e31897846e41?auto=format&fit=crop&w=600&q=80",
           "isVisited": false,
           "hasPlanBReady": true,
           "planBAlternative": {{
             "id": "alt-1-1",
-            "title": "Real indoor museum or sheltered venue name",
+            "title": "Real indoor museum or sheltered venue name in {day_destinations[0].name}",
             "timeSlot": "09:00 AM",
             "duration": "2h",
             "cost": 300,
@@ -290,7 +478,6 @@ Output MUST be valid JSON adhering strictly to this schema:
   ]
 }}
 """
-        # Call Gemini with retry once on 429
         for attempt in range(2):
             try:
                 response = self.client.models.generate_content(
@@ -302,9 +489,6 @@ Output MUST be valid JSON adhering strictly to this schema:
                     )
                 )
                 result = json.loads(response.text)
-                # Attach poi_source metadata and verified candidate POIs for validation
-                result["_poiSource"] = poi_source
-                result["_pois"] = pois
                 return result
             except Exception as e:
                 err_str = str(e)
@@ -314,9 +498,18 @@ Output MUST be valid JSON adhering strictly to this schema:
                     continue
                 raise
 
+    def _validate_itinerary(
+        self,
+        data: dict,
+        config: dict,
+        resolved_destinations: list,
+        day_destinations: list,
+        per_dest_pois: dict,
+        per_dest_poi_source: dict
+    ) -> tuple[bool, dict]:
+        """Validate structure, enforce dayDestination, validate against per-day POIs, and apply 40 km limit."""
+        from app.services.destinations import haversine_km
 
-    def _validate_itinerary(self, data: dict, config: dict) -> tuple[bool, dict]:
-        """Validate structure and sanitize required fields."""
         if not isinstance(data, dict):
             return False, None
         days = data.get("days")
@@ -331,6 +524,8 @@ Output MUST be valid JSON adhering strictly to this schema:
             activities = day.get("activities", [])
             if not isinstance(activities, list) or len(activities) == 0:
                 continue
+
+            day_dest = day_destinations[min(d_idx - 1, len(day_destinations) - 1)]
 
             sanitized_activities = []
             for a_idx, act in enumerate(activities, 1):
@@ -351,70 +546,203 @@ Output MUST be valid JSON adhering strictly to this schema:
                     "cost": cost_int,
                     "costDisplay": act.get("costDisplay", f"₹{cost_int}" if cost_int > 0 else "Free"),
                     "category": act.get("category", "Culture"),
-                    "location": act.get("location", config.get("destination", "")),
+                    "location": act.get("location", f"{day_dest.name}, {day_dest.state}"),
                     "isIndoor": bool(act.get("isIndoor", False)),
                     "weatherRisk": act.get("weatherRisk", "low"),
                     "weatherRiskLabel": act.get("weatherRiskLabel", "☀️ Low Risk"),
                     "description": act.get("description", ""),
-                    "imageUrl": act.get("imageUrl") or "https://images.unsplash.com/photo-1599661046289-e31897846e41?auto=format&fit=crop&w=600&q=80",
+                    "imageUrl": "",
                     "isVisited": False,
                     "hasPlanBReady": bool(act.get("hasPlanBReady", False)),
                     "planBAlternative": act.get("planBAlternative")
                 }
+                if act.get("lat") is not None:
+                    sanitized_act["lat"] = float(act["lat"])
+                    sanitized_act["latitude"] = float(act["lat"])
+                if act.get("lon") is not None:
+                    sanitized_act["lon"] = float(act["lon"])
+                    sanitized_act["longitude"] = float(act["lon"])
+
                 sanitized_activities.append(sanitized_act)
 
-            if sanitized_activities:
-                sanitized_days.append({
-                    "dayNumber": day_num,
-                    "dayOfWeek": day.get("dayOfWeek", "Day"),
-                    "dateStr": day.get("dateStr", ""),
-                    "theme": day.get("theme", f"Day {day_num} Exploration"),
-                    "weatherSummary": day.get("weatherSummary", "26°C • Clear"),
-                    "temperature": day.get("temperature", "26°C"),
-                    "rainRisk": int(day.get("rainRisk", 10)),
-                    "weatherCondition": day.get("weatherCondition", "sunny"),
-                    "weatherAlert": day.get("weatherAlert"),
-                    "activities": sanitized_activities
-                })
+            if not sanitized_activities:
+                continue
+
+            # ── 1. Match against that day's destination POIs ──────────
+            day_pois = per_dest_pois.get(day_dest.name, [])
+            poi_source = per_dest_poi_source.get(day_dest.name, "none")
+
+            for act in sanitized_activities:
+                matched, matched_poi = _match_activity_to_poi(act.get("title", ""), day_pois)
+                if matched and matched_poi:
+                    act["verified"] = True
+                    act["_matched_poi"] = matched_poi
+                    if matched_poi.get("lat") is not None:
+                        act["lat"] = float(matched_poi["lat"])
+                        act["latitude"] = float(matched_poi["lat"])
+                    if matched_poi.get("lon") is not None:
+                        act["lon"] = float(matched_poi["lon"])
+                        act["longitude"] = float(matched_poi["lon"])
+                    if matched_poi.get("area"):
+                        act["location"] = matched_poi["area"]
+                    elif matched_poi.get("name"):
+                        act["location"] = matched_poi["name"]
+
+                    # Set imageUrl ONLY from Wikipedia page image of verified POI (pageimages API) and cache it
+                    wiki_title = matched_poi.get("tags", {}).get("wikipedia") or matched_poi.get("name") or act.get("title")
+                    if ":" in str(wiki_title):
+                        wiki_title = str(wiki_title).split(":", 1)[-1]
+                    act["imageUrl"] = get_wikipedia_page_image(wiki_title)
+                else:
+                    act["verified"] = False
+                    act["_matched_poi"] = None
+                    act["imageUrl"] = ""
+
+            # ── 2. 40 km Distance Verification from day's destination centre ──
+            valid_dist_acts = []
+            for act in sanitized_activities:
+                a_lat = act.get("lat") or act.get("latitude")
+                a_lon = act.get("lon") or act.get("longitude")
+                if a_lat is not None and a_lon is not None:
+                    try:
+                        dist = haversine_km(float(a_lat), float(a_lon), day_dest.lat, day_dest.lon)
+                        if dist > 40.0:
+                            logger.info(
+                                f"Activity '{act.get('title')}' is {dist:.1f} km from {day_dest.name} center (> 40km). Dropping."
+                            )
+                            continue
+                    except Exception as e:
+                        logger.warning(f"Error computing distance for {act.get('title')}: {e}")
+                valid_dist_acts.append(act)
+
+            if len(valid_dist_acts) >= 2:
+                sanitized_activities = valid_dist_acts
+            else:
+                for act in sanitized_activities:
+                    a_lat = act.get("lat") or act.get("latitude")
+                    a_lon = act.get("lon") or act.get("longitude")
+                    if a_lat is not None and a_lon is not None:
+                        if haversine_km(float(a_lat), float(a_lon), day_dest.lat, day_dest.lon) > 40.0:
+                            act.pop("lat", None)
+                            act.pop("lon", None)
+                            act.pop("latitude", None)
+                            act.pop("longitude", None)
+                            act["verified"] = False
+
+            # ── 3. Drop unverified activities if verified exist (min 2) ──
+            if poi_source in ("curated", "openstreetmap", "wikipedia") and day_pois:
+                verified_acts = [a for a in sanitized_activities if a.get("verified")]
+                if len(verified_acts) >= 2:
+                    sanitized_activities = verified_acts
+
+            # ── 4. Validate planBAlternative against destination POIs ──
+            for act in sanitized_activities:
+                has_pb = bool(act.get("hasPlanBReady"))
+                plan_b = act.get("planBAlternative")
+                if not has_pb or not isinstance(plan_b, dict) or not plan_b.get("title"):
+                    act["hasPlanBReady"] = False
+                    act["planBAlternative"] = None
+                    continue
+
+                pb_title = plan_b.get("title", "").strip()
+                # Validate against that day's destination POIs
+                pb_matched, pb_poi = _match_activity_to_poi(pb_title, day_pois)
+                if not pb_matched or not pb_poi:
+                    logger.info(f"Plan B '{pb_title}' failed POI validation against {day_dest.name} POIs. Removing.")
+                    act["hasPlanBReady"] = False
+                    act["planBAlternative"] = None
+                    continue
+
+                # Must be a DIFFERENT real venue (not same venue as main activity, not sub-area)
+                main_title = act.get("title", "")
+                main_norm, main_tokens = _normalize_title_tokens(main_title)
+                pb_norm, pb_tokens = _normalize_title_tokens(pb_title)
+
+                act_poi = act.get("_matched_poi")
+                is_same_poi = False
+                if act_poi and act_poi.get("name", "").lower() == pb_poi.get("name", "").lower():
+                    is_same_poi = True
+
+                ratio = difflib.SequenceMatcher(None, main_norm, pb_norm).ratio()
+                is_sub_area = (
+                    (len(main_norm) >= 5 and main_norm in pb_norm) or
+                    (len(pb_norm) >= 5 and pb_norm in main_norm) or
+                    ratio >= 0.70 or
+                    len(main_tokens.intersection(pb_tokens)) >= 2
+                )
+
+                if is_same_poi or is_sub_area:
+                    logger.info(f"Plan B '{pb_title}' is same venue or sub-area of main activity '{main_title}'. Removing.")
+                    act["hasPlanBReady"] = False
+                    act["planBAlternative"] = None
+                    continue
+
+                # Must be indoor or sheltered venue
+                poi_cat = pb_poi.get("category", "")
+                poi_tags = pb_poi.get("tags", {})
+                is_sheltered = (
+                    plan_b.get("isIndoor") is True or
+                    any(c in poi_cat.lower() for c in ("museum", "gallery", "palace", "temple", "spiritual", "indoor", "aquarium", "library", "exhibition")) or
+                    any(t in str(poi_tags).lower() for t in ("indoor", "museum", "temple", "palace", "gallery"))
+                )
+                is_outdoor_only = any(c in poi_cat.lower() for c in ("beach", "viewpoint", "waterfall", "park", "garden", "wildlife", "reserve", "lake"))
+                if is_outdoor_only and not plan_b.get("isIndoor"):
+                    logger.info(f"Plan B '{pb_title}' is an open outdoor venue ({poi_cat}), not sheltered. Removing.")
+                    act["hasPlanBReady"] = False
+                    act["planBAlternative"] = None
+                    continue
+
+                # Validated! Attach verified POI coordinates and image
+                if pb_poi.get("lat") is not None:
+                    plan_b["lat"] = float(pb_poi["lat"])
+                    plan_b["latitude"] = float(pb_poi["lat"])
+                if pb_poi.get("lon") is not None:
+                    plan_b["lon"] = float(pb_poi["lon"])
+                    plan_b["longitude"] = float(pb_poi["lon"])
+                if pb_poi.get("area"):
+                    plan_b["location"] = pb_poi["area"]
+                elif pb_poi.get("name"):
+                    plan_b["location"] = pb_poi["name"]
+
+                plan_b["isIndoor"] = True
+                plan_b["weatherRisk"] = "low"
+                plan_b["weatherRiskLabel"] = "☂️ Indoor Sheltered"
+                pb_wiki = pb_poi.get("tags", {}).get("wikipedia") or pb_poi.get("name") or pb_title
+                if ":" in str(pb_wiki):
+                    pb_wiki = str(pb_wiki).split(":", 1)[-1]
+                plan_b["imageUrl"] = get_wikipedia_page_image(pb_wiki)
+
+                act["hasPlanBReady"] = True
+                act["planBAlternative"] = plan_b
+
+            # Clean up internal temporary fields before returning
+            for act in sanitized_activities:
+                act.pop("_matched_poi", None)
+
+            sanitized_days.append({
+                "dayNumber": day_num,
+                "dayOfWeek": day.get("dayOfWeek", "Day"),
+                "dateStr": day.get("dateStr", ""),
+                "theme": day.get("theme", f"{day_dest.name} Exploration"),
+                "weatherSummary": day.get("weatherSummary", "26°C • Clear"),
+                "temperature": day.get("temperature", "26°C"),
+                "rainRisk": int(day.get("rainRisk", 10)),
+                "weatherCondition": day.get("weatherCondition", "sunny"),
+                "weatherAlert": day.get("weatherAlert"),
+                "dayDestination": {
+                    "name": day_dest.name,
+                    "state": day_dest.state,
+                    "lat": day_dest.lat,
+                    "lon": day_dest.lon
+                },
+                "activities": sanitized_activities
+            })
 
         if not sanitized_days:
             return False, None
 
-        # ── POI Verification and Filtering ──────────────────────────────
-        pois = data.get("_pois", [])
-        poi_source = data.get("_poiSource", "none")
-
-        if poi_source in ("curated", "openstreetmap") and pois:
-            for day in sanitized_days:
-                day_acts = day.get("activities", [])
-                for act in day_acts:
-                    matched, matched_poi = _match_activity_to_poi(act.get("title", ""), pois)
-                    if matched and matched_poi:
-                        act["verified"] = True
-                        if matched_poi.get("lat") is not None:
-                            act["lat"] = float(matched_poi["lat"])
-                            act["latitude"] = float(matched_poi["lat"])
-                        if matched_poi.get("lon") is not None:
-                            act["lon"] = float(matched_poi["lon"])
-                            act["longitude"] = float(matched_poi["lon"])
-                        if matched_poi.get("area"):
-                            act["location"] = matched_poi["area"]
-                        elif matched_poi.get("name"):
-                            act["location"] = matched_poi["name"]
-                    else:
-                        act["verified"] = False
-
-                # Drop unverified activities when verified POIs exist,
-                # but only if the day keeps at least 2 activities.
-                # Otherwise keep them and set verified=false.
-                verified_acts = [a for a in day_acts if a.get("verified")]
-                if len(verified_acts) >= 2:
-                    day["activities"] = verified_acts
-                else:
-                    day["activities"] = day_acts
-
         return True, {
-            "tagline": data.get("tagline", f"{config.get('travelerType', 'Curated')} Expedition across {config.get('destination')}"),
+            "tagline": data.get("tagline", f"{config.get('travelerType', 'Curated')} Expedition across {' ➔ '.join(d.name for d in resolved_destinations)}"),
             "days": sanitized_days
         }
 
@@ -626,24 +954,81 @@ STRICT REQUIREMENTS:
             "generationSource": "deterministic-fallback"
         }
 
-    def _generate_fallback_itinerary(self, config: dict) -> dict:
+    def _generate_fallback_itinerary(
+        self,
+        config: dict,
+        resolved_destinations: list = None,
+        day_destinations: list = None,
+        per_dest_pois: dict = None,
+        per_dest_poi_source: dict = None
+    ) -> dict:
         """Deterministic itinerary synthesis for destinations when live AI is offline."""
-        destination = config.get("destination", "Hyderabad, Telangana")
-        dest_clean = destination.split(",")[0].strip()
+        from app.services.destinations import (
+            destination_resolver,
+            allocate_trip_days,
+            haversine_km,
+            calculate_transit_between,
+            ResolvedDestination
+        )
+
+        if not resolved_destinations:
+            raw_dest_list = config.get("destinations")
+            if not raw_dest_list or not isinstance(raw_dest_list, list):
+                raw_str = config.get("destination", "")
+                if "➔" in raw_str:
+                    raw_dest_list = [s.strip() for s in raw_str.split("➔") if s.strip()]
+                elif "->" in raw_str:
+                    raw_dest_list = [s.strip() for s in raw_str.split("->") if s.strip()]
+                else:
+                    raw_dest_list = [raw_str.strip()] if raw_str.strip() else ["Jaipur"]
+
+            resolved_destinations = []
+            for d in raw_dest_list:
+                if isinstance(d, ResolvedDestination):
+                    resolved_destinations.append(d)
+                elif isinstance(d, dict) and "name" in d and "lat" in d:
+                    resolved_destinations.append(
+                        ResolvedDestination(d["name"], d.get("state", "India"), float(d["lat"]), float(d["lon"]))
+                    )
+                else:
+                    res = destination_resolver.resolve(str(d))
+                    if res.is_ok and res.destination:
+                        resolved_destinations.append(res.destination)
+
+        if not resolved_destinations:
+            res = destination_resolver.resolve("Jaipur, Rajasthan")
+            if res.is_ok and res.destination:
+                resolved_destinations = [res.destination]
+
         start_date = config.get("startDate", "2026-11-20")
-        end_date = config.get("endDate", "2026-11-22")
-        traveler = config.get("travelerType", "Friends")
-        budget = config.get("budgetTier", "Budget-friendly")
+        end_date = config.get("endDate", "2026-11-23")
+        traveler = config.get("travelerType", "Couple")
+        budget = config.get("budgetTier", "Moderate")
         pace = config.get("pace", "Balanced")
-        interests = config.get("interests", ["Food", "History", "Culture"])
+        interests = config.get("interests", ["Culture", "Food", "History"])
 
         # Determine days count
         try:
             d1 = datetime.strptime(start_date, "%Y-%m-%d")
             d2 = datetime.strptime(end_date, "%Y-%m-%d")
-            num_days = max(1, min((d2 - d1).days + 1, 7))
+            num_days = max(1, min((d2 - d1).days + 1, 14))
         except Exception:
-            num_days = 3
+            num_days = len(resolved_destinations) if len(resolved_destinations) > 1 else 3
+
+        if not day_destinations:
+            day_destinations = allocate_trip_days(num_days, resolved_destinations)
+        else:
+            num_days = len(day_destinations)
+
+        if per_dest_pois is None:
+            svc = _get_poi_service()
+            per_dest_pois = {}
+            for dest in resolved_destinations:
+                if svc:
+                    p_res = svc.get_pois(dest.name, max_results=30, interests=interests)
+                    per_dest_pois[dest.name] = p_res.get("pois", [])
+                else:
+                    per_dest_pois[dest.name] = []
 
         # Destination landmark database for premier verified Indian hubs
         VIZAG_LANDMARKS = [
@@ -653,7 +1038,7 @@ STRICT REQUIREMENTS:
                 "costDisplay": "₹70", "category": "History", "location": "RK Beach Road, Visakhapatnam",
                 "isIndoor": True, "weatherRisk": "low", "weatherRiskLabel": "🏛️ Indoor Submarine Museum",
                 "description": "Authentic Soviet-built submarine decommissioned and preserved as South Asia's first submarine museum along the coastal sands.",
-                "imageUrl": "https://images.unsplash.com/photo-1599661046289-e31897846e41?auto=format&fit=crop&w=600&q=80"
+                "imageUrl": ""
             },
             {
                 "title": "TU 142 Aircraft Museum",
@@ -661,7 +1046,7 @@ STRICT REQUIREMENTS:
                 "costDisplay": "₹50", "category": "History", "location": "Opposite Kursura, Beach Road, Visakhapatnam",
                 "isIndoor": True, "weatherRisk": "low", "weatherRiskLabel": "✈️ Covered Aviation Gallery",
                 "description": "Decommissioned Tupolev maritime anti-submarine reconnaissance aircraft transformed into an interactive naval aviation museum.",
-                "imageUrl": "https://images.unsplash.com/photo-1587474260584-136574528ed5?auto=format&fit=crop&w=600&q=80"
+                "imageUrl": ""
             },
             {
                 "title": "Ramakrishna Beach Promenade & Sunset Walk",
@@ -669,7 +1054,7 @@ STRICT REQUIREMENTS:
                 "costDisplay": "Free", "category": "Relaxation", "location": "Beach Road, Visakhapatnam",
                 "isIndoor": False, "weatherRisk": "low", "weatherRiskLabel": "🌊 Coastal Sunset",
                 "description": "Iconic seafront promenade known for the Kali Temple vista, maritime monuments, and refreshing Bay of Bengal evening breeze.",
-                "imageUrl": "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=600&q=80"
+                "imageUrl": ""
             },
             {
                 "title": "Kailasagiri Hilltop Park & Coastal Ropeway",
@@ -677,7 +1062,7 @@ STRICT REQUIREMENTS:
                 "costDisplay": "₹120", "category": "Nature", "location": "Hill Crest, Kailasagiri, Visakhapatnam",
                 "isIndoor": False, "weatherRisk": "low", "weatherRiskLabel": "☀️ Panoramic Heights",
                 "description": "Scenic 360-foot hilltop park featuring colossal Shiva-Parvati statues, floral clock, and aerial cable car views of the coastline.",
-                "imageUrl": "https://images.unsplash.com/photo-1589182373726-e4f658ab50f0?auto=format&fit=crop&w=600&q=80"
+                "imageUrl": ""
             },
             {
                 "title": "Tenneti Seafront Coastal Park",
@@ -685,7 +1070,7 @@ STRICT REQUIREMENTS:
                 "costDisplay": "₹20", "category": "Nature", "location": "Jodugullapalem, Beach Road, Visakhapatnam",
                 "isIndoor": False, "weatherRisk": "high", "weatherRiskLabel": "⚠️ Convective Rain Risk",
                 "description": "Cliffside coastal park overlooking rocky Bay of Bengal shores and the grounded cargo vessel MV Maa.",
-                "imageUrl": "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=600&q=80",
+                "imageUrl": "",
                 "alt": {
                     "title": "Visakha Museum Heritage Galleries", "duration": "2h", "cost": 40, "costDisplay": "₹40",
                     "category": "Culture", "location": "Dutch Bungalow, Beach Road, Visakhapatnam", "isIndoor": True,
@@ -700,7 +1085,7 @@ STRICT REQUIREMENTS:
                 "costDisplay": "Free", "category": "Adventure", "location": "Rushikonda, Visakhapatnam",
                 "isIndoor": False, "weatherRisk": "low", "weatherRiskLabel": "🏖️ Golden Hour",
                 "description": "Blue Flag-certified golden sand cove known for crystal waters, surfing, and scenic rocky headlands.",
-                "imageUrl": "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=600&q=80"
+                "imageUrl": ""
             },
             {
                 "title": "Simhachalam Temple (Varaha Lakshmi Narasimha)",
@@ -708,7 +1093,7 @@ STRICT REQUIREMENTS:
                 "costDisplay": "₹100", "category": "Spiritual", "location": "Simhachalam Hill Range, Visakhapatnam",
                 "isIndoor": False, "weatherRisk": "low", "weatherRiskLabel": "🪔 Sacred Morning",
                 "description": "Ancient 11th-century hill shrine celebrated for its ornate Chola-Ganga stone carving and 96-pillar Kalyana Mandapam.",
-                "imageUrl": "https://images.unsplash.com/photo-1590050752117-238cb0fb12b1?auto=format&fit=crop&w=600&q=80"
+                "imageUrl": ""
             },
             {
                 "title": "Dolphin's Nose Promontory & Hilltop Lighthouse",
@@ -716,7 +1101,7 @@ STRICT REQUIREMENTS:
                 "costDisplay": "₹30", "category": "History", "location": "Southern Port Ridge, Visakhapatnam",
                 "isIndoor": False, "weatherRisk": "low", "weatherRiskLabel": "⚓ Maritime Vista",
                 "description": "Natural dolphin head-shaped basalt rock projecting into the sea, featuring a 358-meter lighthouse overlooking the harbor.",
-                "imageUrl": "https://images.unsplash.com/photo-1600100397608-f010f4439c05?auto=format&fit=crop&w=600&q=80"
+                "imageUrl": ""
             },
             {
                 "title": "Yarada Beach Coastal Cove",
@@ -724,7 +1109,7 @@ STRICT REQUIREMENTS:
                 "costDisplay": "₹30", "category": "Relaxation", "location": "Yarada Village, Visakhapatnam",
                 "isIndoor": False, "weatherRisk": "low", "weatherRiskLabel": "🌅 Sunset Overlook",
                 "description": "Pristine secluded beach embraced by lush green hills on three sides and the azure Bay of Bengal on the fourth.",
-                "imageUrl": "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=600&q=80"
+                "imageUrl": ""
             },
             {
                 "title": "Thotlakonda Buddhist Complex",
@@ -732,7 +1117,7 @@ STRICT REQUIREMENTS:
                 "costDisplay": "₹25", "category": "History", "location": "Mangamaripeta Hill, Visakhapatnam",
                 "isIndoor": False, "weatherRisk": "low", "weatherRiskLabel": "🪷 Monastic Heritage",
                 "description": "2,000-year-old Hinayana Buddhist monastery ruins perched on a hill above the sea with stupas and stone viharas.",
-                "imageUrl": "https://images.unsplash.com/photo-1599661046289-e31897846e41?auto=format&fit=crop&w=600&q=80"
+                "imageUrl": ""
             },
             {
                 "title": "Bheemili Beach & Dutch Outpost Ruins",
@@ -740,7 +1125,7 @@ STRICT REQUIREMENTS:
                 "costDisplay": "Free", "category": "History", "location": "Bheemunipatnam, Visakhapatnam",
                 "isIndoor": False, "weatherRisk": "low", "weatherRiskLabel": "🏛️ Dutch Maritime Ruins",
                 "description": "Historic 17th-century Dutch maritime settlement at the mouth of the Gosthani River with colonial cemetery ruins.",
-                "imageUrl": "https://images.unsplash.com/photo-1596178065887-1198b6148b2b?auto=format&fit=crop&w=600&q=80"
+                "imageUrl": ""
             },
             {
                 "title": "Jagadamba Center & Waltair Seafood Trail",
@@ -748,7 +1133,7 @@ STRICT REQUIREMENTS:
                 "costDisplay": "₹350", "category": "Food", "location": "Jagadamba Junction, Visakhapatnam",
                 "isIndoor": True, "weatherRisk": "low", "weatherRiskLabel": "🍽️ Regional Andhra Cuisine",
                 "description": "Curated culinary tasting of authentic coastal Andhra delicacies, Royyala Iguru, and Madugula halwa.",
-                "imageUrl": "https://images.unsplash.com/photo-1563379091339-03b21ab4a4f8?auto=format&fit=crop&w=600&q=80"
+                "imageUrl": ""
             }
         ]
 
@@ -762,7 +1147,7 @@ STRICT REQUIREMENTS:
                     "costDisplay": "₹50", "category": "History", "location": "Old City, Hyderabad",
                     "isIndoor": False, "weatherRisk": "low", "weatherRiskLabel": "☀️ Clear Morning",
                     "description": "16th-century four-minaret monument paired with vibrant lac bangle arcades and Irani chai.",
-                    "imageUrl": "https://images.unsplash.com/photo-1590050752117-238cb0fb12b1?auto=format&fit=crop&w=600&q=80"
+                    "imageUrl": ""
                 },
                 {
                     "title": "Chowmahalla Palace Royal Courtyards",
@@ -770,7 +1155,7 @@ STRICT REQUIREMENTS:
                     "costDisplay": "₹100", "category": "Culture", "location": "Motigall, Hyderabad",
                     "isIndoor": True, "weatherRisk": "low", "weatherRiskLabel": "🏛️ Indoor Safe",
                     "description": "Opulent palace seat of the Asaf Jahi dynasty with ornate Belgian crystal chandeliers.",
-                    "imageUrl": "https://images.unsplash.com/photo-1587474260584-136574528ed5?auto=format&fit=crop&w=600&q=80"
+                    "imageUrl": ""
                 },
                 {
                     "title": "Paradise Food Trail & Biryani Heritage",
@@ -778,7 +1163,7 @@ STRICT REQUIREMENTS:
                     "costDisplay": "₹350", "category": "Food", "location": "Secunderabad / Old City",
                     "isIndoor": True, "weatherRisk": "low", "weatherRiskLabel": "🍽️ Indoor Dining",
                     "description": "Authentic Hyderabadi Dum Biryani, mirchi ka salan, and double ka meetha tasting.",
-                    "imageUrl": "https://images.unsplash.com/photo-1563379091339-03b21ab4a4f8?auto=format&fit=crop&w=600&q=80"
+                    "imageUrl": ""
                 },
                 {
                     "title": "Golconda Fort & Acoustic Echo Vaults",
@@ -786,7 +1171,7 @@ STRICT REQUIREMENTS:
                     "costDisplay": "₹40", "category": "History", "location": "Ibrahim Bagh, Hyderabad",
                     "isIndoor": False, "weatherRisk": "high", "weatherRiskLabel": "⚠️ Convective Rain Risk",
                     "description": "Citadel fortress famous for its acoustic clapping portico and Koh-i-Noor diamond vaults.",
-                    "imageUrl": "https://images.unsplash.com/photo-1605649487212-47bdab064df7?auto=format&fit=crop&w=600&q=80",
+                    "imageUrl": "",
                     "alt": {
                         "title": "Salar Jung Museum Galleries", "duration": "2h", "cost": 100, "costDisplay": "₹100",
                         "category": "Culture", "location": "Darulshifa, Hyderabad", "isIndoor": True,
@@ -800,7 +1185,7 @@ STRICT REQUIREMENTS:
                     "costDisplay": "₹50", "category": "Nature", "location": "Golconda, Hyderabad",
                     "isIndoor": False, "weatherRisk": "low", "weatherRiskLabel": "☀️ Clear Skies",
                     "description": "Domed stone mausoleums surrounded by landscaped Persian charbagh gardens.",
-                    "imageUrl": "https://images.unsplash.com/photo-1589182373726-e4f658ab50f0?auto=format&fit=crop&w=600&q=80"
+                    "imageUrl": ""
                 },
                 {
                     "title": "Hussain Sagar Lake & Necklace Road Promenade",
@@ -808,7 +1193,7 @@ STRICT REQUIREMENTS:
                     "costDisplay": "₹100", "category": "Relaxation", "location": "Necklace Rd, Hyderabad",
                     "isIndoor": False, "weatherRisk": "low", "weatherRiskLabel": "⛵ Twilight Window",
                     "description": "Heart-shaped urban lake featuring the monolithic Buddha statue and lakefront breeze.",
-                    "imageUrl": "https://images.unsplash.com/photo-1570168007204-dfb528c6958f?auto=format&fit=crop&w=600&q=80"
+                    "imageUrl": ""
                 },
                 {
                     "title": "Shilparamam Arts & Crafts Village",
@@ -816,7 +1201,7 @@ STRICT REQUIREMENTS:
                     "costDisplay": "₹60", "category": "Culture", "location": "HITEC City, Hyderabad",
                     "isIndoor": False, "weatherRisk": "low", "weatherRiskLabel": "☀️ Shaded Walkways",
                     "description": "Traditional artisan hamlet featuring handloom weavers, terracotta artisans, and folk music.",
-                    "imageUrl": "https://images.unsplash.com/photo-1600585154340-be6161a56a0c?auto=format&fit=crop&w=600&q=80"
+                    "imageUrl": ""
                 },
                 {
                     "title": "Durgam Cheruvu Cable-Stayed Bridge Walk",
@@ -824,7 +1209,7 @@ STRICT REQUIREMENTS:
                     "costDisplay": "Free", "category": "Nature", "location": "Jubilee Hills, Hyderabad",
                     "isIndoor": False, "weatherRisk": "low", "weatherRiskLabel": "🌆 Sunset View",
                     "description": "Iconic illuminated bridge with panoramic views over the secret lake and city skyline.",
-                    "imageUrl": "https://images.unsplash.com/photo-1519501025264-65ba15a82390?auto=format&fit=crop&w=600&q=80"
+                    "imageUrl": ""
                 }
             ],
             "jaipur": [
@@ -834,7 +1219,7 @@ STRICT REQUIREMENTS:
                     "costDisplay": "₹500", "category": "History", "location": "Amer, Jaipur",
                     "isIndoor": False, "weatherRisk": "low", "weatherRiskLabel": "☀️ Clear Skies",
                     "description": "Iconic 16th-century fortress overlooking Maota Lake, famous for intricate mirror mosaics.",
-                    "imageUrl": "https://images.unsplash.com/photo-1599661046289-e31897846e41?auto=format&fit=crop&w=600&q=80"
+                    "imageUrl": ""
                 },
                 {
                     "title": "Panna Meena Ka Kund Stepwell",
@@ -842,7 +1227,7 @@ STRICT REQUIREMENTS:
                     "costDisplay": "Free", "category": "Culture", "location": "Near Amer Fort, Jaipur",
                     "isIndoor": False, "weatherRisk": "low", "weatherRiskLabel": "☀️ Clear Skies",
                     "description": "Centuries-old symmetrical geometric stepwell with golden stone steps and shaded verandahs.",
-                    "imageUrl": "https://images.unsplash.com/photo-1609137144822-482a5c2ec0f5?auto=format&fit=crop&w=600&q=80"
+                    "imageUrl": ""
                 },
                 {
                     "title": "Jal Mahal Promenade & Spiced Chai Stop",
@@ -850,7 +1235,7 @@ STRICT REQUIREMENTS:
                     "costDisplay": "₹150", "category": "Food", "location": "Man Sagar Lake, Jaipur",
                     "isIndoor": False, "weatherRisk": "low", "weatherRiskLabel": "🌅 Sunset View",
                     "description": "Scenic photo stroll along lakeside promenade viewing the sunken water palace with spiced Kulhad chai.",
-                    "imageUrl": "https://images.unsplash.com/photo-1582510003544-4d00b7f74220?auto=format&fit=crop&w=600&q=80"
+                    "imageUrl": ""
                 },
                 {
                     "title": "Nahargarh Fort Outdoor Sunset Viewpoint",
@@ -858,7 +1243,7 @@ STRICT REQUIREMENTS:
                     "costDisplay": "₹300", "category": "Relaxation", "location": "Aravalli Hills, Jaipur",
                     "isIndoor": False, "weatherRisk": "high", "weatherRiskLabel": "⚠️ Convective Rain Risk",
                     "description": "Perched on the Aravalli ridge offering panoramic evening vistas across the Pink City.",
-                    "imageUrl": "https://images.unsplash.com/photo-1600100397608-f010f4439c05?auto=format&fit=crop&w=600&q=80",
+                    "imageUrl": "",
                     "alt": {
                         "title": "Albert Hall Museum & Indoor Pottery Gallery", "duration": "2h", "cost": 300, "costDisplay": "₹300",
                         "category": "Culture", "location": "Ram Niwas Garden, Jaipur", "isIndoor": True,
@@ -873,7 +1258,7 @@ STRICT REQUIREMENTS:
                     "costDisplay": "₹200", "category": "History", "location": "Badi Choupad, Jaipur",
                     "isIndoor": False, "weatherRisk": "low", "weatherRiskLabel": "☀️ Clear Skies",
                     "description": "Admire 953 honeycombed sandstone jharokhas in soft light from Wind View terrace.",
-                    "imageUrl": "https://images.unsplash.com/photo-1603262110263-fb010d6e75dc?auto=format&fit=crop&w=600&q=80"
+                    "imageUrl": ""
                 },
                 {
                     "title": "City Palace Royal Quarters & Chandra Mahal",
@@ -881,7 +1266,7 @@ STRICT REQUIREMENTS:
                     "costDisplay": "₹700", "category": "Culture", "location": "Gangori Bazaar, Jaipur",
                     "isIndoor": True, "weatherRisk": "low", "weatherRiskLabel": "🏛️ Indoor Sheltered",
                     "description": "Vast ceremonial courtyards, Peacock Gate, royal costume armory, and maharaja suites.",
-                    "imageUrl": "https://images.unsplash.com/photo-1590050752117-238cb0fb12b1?auto=format&fit=crop&w=600&q=80"
+                    "imageUrl": ""
                 }
             ],
             "goa": [
@@ -891,7 +1276,7 @@ STRICT REQUIREMENTS:
                     "costDisplay": "₹50", "category": "History", "location": "Old Goa, Goa",
                     "isIndoor": True, "weatherRisk": "low", "weatherRiskLabel": "🏛️ Indoor Heritage Basilica",
                     "description": "UNESCO World Heritage Baroque cathedral housing the sacred silver relics of St. Francis Xavier.",
-                    "imageUrl": "https://images.unsplash.com/photo-1587474260584-136574528ed5?auto=format&fit=crop&w=600&q=80"
+                    "imageUrl": ""
                 },
                 {
                     "title": "Fontainhas Latin Quarter Walking Tour",
@@ -899,7 +1284,7 @@ STRICT REQUIREMENTS:
                     "costDisplay": "₹150", "category": "Culture", "location": "Panaji, Goa",
                     "isIndoor": False, "weatherRisk": "low", "weatherRiskLabel": "☀️ Clear Skies",
                     "description": "Vibrant Portuguese quarter characterized by colorful tiled villas, bougainvillea balconies, and bakeries.",
-                    "imageUrl": "https://images.unsplash.com/photo-1596178065887-1198b6148b2b?auto=format&fit=crop&w=600&q=80"
+                    "imageUrl": ""
                 },
                 {
                     "title": "Mandovi River Twilight Sunset Cruise",
@@ -907,7 +1292,7 @@ STRICT REQUIREMENTS:
                     "costDisplay": "₹400", "category": "Relaxation", "location": "Panaji Jetty, Goa",
                     "isIndoor": False, "weatherRisk": "low", "weatherRiskLabel": "🌅 Sunset Cruise",
                     "description": "Scenic boat cruise along Mandovi estuary featuring live Goan folk dance and golden hour river views.",
-                    "imageUrl": "https://images.unsplash.com/photo-1519501025264-65ba15a82390?auto=format&fit=crop&w=600&q=80"
+                    "imageUrl": ""
                 },
                 {
                     "title": "Aguada Fort & Coastal Bastion",
@@ -915,7 +1300,7 @@ STRICT REQUIREMENTS:
                     "costDisplay": "₹50", "category": "History", "location": "Sinquerim, Goa",
                     "isIndoor": False, "weatherRisk": "high", "weatherRiskLabel": "⚠️ Convective Rain Risk",
                     "description": "17th-century Portuguese fortress and four-story lighthouse guarding the mouth of Mandovi river.",
-                    "imageUrl": "https://images.unsplash.com/photo-1600100397608-f010f4439c05?auto=format&fit=crop&w=600&q=80",
+                    "imageUrl": "",
                     "alt": {
                         "title": "Goa State Central Museum & Gallery", "duration": "2h", "cost": 100, "costDisplay": "₹100",
                         "category": "Culture", "location": "Patto, Panaji, Goa", "isIndoor": True,
@@ -930,7 +1315,7 @@ STRICT REQUIREMENTS:
                     "costDisplay": "Free", "category": "Relaxation", "location": "Anjuna, Goa",
                     "isIndoor": False, "weatherRisk": "low", "weatherRiskLabel": "☀️ Clear Skies",
                     "description": "Iconic north Goan beach framed by red laterite cliffs, coastal palms, and seaside cafes.",
-                    "imageUrl": "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=600&q=80"
+                    "imageUrl": ""
                 },
                 {
                     "title": "Spice Plantation Tour & Goan Buffet Dinner",
@@ -938,55 +1323,10 @@ STRICT REQUIREMENTS:
                     "costDisplay": "₹500", "category": "Food", "location": "Ponda, Goa",
                     "isIndoor": True, "weatherRisk": "low", "weatherRiskLabel": "🍽️ Covered Dining",
                     "description": "Traditional aromatic spice farm tour followed by authentic Goan fish curry and feni tasting.",
-                    "imageUrl": "https://images.unsplash.com/photo-1563379091339-03b21ab4a4f8?auto=format&fit=crop&w=600&q=80"
+                    "imageUrl": ""
                 }
             ]
         }
-
-        # Select landmarks from POIService or fallback dictionary
-        svc = _get_poi_service()
-        poi_data = svc.get_pois(destination, max_results=40, interests=interests) if svc else {}
-        retrieved_pois = poi_data.get("pois", [])
-
-        landmarks = []
-        if retrieved_pois:
-            for p in retrieved_pois:
-                cat = p.get("category", "Culture")
-                is_indoor = cat in ("Museum", "Art Gallery", "Palace", "Temple")
-                if "Free" in p.get("tags", {}).get("fee", "") or cat in ("Park", "Viewpoint"):
-                    cost_val = 0
-                elif cat == "Palace":
-                    cost_val = 250 if "budget" in budget.lower() else 450
-                elif cat in ("Museum", "Art Gallery"):
-                    cost_val = 50 if "budget" in budget.lower() else 150
-                elif cat == "Temple":
-                    cost_val = 0
-                else:
-                    cost_val = 100 if "budget" in budget.lower() else 250
-
-                landmarks.append({
-                    "title": p["name"],
-                    "period": "morning",
-                    "duration": "2h",
-                    "cost": cost_val,
-                    "costDisplay": f"₹{cost_val}" if cost_val > 0 else "Free",
-                    "category": cat,
-                    "location": p.get("area") or f"{p['name']}, {dest_clean}",
-                    "isIndoor": is_indoor,
-                    "lat": p.get("lat"),
-                    "lon": p.get("lon"),
-                    "weatherRisk": "low",
-                    "weatherRiskLabel": "🏛️ Indoor Sheltered" if is_indoor else "☀️ Clear Skies",
-                    "description": f"Verified attraction in {p.get('area', dest_clean)}.",
-                    "imageUrl": "https://images.unsplash.com/photo-1599661046289-e31897846e41?auto=format&fit=crop&w=600&q=80"
-                })
-        else:
-            hub_key = None
-            for k in LANDMARKS_DB.keys():
-                if k in dest_clean.lower():
-                    hub_key = k
-                    break
-            landmarks = LANDMARKS_DB.get(hub_key, [])
 
         # Determine pace scaling
         pace_lower = pace.lower()
@@ -1003,50 +1343,50 @@ STRICT REQUIREMENTS:
         # Multi-day archetype themes for generic destinations or extra days
         THEMED_DAYS = [
             ("Historic Architecture & Heritage Quarter", [
-                {"title": f"{dest_clean} Heritage Quarter Walking Tour", "duration": "2.5h", "cost": 300, "category": "Culture", "location": f"Old Town, {dest_clean}", "isIndoor": False, "desc": f"Guided walking tour exploring historic architecture, artisanal alleys, and local morning tea stops in {dest_clean}."},
-                {"title": f"{dest_clean} Central Arts & Cultural Museum", "duration": "2h", "cost": 150, "category": "History", "location": f"Museum Enclave, {dest_clean}", "isIndoor": True, "desc": f"Sheltered historic gallery featuring regional antiquities, folk textiles, and miniature paintings of {dest_clean}."},
-                {"title": f"{dest_clean} Twilight Culinary Trail", "duration": "2h", "cost": 450, "category": "Food", "location": f"Heritage Promenade, {dest_clean}", "isIndoor": True, "desc": f"Curated evening tasting of {dest_clean}'s signature delicacies, regional sweets, and clay-pot beverages."},
-                {"title": f"{dest_clean} Illuminated Clock Tower Square", "duration": "1.5h", "cost": 0, "category": "Relaxation", "location": f"City Center, {dest_clean}", "isIndoor": False, "desc": "Evening gathering hub featuring heritage lamp posts and vibrant street ambiance."}
+                {"title": "Heritage Quarter Walking Tour", "duration": "2.5h", "cost": 300, "category": "Culture", "location": "Old Town", "isIndoor": False, "desc": "Guided walking tour exploring historic architecture, artisanal alleys, and local morning tea stops."},
+                {"title": "Central Arts & Cultural Museum", "duration": "2h", "cost": 150, "category": "History", "location": "Museum Enclave", "isIndoor": True, "desc": "Sheltered historic gallery featuring regional antiquities, folk textiles, and miniature paintings."},
+                {"title": "Twilight Culinary Trail", "duration": "2h", "cost": 450, "category": "Food", "location": "Heritage Promenade", "isIndoor": True, "desc": "Curated evening tasting of signature delicacies, regional sweets, and clay-pot beverages."},
+                {"title": "Illuminated Clock Tower Square", "duration": "1.5h", "cost": 0, "category": "Relaxation", "location": "City Center", "isIndoor": False, "desc": "Evening gathering hub featuring heritage lamp posts and vibrant street ambiance."}
             ]),
             ("Scenic Heights & Botanic Sanctuaries", [
-                {"title": f"{dest_clean} Panoramic Hilltop Ridge Overlook", "duration": "2.5h", "cost": 100, "category": "Nature", "location": f"Upper Ridge, {dest_clean}", "isIndoor": False, "desc": f"Scenic hilltop vantage offering breathtaking horizons across the valleys of {dest_clean}."},
-                {"title": f"{dest_clean} Grand Botanical Sanctuary", "duration": "2h", "cost": 80, "category": "Nature", "location": f"Outer Ring, {dest_clean}", "isIndoor": False, "desc": "Lush shaded gardens featuring heritage flora, tranquil water bodies, and avian photography spots."},
-                {"title": f"{dest_clean} Artisan Coffee & Plantation Cafe", "duration": "1.5h", "cost": 250, "category": "Food", "location": f"Hill Slope, {dest_clean}", "isIndoor": True, "desc": "Locally harvested single-origin brews served with freshly baked treats overlooking the hills."},
-                {"title": f"{dest_clean} Sunset Point Golden Hour Deck", "duration": "1.5h", "cost": 50, "category": "Relaxation", "location": f"Ridge Path, {dest_clean}", "isIndoor": False, "desc": "Quiet wooden deck with panoramic sunset colors across the horizon."}
+                {"title": "Panoramic Hilltop Ridge Overlook", "duration": "2.5h", "cost": 100, "category": "Nature", "location": "Upper Ridge", "isIndoor": False, "desc": "Scenic hilltop vantage offering breathtaking horizons across the valleys."},
+                {"title": "Grand Botanical Sanctuary", "duration": "2h", "cost": 80, "category": "Nature", "location": "Outer Ring", "isIndoor": False, "desc": "Lush shaded gardens featuring heritage flora, tranquil water bodies, and avian photography spots."},
+                {"title": "Artisan Coffee & Plantation Cafe", "duration": "1.5h", "cost": 250, "category": "Food", "location": "Hill Slope", "isIndoor": True, "desc": "Locally harvested single-origin brews served with freshly baked treats overlooking the hills."},
+                {"title": "Sunset Point Golden Hour Deck", "duration": "1.5h", "cost": 50, "category": "Relaxation", "location": "Ridge Path", "isIndoor": False, "desc": "Quiet wooden deck with panoramic sunset colors across the horizon."}
             ]),
             ("Artisan Traditions & Sacred Heritage", [
-                {"title": f"{dest_clean} Ancient Stone Temple & Sculpted Mandapam", "duration": "2.5h", "cost": 50, "category": "Spiritual", "location": f"Temple Road, {dest_clean}", "isIndoor": False, "desc": f"Centuries-old stone sanctuary featuring intricate carvings, traditional bronze lamps, and peaceful prayer courtyards."},
-                {"title": f"{dest_clean} Master Weavers & Handicraft Atelier", "duration": "2h", "cost": 100, "category": "Culture", "location": f"Artisans Lane, {dest_clean}", "isIndoor": True, "desc": "Witness generational artisans shaping handloom fabrics, pottery, and brass metalwork."},
-                {"title": f"{dest_clean} Spice Market & Herb Guild Walk", "duration": "1.5h", "cost": 150, "category": "Food", "location": f"Bazaar Circle, {dest_clean}", "isIndoor": False, "desc": "Aromatic alleys filled with freshly ground spices, herbs, and cold-pressed oils."},
-                {"title": f"{dest_clean} Folk Music & Classical Dance Evening", "duration": "2h", "cost": 400, "category": "Culture", "location": f"Community Amphitheatre, {dest_clean}", "isIndoor": True, "desc": "Mesmerizing regional folk instruments, vocal ballads, and classical rhythms."}
+                {"title": "Ancient Stone Temple & Sculpted Mandapam", "duration": "2.5h", "cost": 50, "category": "Spiritual", "location": "Temple Road", "isIndoor": False, "desc": "Centuries-old stone sanctuary featuring intricate carvings, traditional bronze lamps, and peaceful prayer courtyards."},
+                {"title": "Master Weavers & Handicraft Atelier", "duration": "2h", "cost": 100, "category": "Culture", "location": "Artisans Lane", "isIndoor": True, "desc": "Witness generational artisans shaping handloom fabrics, pottery, and brass metalwork."},
+                {"title": "Spice Market & Herb Guild Walk", "duration": "1.5h", "cost": 150, "category": "Food", "location": "Bazaar Circle", "isIndoor": False, "desc": "Aromatic alleys filled with freshly ground spices, herbs, and cold-pressed oils."},
+                {"title": "Folk Music & Classical Dance Evening", "duration": "2h", "cost": 400, "category": "Culture", "location": "Community Amphitheatre", "isIndoor": True, "desc": "Mesmerizing regional folk instruments, vocal ballads, and classical rhythms."}
             ]),
             ("Waterfront Serenity & Nature Coves", [
-                {"title": f"{dest_clean} Waterfront Promenade & Morning Breeze", "duration": "2h", "cost": 0, "category": "Relaxation", "location": f"Waterfront Drive, {dest_clean}", "isIndoor": False, "desc": f"Crisp morning walk alongside the shimmering waters of {dest_clean} with avian sightings."},
-                {"title": f"{dest_clean} Lake Island Pavilion & Solar Cruise", "duration": "2h", "cost": 300, "category": "Adventure", "location": f"Pier Terminal, {dest_clean}", "isIndoor": False, "desc": "Tranquil electric boat cruise to a secluded island pavilion with mountain views."},
-                {"title": f"{dest_clean} Marine Life & Bio-Reserve Center", "duration": "2h", "cost": 120, "category": "Nature", "location": f"Coastal Enclave, {dest_clean}", "isIndoor": True, "desc": "Interactive exhibits showcasing native freshwater ecosystems and bird migrations."},
-                {"title": f"{dest_clean} Waterfront Twilight Grill Dinner", "duration": "2h", "cost": 700, "category": "Food", "location": f"Marina Jetty, {dest_clean}", "isIndoor": True, "desc": "Fresh locally sourced catch prepared with fragrant coastal spices and sunset vistas."}
+                {"title": "Waterfront Promenade & Morning Breeze", "duration": "2h", "cost": 0, "category": "Relaxation", "location": "Waterfront Drive", "isIndoor": False, "desc": "Crisp morning walk alongside the shimmering waters with avian sightings."},
+                {"title": "Lake Island Pavilion & Solar Cruise", "duration": "2h", "cost": 300, "category": "Adventure", "location": "Pier Terminal", "isIndoor": False, "desc": "Tranquil electric boat cruise to a secluded island pavilion with mountain views."},
+                {"title": "Marine Life & Bio-Reserve Center", "duration": "2h", "cost": 120, "category": "Nature", "location": "Coastal Enclave", "isIndoor": True, "desc": "Interactive exhibits showcasing native freshwater ecosystems and bird migrations."},
+                {"title": "Waterfront Twilight Grill Dinner", "duration": "2h", "cost": 700, "category": "Food", "location": "Marina Jetty", "isIndoor": True, "desc": "Fresh locally sourced catch prepared with fragrant coastal spices and sunset vistas."}
             ]),
             ("Sacred Valleys & Historic Citadels", [
-                {"title": f"{dest_clean} Hill Citadel & Historic Bastion", "duration": "3h", "cost": 200, "category": "History", "location": f"Fortress Hill, {dest_clean}", "isIndoor": False, "desc": f"Sprawling ramparts, watchtowers, and secret passageways guarding the borders of {dest_clean}."},
-                {"title": f"{dest_clean} Royal Armory & Coins Gallery", "duration": "1.5h", "cost": 80, "category": "History", "location": f"Upper Palace, {dest_clean}", "isIndoor": True, "desc": "Sheltered vault holding ancient damascened swords, royal royal edicts, and antique coinage."},
-                {"title": f"{dest_clean} Valley View Tea Lounge", "duration": "1.5h", "cost": 200, "category": "Relaxation", "location": f"Fort Verandah, {dest_clean}", "isIndoor": True, "desc": "Historic verandah offering fragrant chai and savory local pastries with commanding valley views."},
-                {"title": f"{dest_clean} Stargazing Astronomy Point", "duration": "1.5h", "cost": 100, "category": "Nature", "location": f"Observatory Crest, {dest_clean}", "isIndoor": False, "desc": "Unpolluted night sky viewing with high-powered telescope stations."}
+                {"title": "Hill Citadel & Historic Bastion", "duration": "3h", "cost": 200, "category": "History", "location": "Fortress Hill", "isIndoor": False, "desc": "Sprawling ramparts, watchtowers, and secret passageways guarding the borders."},
+                {"title": "Royal Armory & Coins Gallery", "duration": "1.5h", "cost": 80, "category": "History", "location": "Upper Palace", "isIndoor": True, "desc": "Sheltered vault holding ancient damascened swords, royal edicts, and antique coinage."},
+                {"title": "Valley View Tea Lounge", "duration": "1.5h", "cost": 200, "category": "Relaxation", "location": "Fort Verandah", "isIndoor": True, "desc": "Historic verandah offering fragrant chai and savory local pastries with commanding valley views."},
+                {"title": "Stargazing Astronomy Point", "duration": "1.5h", "cost": 100, "category": "Nature", "location": "Observatory Crest", "isIndoor": False, "desc": "Unpolluted night sky viewing with high-powered telescope stations."}
             ]),
             ("Hidden Gardens & Culinary Masterclass", [
-                {"title": f"{dest_clean} Organic Herb Farm & Guided Orchard Tour", "duration": "2h", "cost": 150, "category": "Nature", "location": f"Green Valley, {dest_clean}", "isIndoor": False, "desc": f"Walk through lush citrus groves, medicinal herb plots, and honey bee hives."},
-                {"title": f"{dest_clean} Interactive Cooking Studio & Heritage Feast", "duration": "2.5h", "cost": 650, "category": "Food", "location": f"Culinary Quarter, {dest_clean}", "isIndoor": True, "desc": "Hands-on cooking experience learning grandmother recipes and slow-cooked earthen pot delicacies."},
-                {"title": f"{dest_clean} Artisan Ceramics & Pottery Workshop", "duration": "2h", "cost": 300, "category": "Culture", "location": f"Pottery Colony, {dest_clean}", "isIndoor": True, "desc": "Shape your own clay vessel on a potter wheel with traditional ceramic glaze."},
-                {"title": f"{dest_clean} Candlelit Courtyard Dinner", "duration": "2h", "cost": 800, "category": "Food", "location": f"Old Haveli, {dest_clean}", "isIndoor": True, "desc": "Romantic outdoor courtyard dinner with live acoustic strings and seasonal tasting menu."}
+                {"title": "Organic Herb Farm & Guided Orchard Tour", "duration": "2h", "cost": 150, "category": "Nature", "location": "Green Valley", "isIndoor": False, "desc": "Walk through lush citrus groves, medicinal herb plots, and honey bee hives."},
+                {"title": "Interactive Cooking Studio & Heritage Feast", "duration": "2.5h", "cost": 650, "category": "Food", "location": "Culinary Quarter", "isIndoor": True, "desc": "Hands-on cooking experience learning grandmother recipes and slow-cooked earthen pot delicacies."},
+                {"title": "Artisan Ceramics & Pottery Workshop", "duration": "2h", "cost": 300, "category": "Culture", "location": "Pottery Colony", "isIndoor": True, "desc": "Shape your own clay vessel on a potter wheel with traditional ceramic glaze."},
+                {"title": "Candlelit Courtyard Dinner", "duration": "2h", "cost": 800, "category": "Food", "location": "Old Haveli", "isIndoor": True, "desc": "Romantic outdoor courtyard dinner with live acoustic strings and seasonal tasting menu."}
             ]),
             ("Farewell Horizons & Golden Vista", [
-                {"title": f"{dest_clean} Dawn Ridge Awakening Walk", "duration": "2h", "cost": 0, "category": "Nature", "location": f"Sunrise Ridge, {dest_clean}", "isIndoor": False, "desc": f"Early morning meditation and brisk walk watching the morning mist lift across {dest_clean}."},
-                {"title": f"{dest_clean} Heritage Library & Archival Reading Hall", "duration": "1.5h", "cost": 50, "category": "Culture", "location": f"Town Center, {dest_clean}", "isIndoor": True, "desc": "Historic teakwood reading hall with rare travel logs, lithographs, and maps."},
-                {"title": f"{dest_clean} Souvenir Emporium & Handloom Guild", "duration": "2h", "cost": 200, "category": "Shopping", "location": f"Central Square, {dest_clean}", "isIndoor": True, "desc": "Certified authentic artisanal souvenirs, handmade shawls, and locally packed teas."},
-                {"title": f"{dest_clean} Celebration Farewell Feast", "duration": "2h", "cost": 900, "category": "Food", "location": f"Grand Terrace, {dest_clean}", "isIndoor": True, "desc": "Celebratory multi-course dinner summarizing the regional flavors and memorable moments of your trip."}
+                {"title": "Dawn Ridge Awakening Walk", "duration": "2h", "cost": 0, "category": "Nature", "location": "Sunrise Ridge", "isIndoor": False, "desc": "Early morning meditation and brisk walk watching the morning mist lift."},
+                {"title": "Heritage Library & Archival Reading Hall", "duration": "1.5h", "cost": 50, "category": "Culture", "location": "Town Center", "isIndoor": True, "desc": "Historic teakwood reading hall with rare travel logs, lithographs, and maps."},
+                {"title": "Souvenir Emporium & Handloom Guild", "duration": "2h", "cost": 200, "category": "Shopping", "location": "Central Square", "isIndoor": True, "desc": "Certified authentic artisanal souvenirs, handmade shawls, and locally packed teas."},
+                {"title": "Celebration Farewell Feast", "duration": "2h", "cost": 900, "category": "Food", "location": "Grand Terrace", "isIndoor": True, "desc": "Celebratory multi-course dinner summarizing the regional flavors and memorable moments of your trip."}
             ])
         ]
 
-        used_titles = set()
+        used_titles_per_dest: dict[str, set[str]] = {}
         days = []
         cur_date = datetime.strptime(start_date, "%Y-%m-%d") if start_date else datetime.now()
 
@@ -1055,39 +1395,83 @@ STRICT REQUIREMENTS:
             day_of_week = cur_date.strftime("%A")
             is_rain_day = (day_num == 2)  # Controlled Day 2 weather contingency test
 
-            # Pick activities for this day ensuring zero overlap across days
+            day_dest = day_destinations[min(day_num - 1, len(day_destinations) - 1)]
+            dest_clean = day_dest.name
+            dest_key = dest_clean.lower().strip()
+
+            if dest_clean not in used_titles_per_dest:
+                used_titles_per_dest[dest_clean] = set()
+            used_titles = used_titles_per_dest[dest_clean]
+
+            # 1. Lookup landmarks specifically for this day's destination
+            day_landmarks = LANDMARKS_DB.get(dest_key)
+            if not day_landmarks:
+                dest_pois = per_dest_pois.get(dest_clean, []) if per_dest_pois else []
+                if not dest_pois:
+                    svc = _get_poi_service()
+                    if svc:
+                        p_res = svc.get_pois(dest_clean, max_results=20, interests=interests)
+                        dest_pois = p_res.get("pois", [])
+                if dest_pois:
+                    day_landmarks = []
+                    for p in dest_pois:
+                        cat = p.get("category", "Culture")
+                        is_ind = cat in ("Museum", "Palace", "Art Gallery", "Temple")
+                        day_landmarks.append({
+                            "title": p["name"],
+                            "period": "morning",
+                            "duration": "2h",
+                            "cost": 50 if is_ind else 0,
+                            "costDisplay": "₹50" if is_ind else "Free",
+                            "category": cat,
+                            "location": p.get("area") or f"{p['name']}, {dest_clean}",
+                            "lat": p.get("lat", day_dest.lat),
+                            "lon": p.get("lon", day_dest.lon),
+                            "isIndoor": is_ind,
+                            "weatherRisk": "low",
+                            "weatherRiskLabel": "🏛️ Indoor Safe" if is_ind else "☀️ Clear Skies",
+                            "description": f"Explore {p['name']}, a verified attraction in {dest_clean}, {day_dest.state}.",
+                            "imageUrl": ""
+                        })
+                else:
+                    day_landmarks = []
+
+            # Pick activities for this day ensuring zero overlap across days in the same destination
             day_activities = []
             chosen_items = []
 
-            # 1. First try unused items from landmarks database
-            if landmarks:
-                for item in landmarks:
+            # Try unused items from destination landmarks
+            if day_landmarks:
+                for item in day_landmarks:
                     if item["title"] not in used_titles and len(chosen_items) < acts_per_day:
                         chosen_items.append(item)
                         used_titles.add(item["title"])
 
-            # 2. If more items needed, pull from themed archetype for this day
+            # If more items needed, pull from themed archetype for this day
             theme_idx = (day_num - 1) % len(THEMED_DAYS)
             theme_name, theme_stops = THEMED_DAYS[theme_idx]
 
             if len(chosen_items) < acts_per_day:
                 for s in theme_stops:
-                    if s["title"] not in used_titles and len(chosen_items) < acts_per_day:
+                    s_title = f"{dest_clean} {s['title']}"
+                    if s_title not in used_titles and len(chosen_items) < acts_per_day:
                         chosen_items.append({
-                            "title": s["title"],
+                            "title": s_title,
                             "period": "morning",
                             "duration": s["duration"],
                             "cost": s["cost"],
                             "costDisplay": f"₹{s['cost']}" if s["cost"] > 0 else "Free",
                             "category": s["category"],
-                            "location": s["location"],
+                            "location": f"{s['location']}, {dest_clean}",
+                            "lat": day_dest.lat,
+                            "lon": day_dest.lon,
                             "isIndoor": s["isIndoor"],
                             "weatherRisk": "low",
                             "weatherRiskLabel": "🏛️ Indoor Safe" if s["isIndoor"] else "☀️ Clear Skies",
-                            "description": s["desc"],
-                            "imageUrl": "https://images.unsplash.com/photo-1599661046289-e31897846e41?auto=format&fit=crop&w=600&q=80"
+                            "description": f"{s['desc']} in {dest_clean}.",
+                            "imageUrl": ""
                         })
-                        used_titles.add(s["title"])
+                        used_titles.add(s_title)
 
             # Assign slots and harmonize weather risks
             # Exactly one outdoor activity on a rain day gets high weather risk and a Plan B
@@ -1099,14 +1483,11 @@ STRICT REQUIREMENTS:
 
                 is_indoor = item.get("isIndoor", False)
 
-                # Weather risk logic: strictly consistent
                 if is_rain_day and not is_indoor and not plan_b_assigned and a_idx >= 2:
-                    # Target outdoor activity facing rain risk
                     weather_risk = "high"
                     weather_risk_label = "⚠️ Convective Rain Risk"
                     plan_b_assigned = True
 
-                    # Provide sheltered alternative
                     alt_info = item.get("alt")
                     if alt_info:
                         alt_data = {
@@ -1125,9 +1506,8 @@ STRICT REQUIREMENTS:
                             "costDelta": "₹0"
                         }
                     else:
-                        # Find a real indoor landmark from destination POIs not already scheduled today
                         real_indoor = None
-                        for l_cand in landmarks:
+                        for l_cand in day_landmarks:
                             if l_cand.get("isIndoor") and l_cand.get("title") not in [c.get("title") for c in chosen_items]:
                                 real_indoor = l_cand
                                 break
@@ -1144,28 +1524,15 @@ STRICT REQUIREMENTS:
                                 "isIndoor": True,
                                 "weatherRiskLabel": "🛡️ 100% Indoor Sheltered",
                                 "description": f"Curated sheltered visit to {real_indoor['title']} safe from rain showers.",
+                                "imageUrl": get_wikipedia_page_image(real_indoor.get("title", "")),
                                 "shelterReason": "Convective shower alert. Transferred to sheltered indoor venue.",
                                 "costDelta": "₹0"
                             }
+                            has_plan_b = True
                         else:
-                            alt_data = {
-                                "id": f"alt-{day_num}-{a_idx}",
-                                "title": f"{dest_clean} Cultural Center & Covered Gallery",
-                                "timeSlot": slot_time,
-                                "duration": "2h",
-                                "cost": 50,
-                                "costDisplay": "₹50",
-                                "category": "Culture",
-                                "location": f"Central District, {dest_clean}",
-                                "isIndoor": True,
-                                "weatherRiskLabel": "🛡️ 100% Indoor Sheltered",
-                                "description": f"Covered arts and cultural center in {dest_clean} with protected exhibition halls.",
-                                "shelterReason": "Convective shower alert. Transferred to sheltered indoor gallery.",
-                                "costDelta": "₹0"
-                            }
-                    has_plan_b = True
+                            alt_data = None
+                            has_plan_b = False
                 else:
-                    # Low risk activity
                     weather_risk = "low"
                     if is_indoor:
                         weather_risk_label = "🏛️ Indoor Sheltered"
@@ -1173,6 +1540,9 @@ STRICT REQUIREMENTS:
                         weather_risk_label = "☀️ Clear Skies"
                     alt_data = None
                     has_plan_b = False
+
+                item_lat = float(item.get("lat") or day_dest.lat)
+                item_lon = float(item.get("lon") or day_dest.lon)
 
                 day_activities.append({
                     "id": act_id,
@@ -1184,27 +1554,20 @@ STRICT REQUIREMENTS:
                     "costDisplay": item.get("costDisplay", f"₹{item.get('cost', 100)}"),
                     "category": item.get("category", "Culture"),
                     "location": item.get("location", dest_clean),
+                    "lat": item_lat,
+                    "lon": item_lon,
+                    "latitude": item_lat,
+                    "longitude": item_lon,
                     "isIndoor": is_indoor,
                     "weatherRisk": weather_risk,
                     "weatherRiskLabel": weather_risk_label,
                     "description": item.get("description", ""),
-                    "imageUrl": item.get("imageUrl", "https://images.unsplash.com/photo-1599661046289-e31897846e41?auto=format&fit=crop&w=600&q=80"),
+                    "imageUrl": get_wikipedia_page_image(item.get("title", "")),
                     "isVisited": False,
+                    "verified": True,
                     "hasPlanBReady": has_plan_b,
                     "planBAlternative": alt_data
                 })
-
-            # Day theme
-            if landmarks and day_num <= 4:
-                vizag_themes = [
-                    "Beach Road & Naval Heritage Circuit",
-                    "Scenic Heights, Panoramic Hills & Coastal Sands",
-                    "Sacred Temples & Historic Dolphin's Nose Vistas",
-                    "Monastic Antiquities & Dutch Maritime Trails"
-                ]
-                day_theme = f"{dest_clean}: {vizag_themes[(day_num - 1) % len(vizag_themes)]}"
-            else:
-                day_theme = f"{dest_clean}: {theme_name}"
 
             weather_summary = "Showers 25°C • 65% Rain at 2 PM" if is_rain_day else "27°C • Sunny & Clear"
 
@@ -1212,18 +1575,28 @@ STRICT REQUIREMENTS:
                 "dayNumber": day_num,
                 "dayOfWeek": day_of_week,
                 "dateStr": date_str,
-                "theme": day_theme,
+                "theme": f"{dest_clean}: {theme_name}",
                 "weatherSummary": weather_summary,
                 "temperature": "25°C" if is_rain_day else "27°C",
                 "rainRisk": 65 if is_rain_day else 10,
                 "weatherCondition": "thunderstorm" if is_rain_day else "sunny",
+                "dayDestination": {
+                    "name": day_dest.name,
+                    "state": day_dest.state,
+                    "lat": day_dest.lat,
+                    "lon": day_dest.lon
+                },
                 "activities": day_activities
             })
             cur_date += timedelta(days=1)
 
+        from app.services.destinations import calculate_transit_between
         return {
-            "tagline": f"{traveler} Expedition across {dest_clean} ({pace} pace, {budget})",
-            "days": days
+            "tagline": f"{traveler} Expedition across {' ➔ '.join(d.name for d in resolved_destinations)} ({pace} pace, {budget})",
+            "days": days,
+            "destinations": [d.name for d in resolved_destinations],
+            "destination": " ➔ ".join(d.name for d in resolved_destinations),
+            "transitBetween": calculate_transit_between(resolved_destinations)
         }
 
 

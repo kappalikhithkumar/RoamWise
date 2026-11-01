@@ -3,59 +3,88 @@ from datetime import datetime, timedelta
 from flask import Blueprint, jsonify, request
 from app.database import get_db, serialize_trip, serialize_day, serialize_activity
 from app.services.gemini_service import gemini_service
-from app.services.destinations import destination_resolver
+from app.services.destinations import destination_resolver, calculate_transit_between
 
 trips_bp = Blueprint("trips", __name__)
+
+
+def _extract_destination_strings(data: dict) -> list[str]:
+    """Extract individual destination strings from destinations array or destination string."""
+    raw_destinations = data.get("destinations")
+    if isinstance(raw_destinations, list) and raw_destinations:
+        items = []
+        for d in raw_destinations:
+            d_str = str(d).strip()
+            if not d_str:
+                continue
+            if "➔" in d_str:
+                items.extend([p.strip() for p in d_str.split("➔") if p.strip()])
+            elif "->" in d_str:
+                items.extend([p.strip() for p in d_str.split("->") if p.strip()])
+            else:
+                items.append(d_str)
+        if items:
+            return items
+
+    raw_dest = data.get("destination", "")
+    if isinstance(raw_dest, str) and raw_dest.strip():
+        if "➔" in raw_dest:
+            return [p.strip() for p in raw_dest.split("➔") if p.strip()]
+        elif "->" in raw_dest:
+            return [p.strip() for p in raw_dest.split("->") if p.strip()]
+        else:
+            return [raw_dest.strip()]
+    return []
+
 
 @trips_bp.route("/trips/generate", methods=["POST"])
 def generate_itinerary_endpoint():
     """Generate an itinerary using Gemini AI with deterministic fallback."""
     data = request.get_json() or {}
-    raw_dest = data.get("destination")
-    if not raw_dest or not str(raw_dest).strip():
-        if data.get("destinations") and isinstance(data["destinations"], list) and data["destinations"]:
-            raw_dest = data["destinations"][0]
-        else:
-            return jsonify({"error": "Destination is required"}), 400
+    dest_inputs = _extract_destination_strings(data)
+    if not dest_inputs:
+        return jsonify({"error": "Destination is required"}), 400
 
-    lookup_dest = str(raw_dest).strip()
-    if "➔" in lookup_dest or "->" in lookup_dest:
-        lookup_dest = lookup_dest.split("➔")[0].split("->")[0].strip()
+    resolved_destinations = []
+    for item in dest_inputs:
+        resolution = destination_resolver.resolve(item)
+        if resolution.status in ("not_found", "not_india"):
+            return jsonify({"error": resolution.message}), 422
+        elif resolution.status == "lookup_unavailable":
+            return jsonify({"error": resolution.message}), 503
+        if not resolution.destination:
+            return jsonify({"error": f"Destination '{item}' could not be resolved in India."}), 422
+        resolved_destinations.append(resolution.destination)
 
-    resolution = destination_resolver.resolve(lookup_dest)
-    if resolution.status in ("not_found", "not_india") and data.get("destinations") and isinstance(data["destinations"], list) and data["destinations"]:
-        first_stop = str(data["destinations"][0]).strip()
-        if "➔" in first_stop or "->" in first_stop:
-            first_stop = first_stop.split("➔")[0].split("->")[0].strip()
-        stop_res = destination_resolver.resolve(first_stop)
-        if stop_res.is_ok:
-            resolution = stop_res
+    canonical_names = [d.name for d in resolved_destinations]
+    data["destinations"] = canonical_names
+    data["destination"] = " ➔ ".join(canonical_names)
+    primary = resolved_destinations[0]
+    data["resolvedDestination"] = primary.name
+    data["state"] = primary.state
+    data["lat"] = primary.lat
+    data["lon"] = primary.lon
+    data["latitude"] = primary.lat
+    data["longitude"] = primary.lon
 
-    if resolution.status in ("not_found", "not_india"):
-        return jsonify({"error": resolution.message}), 422
-    elif resolution.status == "lookup_unavailable":
-        return jsonify({"error": resolution.message}), 503
-
-    resolved = resolution.destination
-    if not data.get("destination"):
-        data["destination"] = resolved.name
-    data["resolvedDestination"] = resolved.name
-    data["state"] = resolved.state
-    data["lat"] = resolved.lat
-    data["lon"] = resolved.lon
-    data["latitude"] = resolved.lat
-    data["longitude"] = resolved.lon
-    if "destinations" in data and isinstance(data["destinations"], list):
-        data["destinations"] = [resolved.name]
+    transit_between = calculate_transit_between(resolved_destinations)
+    data["transitBetween"] = transit_between
 
     result = gemini_service.generate_itinerary(data)
+    poi_source = result.get("poiSource", "none")
+    verification = result.get("verification", "unverified" if poi_source == "none" else "verified")
     return jsonify({
         "success": True,
         "itinerary": result,
         "tagline": result.get("tagline"),
+        "destination": data["destination"],
+        "destinations": canonical_names,
+        "transitBetween": transit_between,
         "days": result.get("days", []),
         "generationSource": result.get("generationSource", "ai"),
-        "fallbackReason": result.get("fallbackReason")
+        "fallbackReason": result.get("fallbackReason"),
+        "poiSource": poi_source,
+        "verification": verification
     }), 200
 
 @trips_bp.route("/trips/replan", methods=["POST"])
@@ -107,42 +136,36 @@ def list_trips():
 def create_trip():
     """Save a new trip, its configuration, and its complete day schedule and activities."""
     data = request.get_json() or {}
-    
-    raw_dest = data.get("destination")
-    if not raw_dest or not str(raw_dest).strip():
-        if data.get("destinations") and isinstance(data["destinations"], list) and data["destinations"]:
-            raw_dest = data["destinations"][0]
-        else:
-            return jsonify({"error": "Destination is required"}), 400
+    dest_inputs = _extract_destination_strings(data)
+    if not dest_inputs:
+        return jsonify({"error": "Destination is required"}), 400
 
-    lookup_dest = str(raw_dest).strip()
-    if "➔" in lookup_dest or "->" in lookup_dest:
-        lookup_dest = lookup_dest.split("➔")[0].split("->")[0].strip()
+    resolved_destinations = []
+    for item in dest_inputs:
+        resolution = destination_resolver.resolve(item)
+        if resolution.status in ("not_found", "not_india"):
+            return jsonify({"error": resolution.message}), 422
+        elif resolution.status == "lookup_unavailable":
+            return jsonify({"error": resolution.message}), 503
+        if not resolution.destination:
+            return jsonify({"error": f"Destination '{item}' could not be resolved in India."}), 422
+        resolved_destinations.append(resolution.destination)
 
-    resolution = destination_resolver.resolve(lookup_dest)
-    if resolution.status in ("not_found", "not_india") and data.get("destinations") and isinstance(data["destinations"], list) and data["destinations"]:
-        first_stop = str(data["destinations"][0]).strip()
-        if "➔" in first_stop or "->" in first_stop:
-            first_stop = first_stop.split("➔")[0].split("->")[0].strip()
-        stop_res = destination_resolver.resolve(first_stop)
-        if stop_res.is_ok:
-            resolution = stop_res
+    canonical_names = [d.name for d in resolved_destinations]
+    destination = " ➔ ".join(canonical_names)
+    primary = resolved_destinations[0]
 
-    if resolution.status in ("not_found", "not_india"):
-        return jsonify({"error": resolution.message}), 422
-    elif resolution.status == "lookup_unavailable":
-        return jsonify({"error": resolution.message}), 503
+    data["destinations"] = canonical_names
+    data["destination"] = destination
+    data["resolvedDestination"] = primary.name
+    data["state"] = primary.state
+    data["lat"] = primary.lat
+    data["lon"] = primary.lon
+    data["latitude"] = primary.lat
+    data["longitude"] = primary.lon
 
-    resolved = resolution.destination
-    destination = data.get("destination") or resolved.name
-    destinations = [resolved.name] if not data.get("destinations") else data.get("destinations")
-
-    data["resolvedDestination"] = resolved.name
-    data["state"] = resolved.state
-    data["lat"] = resolved.lat
-    data["lon"] = resolved.lon
-    data["latitude"] = resolved.lat
-    data["longitude"] = resolved.lon
+    transit_between = calculate_transit_between(resolved_destinations)
+    data["transitBetween"] = transit_between
     
     now = datetime.now()
     default_start = (now + timedelta(days=7)).strftime("%Y-%m-%d")
@@ -184,9 +207,9 @@ def create_trip():
         INSERT INTO trips (
             destination, start_date, end_date, budget_tier, travel_style,
             traveler_type, pace, weather_adaptive, tagline,
-            destinations_json, interests_json, is_domestic
+            destinations_json, interests_json, is_domestic, transit_between_json
         )
-        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
     """, (
         destination,
         start_date,
@@ -197,9 +220,10 @@ def create_trip():
         pace,
         weather_adaptive,
         tagline,
-        json.dumps(destinations),
+        json.dumps(canonical_names),
         json.dumps(interests),
-        is_domestic
+        is_domestic,
+        json.dumps(transit_between)
     ))
     
     trip_id = cursor.lastrowid
@@ -216,16 +240,19 @@ def create_trip():
         rain_risk = int(day.get("rainRisk", 0))
         weather_condition = day.get("weatherCondition", "sunny")
         weather_alert = day.get("weatherAlert")
+        day_dest_json = json.dumps(day["dayDestination"]) if day.get("dayDestination") else None
         
         cursor.execute("""
             INSERT INTO trip_days (
                 trip_id, day_number, day_of_week, date_str, theme,
-                weather_summary, temperature, rain_risk, weather_condition, weather_alert
+                weather_summary, temperature, rain_risk, weather_condition, weather_alert,
+                day_destination_json
             )
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
         """, (
             trip_id, day_number, day_of_week, date_str, theme,
-            weather_summary, temperature, rain_risk, weather_condition, weather_alert
+            weather_summary, temperature, rain_risk, weather_condition, weather_alert,
+            day_dest_json
         ))
         day_id = cursor.lastrowid
         
@@ -281,7 +308,8 @@ def create_trip():
         saved_days.append({
             **day,
             "id": day_id,
-            "activities": saved_activities
+            "activities": saved_activities,
+            "dayDestination": day.get("dayDestination")
         })
         
     db.commit()
@@ -291,13 +319,17 @@ def create_trip():
     
     gen_source = data.get("generationSource") or (ai_itinerary.get("generationSource") if ai_itinerary else "saved")
     fb_reason = data.get("fallbackReason") or (ai_itinerary.get("fallbackReason") if ai_itinerary else None)
+    poi_src = data.get("poiSource") or (ai_itinerary.get("poiSource") if ai_itinerary else "none")
+    verif = data.get("verification") or (ai_itinerary.get("verification") if ai_itinerary else ("unverified" if poi_src == "none" else "verified"))
 
     return jsonify({
         "message": "Trip saved successfully",
         "tripId": trip_id,
         "trip": trip_result,
         "generationSource": gen_source,
-        "fallbackReason": fb_reason
+        "fallbackReason": fb_reason,
+        "poiSource": poi_src,
+        "verification": verif
     }), 201
 
 @trips_bp.route("/trips/<int:trip_id>", methods=["GET"])

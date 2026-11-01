@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import React, { useState, useEffect, useRef } from 'react';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useTrip } from '../../context/TripContext';
 import { TripConfig, BudgetTier, TravelPace, TravelerType, InterestType } from '../../types';
 
@@ -51,15 +51,57 @@ const INTEREST_OPTIONS: { id: InterestType; label: string; icon: string }[] = [
 
 export const TripConfigurationForm: React.FC = () => {
   const navigate = useNavigate();
+  const [searchParams, setSearchParams] = useSearchParams();
   const { state, updateConfig, clearDestinationError } = useTrip();
 
   // Multi-stop destinations - starts clean with empty stops
   const [stops, setStops] = useState<StopItem[]>(DEFAULT_STOPS);
   const [searchCity, setSearchCity] = useState('');
-  const [quickCityIdx, setQuickCityIdx] = useState(0);
+  const [inputHint, setInputHint] = useState<string | null>(null);
   const [suggestionDismissed, setSuggestionDismissed] = useState(false);
   const [suggestionApplied, setSuggestionApplied] = useState(false);
   const [highlightSuggestion, setHighlightSuggestion] = useState(false);
+
+  // Guard against React StrictMode double-running the effect
+  const hasProcessedDestinationParamRef = useRef(false);
+
+  // Helper to detect case-insensitive duplicate stops
+  const isDuplicateStop = (existingStops: StopItem[], targetName: string, targetCity: string) => {
+    const normName = targetName.trim().toLowerCase();
+    const normCity = targetCity.trim().toLowerCase();
+    return existingStops.some(
+      (s) =>
+        s.name.trim().toLowerCase() === normName ||
+        s.city.trim().toLowerCase() === normCity
+    );
+  };
+
+  // On first mount only: read destination query param
+  useEffect(() => {
+    if (hasProcessedDestinationParamRef.current) return;
+    hasProcessedDestinationParamRef.current = true;
+
+    const destParam = searchParams.get('destination');
+    if (destParam && destParam.trim()) {
+      const trimmed = destParam.trim();
+      const cityName = (trimmed.split(',')[0] || trimmed).trim();
+
+      setStops((prevStops) => {
+        if (prevStops.length > 0) return prevStops;
+        const initialStop: StopItem = {
+          id: `stop-${Date.now()}-${Math.random().toString(36).substr(2, 4)}`,
+          name: trimmed,
+          desc: 'Stop 1 • Curated Destination',
+          city: cityName
+        };
+        return [initialStop];
+      });
+
+      const nextParams = new URLSearchParams(searchParams);
+      nextParams.delete('destination');
+      setSearchParams(nextParams, { replace: true });
+    }
+  }, [searchParams, setSearchParams]);
 
   // Dynamic upcoming dates (defaults to 7 days from now for 4 days)
   const defaultDates = getDefaultDates();
@@ -98,40 +140,54 @@ export const TripConfigurationForm: React.FC = () => {
 
   // Handle Add Stop
   const handleAddStop = () => {
-    let nameToAdd = searchCity.trim();
-    let descToAdd = 'Curated Circuit Extension';
-    let cityToAdd = nameToAdd.split(',')[0] || nameToAdd;
-
-    if (!nameToAdd) {
-      const chosen = QUICK_ADD_CITIES[quickCityIdx % QUICK_ADD_CITIES.length];
-      setQuickCityIdx((prev) => prev + 1);
-      nameToAdd = chosen.name;
-      descToAdd = chosen.desc;
-      cityToAdd = chosen.city;
-    } else {
-      setSearchCity('');
+    const rawName = searchCity.trim();
+    if (!rawName) {
+      setInputHint('Type a destination first');
+      return;
     }
 
-    const newStop: StopItem = {
-      id: `stop-${Date.now()}-${Math.random().toString(36).substr(2, 4)}`,
-      name: nameToAdd,
-      desc: `Stop ${stops.length + 1} • ${descToAdd}`,
-      city: cityToAdd
-    };
+    setInputHint(null);
+    const nameToAdd = rawName;
+    const cityToAdd = (nameToAdd.split(',')[0] || nameToAdd).trim();
+    const descToAdd = 'Curated Circuit Extension';
 
-    setStops([...stops, newStop]);
+    setSearchCity('');
+
+    setStops((prevStops) => {
+      if (isDuplicateStop(prevStops, nameToAdd, cityToAdd)) {
+        return prevStops;
+      }
+      const newStop: StopItem = {
+        id: `stop-${Date.now()}-${Math.random().toString(36).substr(2, 4)}`,
+        name: nameToAdd,
+        desc: `Stop ${prevStops.length + 1} • ${descToAdd}`,
+        city: cityToAdd
+      };
+      return [...prevStops, newStop];
+    });
+
     if (errors.destination) setErrors({ ...errors, destination: undefined });
   };
 
   // Quick Add Specific Destination
   const handleAddSpecificStop = (name: string, desc: string, city: string) => {
-    const newStop: StopItem = {
-      id: `stop-${Date.now()}-${Math.random().toString(36).substr(2, 4)}`,
-      name,
-      desc: `Stop ${stops.length + 1} • ${desc}`,
-      city
-    };
-    setStops([...stops, newStop]);
+    const trimmedName = name.trim();
+    const trimmedCity = (city || trimmedName.split(',')[0]).trim();
+
+    setStops((prevStops) => {
+      if (isDuplicateStop(prevStops, trimmedName, trimmedCity)) {
+        return prevStops;
+      }
+      const newStop: StopItem = {
+        id: `stop-${Date.now()}-${Math.random().toString(36).substr(2, 4)}`,
+        name: trimmedName,
+        desc: `Stop ${prevStops.length + 1} • ${desc.trim()}`,
+        city: trimmedCity
+      };
+      return [...prevStops, newStop];
+    });
+
+    if (inputHint) setInputHint(null);
     if (errors.destination) setErrors({ ...errors, destination: undefined });
   };
 
@@ -360,6 +416,7 @@ export const TripConfigurationForm: React.FC = () => {
               value={searchCity}
               onChange={(e) => {
                 setSearchCity(e.target.value);
+                if (inputHint) setInputHint(null);
                 if (state.destinationError) clearDestinationError();
               }}
               onKeyDown={(e) => {
@@ -374,6 +431,14 @@ export const TripConfigurationForm: React.FC = () => {
               } transition-all`}
             />
           </div>
+
+          {/* Inline hint when trying to add empty search */}
+          {inputHint && (
+            <div className="text-[11px] text-amber-700 dark:text-amber-400 font-medium px-1 flex items-center gap-1">
+              <span className="material-symbols-outlined text-[14px]">info</span>
+              <span>{inputHint}</span>
+            </div>
+          )}
 
           {/* Backend 422 / 503 Destination Error directly under the destination input */}
           {state.destinationError && (
@@ -410,9 +475,6 @@ export const TripConfigurationForm: React.FC = () => {
               auto_fix_high
             </span>
             <span>Optimise My Route</span>
-            <span className="text-[11px] px-2 py-0.5 rounded-full bg-tertiary-fixed text-on-tertiary-fixed font-bold">
-              Save ~3.5h
-            </span>
           </button>
         )}
 
@@ -640,7 +702,7 @@ export const TripConfigurationForm: React.FC = () => {
                 Budget-friendly
               </span>
               <span className={`font-body-sm text-[11px] mt-0.5 ${budgetTier === 'Budget-friendly' ? 'text-primary-fixed' : 'text-on-surface-variant'}`}>
-                Hostels, experiential dorms & scenic Vande Bharat / Express trains
+                Hostels, experiential dorms & reliable transit connections
               </span>
             </div>
             {budgetTier === 'Budget-friendly' ? (

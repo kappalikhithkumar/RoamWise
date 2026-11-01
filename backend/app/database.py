@@ -56,6 +56,7 @@ def init_db(app):
         _ensure_column(cursor, "trips", "destinations_json", "TEXT")
         _ensure_column(cursor, "trips", "interests_json", "TEXT")
         _ensure_column(cursor, "trips", "is_domestic", "INTEGER DEFAULT 1")
+        _ensure_column(cursor, "trips", "transit_between_json", "TEXT")
         
         # Daily itineraries table
         cursor.execute("""
@@ -77,6 +78,7 @@ def init_db(app):
         _ensure_column(cursor, "trip_days", "day_of_week", "TEXT")
         _ensure_column(cursor, "trip_days", "weather_condition", "TEXT")
         _ensure_column(cursor, "trip_days", "weather_alert", "TEXT")
+        _ensure_column(cursor, "trip_days", "day_destination_json", "TEXT")
         
         # Activities table
         cursor.execute("""
@@ -129,6 +131,15 @@ def init_db(app):
                 FOREIGN KEY (trip_id) REFERENCES trips (id) ON DELETE CASCADE
             );
         """)
+
+        # Persistent POI Cache table with 30-day TTL support
+        cursor.execute("""
+            CREATE TABLE IF NOT EXISTS poi_cache (
+                destination_key TEXT PRIMARY KEY,
+                json TEXT NOT NULL,
+                fetched_at REAL NOT NULL
+            );
+        """)
         
         db.commit()
 
@@ -167,6 +178,13 @@ def serialize_activity(row):
 def serialize_day(day_row, activities):
     """Serialize a database trip_day row into the React frontend DayItinerary shape."""
     r = dict(day_row)
+    day_dest = None
+    if r.get("day_destination_json"):
+        try:
+            day_dest = json.loads(r["day_destination_json"])
+        except Exception:
+            day_dest = None
+
     return {
         "dayNumber": r["day_number"],
         "dayOfWeek": r.get("day_of_week") or "Day",
@@ -177,6 +195,7 @@ def serialize_day(day_row, activities):
         "rainRisk": r.get("rain_risk") or 0,
         "weatherCondition": r.get("weather_condition") or "sunny",
         "weatherAlert": r.get("weather_alert"),
+        "dayDestination": day_dest,
         "activities": activities
     }
 
@@ -201,6 +220,13 @@ def serialize_trip(trip_row, days=None):
     elif r.get("travel_style"):
         interests = [i.strip() for i in r["travel_style"].split(",") if i.strip()]
 
+    transit_between = None
+    if r.get("transit_between_json"):
+        try:
+            transit_between = json.loads(r["transit_between_json"])
+        except Exception:
+            transit_between = None
+
     result = {
         "id": r["id"],
         "destination": r["destination"],
@@ -214,6 +240,7 @@ def serialize_trip(trip_row, days=None):
         "weatherAdaptive": bool(r.get("weather_adaptive", 1)),
         "tagline": r.get("tagline") or f"{r.get('traveler_type', 'Travel')} Expedition in {r['destination'].split(',')[0]}",
         "isDomestic": bool(r.get("is_domestic", 1)),
+        "transitBetween": transit_between,
         "createdAt": str(r.get("created_at") or "")
     }
     

@@ -1,6 +1,7 @@
 import React from 'react';
 import { Activity } from '../../types';
 import { useTrip } from '../../context/TripContext';
+import { getCategoryGradientAndIcon } from '../../utils/categoryTheme';
 
 interface ActivityCardProps {
   activity: Activity;
@@ -37,8 +38,13 @@ export const ActivityCard: React.FC<ActivityCardProps> = ({
             loading="lazy"
           />
         ) : (
-          <div className="w-full h-full flex items-center justify-center text-primary">
-            <span className="material-symbols-outlined text-[24px]">location_on</span>
+          <div
+            className={`w-full h-full bg-gradient-to-br ${getCategoryGradientAndIcon(activity.category).gradient} flex items-center justify-center text-white shadow-inner`}
+            title={activity.category}
+          >
+            <span className="material-symbols-outlined text-[24px] opacity-95">
+              {getCategoryGradientAndIcon(activity.category).icon}
+            </span>
           </div>
         )}
 

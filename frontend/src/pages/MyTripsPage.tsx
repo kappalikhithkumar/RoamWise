@@ -100,7 +100,7 @@ export const MyTripsPage: React.FC = () => {
               </div>
               <h2 className="text-xl font-bold font-display text-primary">No Expeditions Planned Yet</h2>
               <p className="text-sm text-[#414845] max-w-md mt-1 mb-6">
-                You haven't saved any trips yet. Create your first adaptive journey tailored to your rhythm and real-time conditions.
+                You haven't saved any trips yet. Create your first adaptive journey with real-time weather and verified local attractions.
               </p>
               <div className="flex flex-wrap items-center justify-center gap-3">
                 <button
